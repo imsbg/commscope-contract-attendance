@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Dashboard</title>
+    <!-- Tailwind CSS for rapid modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PDF.js for client-side PDF parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        /* Custom Styles for Sticky Elements & Scrollbar */
+        .table-container { max-height: 70vh; overflow: auto; }
+        thead th { position: sticky; top: 0; background-color: #f3f4f6; z-index: 10; }
+        
+        /* Sticky first two columns */
+        .sticky-col-1 { position: sticky; left: 0; background-color: white; z-index: 5; border-right: 1px solid #e5e7eb; }
+        .sticky-col-2 { position: sticky; left: 100px; background-color: white; z-index: 5; border-right: 2px solid #e5e7eb; }
+        thead .sticky-col-1, head .sticky-col-2 { z-index: 15; background-color: #f3f4f6; }
+
+        /* Status Badges */
+        .badge { padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; text-align: center; display: inline-block; min-width: 30px;}
+        .badge-P, .badge-FD { background-color: #d1fae5; color: #065f46; } /* Green */
+        .badge-A { background-color: #fee2e2; color: #991b1b; } /* Red */
+        .badge-HD, .badge-MP { background-color: #fef3c7; color: #92400e; } /* Yellow/Orange */
+        .badge-SLWP { background-color: #f3f4f6; color: #374151; } /* Gray */
+        .badge-unknown { background-color: #e0e7ff; color: #3730a3; } /* Default */
+
+        /* Loader */
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        <!-- Header & Input Section -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">PDF Attendance Extractor</h1>
+            <p class="text-sm text-gray-500 mb-4">Note: The Google Drive link provided was a <b>folder</b>. Please provide a link to a specific PDF <b>file</b> inside that folder.</p>
+            
+            <div class="flex flex-col md:flex-row gap-4">
+                <input type="text" id="pdfLink" placeholder="Paste Google Drive PDF File Link here..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                <button onclick="processPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors">Process PDF</button>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingSection" class="hidden text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100">
+            <div class="loader mb-4"></div>
+            <p id="loadingText" class="text-gray-600 font-medium">Fetching PDF...</p>
+        </div>
+
+        <!-- Dashboard & Filters (Hidden initially) -->
+        <div id="mainDashboard" class="hidden space-y-6">
+            
+            <!-- Metrics Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500">Current Month</p>
+                    <p id="metricMonth" class="text-xl font-bold text-gray-900">-</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500">Total Employees</p>
+                    <p id="metricTotalEmp" class="text-xl font-bold text-blue-600">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500">Total Presents (All Days)</p>
+                    <p id="metricTotalP" class="text-xl font-bold text-green-600">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500">Total Absents (All Days)</p>
+                    <p id="metricTotalA" class="text-xl font-bold text-red-600">0</p>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap gap-4 items-center justify-between">
+                <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search Name, Code, Contractor..." class="px-4 py-2 border border-gray-300 rounded-lg w-full md:w-1/3">
+                
+                <div class="flex gap-4 w-full md:w-auto">
+                    <select id="statusFilter" onchange="applyFilters()" class="px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                        <option value="">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="Left">Left</option>
+                    </select>
+                    
+                    <select id="contractorFilter" onchange="applyFilters()" class="px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                        <option value="">All Contractors</option>
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="table-container w-full">
+                    <table class="w-full text-left border-collapse min-w-max">
+                        <thead>
+                            <tr id="tableHeader" class="text-xs text-gray-600 uppercase bg-gray-50 border-b border-gray-200">
+                                <!-- Generated Dynamically -->
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="text-sm divide-y divide-gray-200">
+                            <!-- Generated Dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="p-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
+                    <span id="pageInfo" class="text-sm text-gray-600">Showing 0 of 0</span>
+                    <div class="flex gap-2">
+                        <button onclick="changePage(-1)" class="px-3 py-1 border border-gray-300 rounded bg-white hover:bg-gray-100 disabled:opacity-50">Previous</button>
+                        <button onclick="changePage(1)" class="px-3 py-1 border border-gray-300 rounded bg-white hover:bg-gray-100 disabled:opacity-50">Next</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Set up PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        let globalData = [];
+        let filteredData = [];
+        let currentMonthStr = "Unknown Month";
+        let currentPage = 1;
+        const rowsPerPage = 50;
+
+        // Extract Google Drive File ID and create a direct download link via CORS proxy
+        function getProxyUrl(driveLink) {
+            let fileId = "";
+            const idMatch = driveLink.match(/\/d\/(.+?)\//) || driveLink.match(/id=(.+?)(&|$)/);
+            if (idMatch) {
+                fileId = idMatch[1];
+            } else {
+                alert("Invalid Google Drive File Link. Please ensure it is a link to a file, not a folder.");
+                return null;
+            }
+            const directUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+            // Using corsproxy.io to bypass Google Drive's strict CORS policies
+            return `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
+        }
+
+        async function processPDF() {
+            const linkInput = document.getElementById('pdfLink').value.trim();
+            if (!linkInput) return alert("Please enter a link.");
+            
+            const pdfUrl = getProxyUrl(linkInput);
+            if (!pdfUrl) return;
+
+            document.getElementById('loadingSection').classList.remove('hidden');
+            document.getElementById('mainDashboard').classList.add('hidden');
+            globalData = [];
+
+            try {
+                const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                const pdf = await loadingTask.promise;
+                const totalPages = pdf.numPages;
+
+                let monthFound = false;
+
+                for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+                    document.getElementById('loadingText').innerText = `Processing Page ${pageNum} of ${totalPages}...`;
+                    
+                    const page = await pdf.getPage(pageNum);
+                    const textContent = await page.getTextContent();
+                    
+                    // Group text by Y coordinate (Row)
+                    const rowsMap = {};
+                    const Y_TOLERANCE = 4; // Adjust this if rows are merging or splitting incorrectly
+
+                    textContent.items.forEach(item => {
+                        if (!item.str.trim()) return; // Skip empty strings
+                        
+                        const y = Math.round(item.transform[5] / Y_TOLERANCE) * Y_TOLERANCE;
+                        if (!rowsMap[y]) rowsMap[y] = [];
+                        rowsMap[y].push({ text: item.str.trim(), x: item.transform[4] });
+                    });
+
+                    // Sort rows top-to-bottom (PDF y-axis goes bottom-to-top, so sort descending)
+                    const sortedY = Object.keys(rowsMap).map(Number).sort((a, b) => b - a);
+
+                    sortedY.forEach(y => {
+                        // Sort items in row left-to-right
+                        const rowItems = rowsMap[y].sort((a, b) => a.x - b.x).map(item => item.text);
+                        
+                        // Heuristic 1: Find Header for Month
+                        if (!monthFound && rowItems.join(" ").toLowerCase().includes("month:")) {
+                            const monthMatch = rowItems.join(" ").match(/Month:\s*([A-Za-z]+\s*\d{4})/i);
+                            if (monthMatch) {
+                                currentMonthStr = monthMatch[1];
+                                monthFound = true;
+                            }
+                        }
+
+                        // Heuristic 2: Identify Data Rows (Assuming attendance rows have > 30 items)
+                        if (rowItems.length >= 30) {
+                            // Map columns based on prompt structure
+                            // Array logic:
+                            // [0]: Code, [1]: Name, [2]: Status, [3]: Contractor
+                            // [last-2]: TL Name, [last-1]: Sanctioner
+                            // Everything in between are dates.
+                            
+                            const datesArr = rowItems.slice(4, rowItems.length - 2);
+                            
+                            globalData.push({
+                                code: rowItems[0],
+                                name: rowItems[1],
+                                status: rowItems[2],
+                                contractor: rowItems[3],
+                                dates: datesArr,
+                                tl: rowItems[rowItems.length - 2],
+                                sanctioner: rowItems[rowItems.length - 1]
+                            });
+                        }
+                    });
+                }
+
+                // Post-processing
+                filteredData = [...globalData];
+                populateFilters();
+                updateDashboard();
+                renderTable();
+
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('mainDashboard').classList.remove('hidden');
+
+            } catch (error) {
+                console.error(error);
+                alert("Error loading PDF. It might be a CORS issue or an invalid file format. Check console for details.");
+                document.getElementById('loadingSection').classList.add('hidden');
+            }
+        }
+
+        function populateFilters() {
+            const contractors = [...new Set(globalData.map(d => d.contractor))].filter(Boolean);
+            const select = document.getElementById('contractorFilter');
+            select.innerHTML = '<option value="">All Contractors</option>';
+            contractors.forEach(c => {
+                select.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const contractor = document.getElementById('contractorFilter').value;
+
+            filteredData = globalData.filter(row => {
+                const matchSearch = row.name.toLowerCase().includes(search) || 
+                                    row.code.toLowerCase().includes(search) || 
+                                    row.contractor.toLowerCase().includes(search);
+                const matchStatus = status ? row.status === status : true;
+                const matchContractor = contractor ? row.contractor === contractor : true;
+                return matchSearch && matchStatus && matchContractor;
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        function updateDashboard() {
+            document.getElementById('metricMonth').innerText = currentMonthStr;
+            document.getElementById('metricTotalEmp').innerText = globalData.length;
+
+            let totalP = 0;
+            let totalA = 0;
+            globalData.forEach(row => {
+                row.dates.forEach(d => {
+                    if (d === 'P' || d === 'FD') totalP++;
+                    if (d === 'A') totalA++;
+                });
+            });
+
+            document.getElementById('metricTotalP').innerText = totalP;
+            document.getElementById('metricTotalA').innerText = totalA;
+        }
+
+        function changePage(direction) {
+            const maxPage = Math.ceil(filteredData.length / rowsPerPage);
+            currentPage += direction;
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > maxPage) currentPage = maxPage;
+            renderTable();
+        }
+
+        function renderTable() {
+            const thead = document.getElementById('tableHeader');
+            const tbody = document.getElementById('tableBody');
+            
+            // Render Header dynamically based on max dates found
+            let maxDates = 31;
+            if (filteredData.length > 0) {
+                maxDates = Math.max(...filteredData.map(d => d.dates.length));
+            }
+
+            let headerHTML = `
+                <th class="px-4 py-3 sticky-col-1" style="width: 100px;">Code</th>
+                <th class="px-4 py-3 sticky-col-2" style="width: 200px;">Name</th>
+                <th class="px-4 py-3 whitespace-nowrap">Status</th>
+                <th class="px-4 py-3 whitespace-nowrap">Contractor</th>
+            `;
+            for (let i = 1; i <= maxDates; i++) {
+                headerHTML += `<th class="px-2 py-3 text-center border-l border-gray-200">${i}</th>`;
+            }
+            headerHTML += `
+                <th class="px-4 py-3 whitespace-nowrap border-l border-gray-200">Team Leader</th>
+                <th class="px-4 py-3 whitespace-nowrap">Sanctioner</th>
+            `;
+            thead.innerHTML = headerHTML;
+
+            // Render Body (Pagination)
+            tbody.innerHTML = "";
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
+
+            pageData.forEach(row => {
+                let datesHTML = "";
+                for (let i = 0; i < maxDates; i++) {
+                    const status = row.dates[i] || "-";
+                    const badgeClass = `badge-${status}`;
+                    datesHTML += `<td class="px-2 py-2 text-center border-l border-gray-200">
+                                    <span class="badge ${badgeClass}">${status}</span>
+                                  </td>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-2 sticky-col-1 font-medium">${row.code}</td>
+                        <td class="px-4 py-2 sticky-col-2 font-medium">${row.name}</td>
+                        <td class="px-4 py-2 text-sm">${row.status}</td>
+                        <td class="px-4 py-2 text-sm whitespace-nowrap">${row.contractor}</td>
+                        ${datesHTML}
+                        <td class="px-4 py-2 text-sm whitespace-nowrap border-l border-gray-200">${row.tl}</td>
+                        <td class="px-4 py-2 text-sm whitespace-nowrap">${row.sanctioner}</td>
+                    </tr>
+                `;
+            });
+
+            // Update Pagination Info
+            const total = filteredData.length;
+            document.getElementById('pageInfo').innerText = `Showing ${total === 0 ? 0 : startIndex + 1} to ${Math.min(endIndex, total)} of ${total}`;
+        }
+    </script>
+</body>
+</html>
