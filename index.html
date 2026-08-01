@@ -4,123 +4,508 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Under Maintenance</title>
+    <!-- SEO & Branding -->
+    <title>CommScope Contractor Attendance Portal - Sandeep Biswal G</title>
+    <link rel="canonical" href="https://imsbg.github.io/commscope-contract-attendance/" />
+    <link rel="icon" type="image/png" href="https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0">
+    <meta name="description" content="Check your CommScope contractor attendance online. Track daily logs and attendance records for ADECCO, ANANYA, Dibya, ESJAY, Om Sai Krupa, and YASHASWI.">
+    <meta name="keywords" content="CommScope contractor attendance, CommScope attendance portal, CommScope worker login, ADECCO CommScope attendance, ANANYA contractor attendance, Dibya Industrial Service attendance, ESJAY CommScope attendance, MATHEW contractor attendance, Om Sai Krupa Enterprise attendance, SHAM contractor attendance, VASUDEVA CommScope attendance, YASHASWI contractor attendance, contractor attendance tracking, vendor employee attendance login, Sandeep Biswal, Sandeep Biswal G" />
+    <meta name="author" content="Sandeep Biswal G">
+    <meta property="og:title" content="CommScope Contractor Attendance Portal - Sandeep Biswal G">
+    <meta property="og:description" content="Check your CommScope contractor attendance online. Track daily logs and attendance records for ADECCO, ANANYA, Dibya, ESJAY, Om Sai Krupa, and YASHASWI.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://imsbg.github.io/commscope-contract-attendance/">
+    <meta property="og:image" content="https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0">
 
+    <!-- External Libraries (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- Custom CSS & Fonts (Google Sans) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
+    
     <style>
-        body{
-            font-family:'Poppins',sans-serif;
-            background:#f1f5f9;
+        :root {
+            --primary: #0d9488; /* Teal */
+            --background: #f1f5f9; /* Light Slate */
+            --card-bg: #ffffff;
         }
+        html { scroll-behavior: smooth; }
+        
+        /* Applied Google Sans font to entire body (including all languages in splash screen) */
+        body { font-family: 'Google Sans', sans-serif; background-color: var(--background); color: #0f172a; }
+        
+        #splash-screen { background-color: var(--card-bg); z-index: 100; transition: opacity 0.5s ease-out; }
+        #progress-bar { background-color: var(--primary); }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #e2e8f0; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
+        
+        .status-badge, .legend-badge { padding: 4px 10px; border-radius: 99px; font-weight: 600; font-size: 12px; text-align: center; display: inline-block; min-width: 28px; }
+        
+        /* Unique Colors for Each Status */
+        .status-p { background-color: #dcfce7; color: #166534; } /* Green */
+        .status-fd { background-color: #cffafe; color: #155e75; } /* Cyan */
+        .status-f { background-color: #d9f99d; color: #3f6212; } /* Lime */
+        .status-a { background-color: #fee2e2; color: #991b1b; } /* Red */
+        .status-wo { background-color: #e2e8f0; color: #475569; } /* Slate/Gray */
+        .status-hd { background-color: #fef9c3; color: #854d0e; } /* Yellow */
+        .status-mp { background-color: #ffedd5; color: #c2410c; } /* Orange */
+        .status-slwp { background-color: #f3e8ff; color: #6b21a8; } /* Purple */
+        .status-l { background-color: #fce7f3; color: #be185d; } /* Pink (Leave) */
+        .status-pending { background-color: #f8fafc; color: #94a3b8; } /* Very light gray for "-" Not Updated */
+        .status-unknown { background-color: #e0e7ff; color: #3730a3; } /* Indigo */
 
-        .card{
-            animation:fadeUp .7s ease;
-        }
-
-        @keyframes fadeUp{
-            from{
-                opacity:0;
-                transform:translateY(30px);
-            }
-            to{
-                opacity:1;
-                transform:translateY(0);
-            }
-        }
-
-        .spinner{
-            width:80px;
-            height:80px;
-            border:7px solid #dbeafe;
-            border-top:7px solid #0d9488;
-            border-radius:50%;
-            animation:spin 1s linear infinite;
-        }
-
-        @keyframes spin{
-            to{
-                transform:rotate(360deg);
-            }
-        }
-
-        .dot{
-            animation:blink 1.5s infinite;
-        }
-
-        .dot:nth-child(2){
-            animation-delay:.2s;
-        }
-
-        .dot:nth-child(3){
-            animation-delay:.4s;
-        }
-
-        @keyframes blink{
-            0%,80%,100%{
-                opacity:.2;
-            }
-            40%{
-                opacity:1;
-            }
-        }
+        .table-container { max-height: 65vh; }
+        thead th { position: sticky; top: 0; z-index: 10; background-color: #f8fafc; }
+        tbody td:first-child, thead th:first-child { position: sticky; left: 0; z-index: 5; background-color: var(--card-bg);}
+        thead th:first-child { z-index: 15; background-color: #f8fafc; }
+        tbody tr:hover td, tbody tr:hover td:first-child { background-color: #f0fdfa; }
+        
+        /* Blur effects for modals */
+        #employee-modal.visible, #pdf-alert-modal.visible { backdrop-filter: blur(4px); }
     </style>
 </head>
+<body class="antialiased">
 
-<body>
-
-<div class="min-h-screen flex items-center justify-center px-6">
-
-    <div class="card bg-white rounded-3xl shadow-xl border border-slate-200 max-w-xl w-full p-10 text-center">
-
-        <div class="flex justify-center mb-8">
-            <div class="spinner"></div>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="fixed inset-0 flex justify-center items-center">
+        <div class="text-center w-80">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <img src="https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0" alt="Logo" class="h-8 w-8">
+                <h1 id="splash-title" class="text-xl font-bold text-slate-700">CommScope Contractor Attendance Portal</h1>
+            </div>
+            <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full w-0 transition-all duration-300"></div>
+            </div>
+            <p id="splash-text" class="mt-3 text-sm text-slate-500">Initializing...</p>
+            <p id="long-load-message" class="mt-2 text-sm text-slate-500" style="display: none;"></p>
+            <p class="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-slate-400">Sandeep Biswal G Apps - Life Made Sarala.</p>
         </div>
-
-        <h1 class="text-4xl font-bold text-slate-800">
-            Under Maintenance
-        </h1>
-
-        <p class="mt-5 text-slate-600 leading-7 text-lg">
-            We are currently updating some attendance data to provide more
-            accurate information.
-        </p>
-
-        <p class="mt-3 text-slate-500">
-            Please check back again in a few minutes.
-        </p>
-
-        <div class="mt-8 inline-flex items-center gap-2 bg-teal-50 text-teal-700 px-5 py-3 rounded-full font-semibold">
-            Updating
-            <span class="dot">●</span>
-            <span class="dot">●</span>
-            <span class="dot">●</span>
-        </div>
-
-        <div class="mt-10 border-t pt-6">
-
-            <p class="text-slate-500">
-                Thank you for your patience.
+    </div>
+    
+    <!-- PDF Notice Alert Modal (Custom UI Popup) -->
+    <div id="pdf-alert-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300" id="pdf-alert-content">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="bg-amber-100 text-amber-600 p-2 rounded-full h-10 w-10 flex items-center justify-center">
+                    <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800">Notice</h3>
+            </div>
+            <p class="text-slate-600 mb-6 text-sm leading-relaxed">
+                If you think this data is incorrect, please view the original PDF in the Drive folder. Occasionally, the script may fail to load the latest data due to system overloads.
             </p>
-
-            <p class="mt-2 text-sm text-slate-400">
-                © <span id="year"></span> Sandeep Biswal G Apps
-            </p>
-
+            <div class="flex justify-end gap-3">
+                <button onclick="closePdfModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition text-sm font-semibold">Close</button>
+                <a href="https://drive.google.com/drive/folders/1H5tR99F-DsbT9wQnlLqXST0aLsa0B1sO?usp=drive_link" target="_blank" onclick="closePdfModal()" class="px-4 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-teal-700 transition text-sm font-semibold shadow-sm">
+                    Open Folder
+                </a>
+            </div>
         </div>
-
     </div>
 
-</div>
+    <!-- Main Content -->
+    <main id="main-content" class="hidden p-6 lg:p-8 max-w-screen-2xl mx-auto space-y-6">
+        <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900">CommScope Contractor Attendance Portal</h1>
+                <p id="current-month-header" class="text-slate-500"></p>
+            </div>
+            <div class="flex items-center gap-3 w-full lg:w-auto">
+                <!-- Home Button -->
+                <a href="https://imsbg.github.io/commscope/" class="bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium w-full lg:w-auto">
+                    <i class="fa-solid fa-house"></i> Home
+                </a>
+                <!-- Custom View PDF Button -->
+                <button onclick="openPdfModal()" class="bg-[var(--primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-teal-700 transition flex items-center justify-center gap-2 text-sm font-medium w-full lg:w-auto cursor-pointer">
+                    <i class="fa-solid fa-folder-open"></i> View Original PDF
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+           <div id="metric-total" class="bg-[var(--primary)] text-white p-6 rounded-2xl shadow-lg animate-fade-in-up" style="animation-delay: 100ms;"></div>
+           <div id="metric-present" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-fade-in-up" style="animation-delay: 200ms;"></div>
+           <div id="metric-absent" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-fade-in-up" style="animation-delay: 300ms;"></div>
+        </div>
+
+        <section id="analytics-section" class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-fade-in-up" style="animation-delay: 400ms;">
+                <h2 class="text-xl font-bold mb-4 text-slate-800">Daily Attendance Trends</h2>
+                <div class="h-80"><canvas id="dayWiseChart"></canvas></div>
+            </div>
+            <div id="status-donut-chart" class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-fade-in-up" style="animation-delay: 500ms;"></div>
+        </section>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-fade-in-up" style="animation-delay: 600ms;">
+            <div class="flex flex-col md:flex-row flex-wrap justify-between items-center gap-4 mb-4">
+                <div class="flex items-center gap-3 self-start">
+                    <h2 class="text-xl font-bold text-slate-800">Employee Records</h2>
+                    <span id="contractor-count" class="bg-teal-100 text-teal-800 text-xs font-semibold px-2.5 py-1 rounded-full hidden"></span>
+                </div>
+                <div class="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto">
+                    <input type="text" id="searchInput" placeholder="Search..." class="px-4 py-2 border border-slate-300 rounded-lg w-full md:w-48 focus:ring-2 focus:ring-teal-500 outline-none">
+                    <select id="statusFilter" class="px-4 py-2 border border-slate-300 rounded-lg bg-white w-full md:w-auto"></select>
+                    <select id="contractorFilter" class="px-4 py-2 border border-slate-300 rounded-lg bg-white w-full md:w-auto"></select>
+                </div>
+            </div>
+            
+            <div class="table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg">
+                <table class="w-full text-left min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
+            </div>
+            <div id="pagination-controls" class="pt-4 flex justify-between items-center text-sm"></div>
+        </div>
+        
+        <footer class="text-center text-xs text-slate-500 pt-4">
+            <p>Disclaimer: This site is not made by, endorsed by, or affiliated with Commscope.</p>
+            <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
+        </footer>
+    </main>
+    
+    <!-- Employee Details Modal -->
+    <div id="employee-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 p-4 lg:p-8 transition-opacity duration-300 opacity-0 pointer-events-none">
+        <div id="modal-content" class="bg-slate-50 rounded-2xl w-full h-full flex flex-col lg:flex-row overflow-hidden transition-transform duration-300 transform scale-95">
+             <button onclick="closeEmployeeModal()" class="absolute top-4 right-4 text-slate-600 bg-white/50 hover:bg-white/80 rounded-full h-10 w-10 text-2xl z-20">&times;</button>
+             <div id="modal-info-panel" class="w-full lg:w-72 p-6 bg-white border-r border-slate-200 flex flex-col"></div>
+             <div class="p-6 flex-1 flex flex-col">
+                <h3 id="modal-calendar-title" class="text-xl font-semibold mb-4 text-slate-700"></h3>
+                <div class="grid grid-cols-7 gap-1.5 mb-2 text-xs font-bold text-center text-slate-500">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                </div>
+                <div id="modal-calendar" class="grid grid-cols-7 grid-rows-6 gap-1.5 flex-1"></div>
+            </div>
+        </div>
+    </div>
 
 <script>
-document.getElementById("year").textContent = new Date().getFullYear();
-</script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzBMx-fZAifindtXbsXVueYEYQz4uBT1cA8CnlrZH3MTHEyR4RMv6uxaPhdKwskiP4T/exec";
 
+    let globalData = [], filteredData = [], currentPage = 1, currentMonthStr = "Unknown Month", dayWiseChart;
+    const rowsPerPage = 15;
+    
+    // Elements
+    const splashScreen = document.getElementById('splash-screen'), 
+          splashText = document.getElementById('splash-text'), 
+          splashTitle = document.getElementById('splash-title'), 
+          progressBar = document.getElementById('progress-bar'), 
+          mainContent = document.getElementById('main-content'), 
+          employeeModal = document.getElementById('employee-modal'), 
+          longLoadMessage = document.getElementById('long-load-message'),
+          pdfAlertModal = document.getElementById('pdf-alert-modal'),
+          pdfAlertContent = document.getElementById('pdf-alert-content');
+    
+    let longLoadTimer, messageInterval;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const employeeName = urlParams.get('Employee');
+        if (employeeName) {
+            splashText.textContent = `Loading details for ${decodeURIComponent(employeeName)}...`;
+        }
+
+        // Start timer for long load message (Fonts dynamically support Odia and Hindi)
+        longLoadTimer = setTimeout(() => {
+            longLoadMessage.style.display = 'block';
+            const messages = [
+                "It can take a few moments to load",
+                "ଏହା ଲୋଡ୍ ହେବାକୁ କିଛି ସମୟ ନେଇପାରେ", // Odia
+                "इसे लोड होने में कुछ समय लग सकता है" // Hindi
+            ];
+            let messageIndex = 0;
+            longLoadMessage.textContent = messages[messageIndex];
+            messageInterval = setInterval(() => {
+                messageIndex = (messageIndex + 1) % messages.length;
+                longLoadMessage.textContent = messages[messageIndex];
+            }, 3000);
+        }, 5000);
+
+        startApp();
+        document.getElementById('footer-year').textContent = new Date().getFullYear();
+        ['searchInput', 'statusFilter', 'contractorFilter'].forEach(id => document.getElementById(id).addEventListener(id === 'searchInput' ? 'keyup' : 'change', applyFilters));
+    });
+
+    // Custom PDF Modal Controls
+    function openPdfModal() {
+        pdfAlertModal.classList.remove('opacity-0', 'pointer-events-none');
+        pdfAlertContent.classList.remove('scale-95');
+    }
+    
+    function closePdfModal() {
+        pdfAlertModal.classList.add('opacity-0', 'pointer-events-none');
+        pdfAlertContent.classList.add('scale-95');
+    }
+
+    // Converts raw '--' into 'L' visually
+    function getDisplayStatus(val) {
+        if (!val) return '-';
+        let cleanVal = val.trim();
+        if (cleanVal === '--') return 'L';
+        return cleanVal;
+    }
+
+    // Helper to get CSS Class based on string value
+    function getStatusClass(val) {
+        if (!val) return 'pending';
+        let cleanVal = val.trim();
+        if (cleanVal === '--' || cleanVal.toUpperCase() === 'L') return 'l'; // Pink color for leave
+        if (cleanVal === '-') return 'pending'; // Light gray for not updated yet
+        return cleanVal.toLowerCase();
+    }
+
+    async function startApp() {
+        try {
+            const pdf = await fetchPDF();
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const progress = Math.round((i / pdf.numPages) * 100);
+                progressBar.style.width = `${progress}%`;
+                if (!new URLSearchParams(window.location.search).get('Employee')) {
+                    splashText.textContent = `Processing Page ${i} of ${pdf.numPages}... (${progress}%)`;
+                }
+                parsePageContent(await (await pdf.getPage(i)).getTextContent());
+            }
+            if (globalData.length === 0) throw new Error("No employee data found in PDF.");
+            filteredData = [...globalData];
+            initializeAppUI();
+        } catch (error) {
+            console.error(error);
+            splashText.innerHTML = `<span class="text-red-600 font-bold">${error.message}</span>`;
+            clearTimeout(longLoadTimer);
+            clearInterval(messageInterval);
+            longLoadMessage.style.display = 'none';
+        }
+    }
+
+    async function fetchPDF() {
+        if (!new URLSearchParams(window.location.search).get('Employee')) {
+            splashText.textContent = 'Connecting to Drive folder...';
+        }
+        
+        const fetchUrl = GAS_URL + "?t=" + new Date().getTime();
+        const res = await fetch(fetchUrl);
+        
+        if (!res.ok) throw new Error('Network response was not ok.');
+        const json = await res.json();
+        if (!json.success) throw new Error(`Google Script Error: ${json.error}`);
+        
+        if (!new URLSearchParams(window.location.search).get('Employee')) {
+            splashText.textContent = 'Downloading newest PDF...';
+        }
+        
+        const bytes = new Uint8Array(atob(json.data).split('').map(char => char.charCodeAt(0)));
+        return await pdfjsLib.getDocument({ data: bytes }).promise;
+    }
+
+    function parsePageContent(textContent) {
+        const rows = {};
+        textContent.items.forEach(item => {
+            if (!item.str.trim()) return;
+            const y = Math.round(item.transform[5]);
+            if (!rows[y]) rows[y] = [];
+            rows[y].push({ text: item.str.trim(), x: item.transform[4] });
+        });
+        Object.values(rows).forEach(rowItems => {
+            const sortedItems = rowItems.sort((a, b) => a.x - b.x).map(i => i.text);
+            const rowText = sortedItems.join(" ");
+            if (currentMonthStr === "Unknown Month" && rowText.toLowerCase().includes("attendance for the month of")) {
+                const match = rowText.match(/Attendance for the Month of\s*([A-Za-z]+\s*\d{4})/i);
+                if (match) currentMonthStr = match[1];
+            }
+            if (sortedItems.length >= 28 && !sortedItems[0].toLowerCase().includes("employee")) {
+                globalData.push({ code: sortedItems[0], name: sortedItems[1], status: sortedItems[2], contractor: sortedItems[3], dates: sortedItems.slice(4, -2), tl: sortedItems.slice(-2, -1)[0], sanctioner: sortedItems.slice(-1)[0] });
+            }
+        });
+    }
+
+    function initializeAppUI() {
+        clearTimeout(longLoadTimer);
+        clearInterval(messageInterval);
+        populateFilters();
+        updateDashboardMetrics();
+        renderTable();
+        splashScreen.style.opacity = '0';
+        setTimeout(() => {
+            splashScreen.style.display = 'none';
+            mainContent.classList.remove('hidden');
+            checkUrlForEmployee();
+        }, 500);
+    }
+    
+    function updateDashboardMetrics() {
+        const total = globalData.length, active = globalData.filter(e => e.status === 'Active').length, left = total - active;
+        let totalPresents = 0, totalAbsents = 0;
+        const dailyAttendance = Array(31).fill(null).map(() => ({ p: 0, a: 0 }));
+
+        globalData.forEach(row => {
+            row.dates.forEach((d, i) => {
+                if (['P', 'FD', 'F'].includes(d)) { totalPresents++; if (i < 31) dailyAttendance[i].p++; }
+                else if (d === 'A') { totalAbsents++; if (i < 31) dailyAttendance[i].a++; }
+            });
+        });
+
+        document.getElementById('current-month-header').textContent = `Overview for ${currentMonthStr}`;
+        document.getElementById('metric-total').innerHTML = `<p class="text-sm font-medium text-teal-200">Total Employees</p><p class="text-4xl font-bold">${total.toLocaleString()}</p>`;
+        document.getElementById('metric-present').innerHTML = `<p class="text-sm font-medium text-slate-500">Total Presents</p><p class="text-3xl font-bold text-emerald-600">${totalPresents.toLocaleString()}</p>`;
+        document.getElementById('metric-absent').innerHTML = `<p class="text-sm font-medium text-slate-500">Total Absents</p><p class="text-3xl font-bold text-red-600">${totalAbsents.toLocaleString()}</p>`;
+        
+        renderStatusDonutChart(active, left);
+        renderDayWiseChart(dailyAttendance);
+    }
+    
+    function renderStatusDonutChart(active, left) {
+        document.getElementById('status-donut-chart').innerHTML = `<h2 class="text-xl font-bold text-slate-800 mb-4">Employee Status</h2><div class="h-64"><canvas id="statusChart"></canvas></div>`;
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels: ['Active', 'Left'], datasets: [{ data: [active, left], backgroundColor: ['#10b981', '#64748b'], borderColor: '#fff', borderWidth: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
+        });
+    }
+
+    function renderDayWiseChart(dailyData) {
+        const ctx = document.getElementById('dayWiseChart').getContext('2d');
+        if (dayWiseChart) dayWiseChart.destroy();
+        dayWiseChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({ length: 31 }, (_, i) => i + 1),
+                datasets: [{ label: 'Present', data: dailyData.map(d => d.p), backgroundColor: '#10b981', borderRadius: 4 }, { label: 'Absent', data: dailyData.map(d => d.a), backgroundColor: '#f43f5e', borderRadius: 4 }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                scales: { y: { beginAtZero: true, grid: { color: '#e2e8f0' } }, x: { grid: { display: false } } }, 
+                plugins: { legend: { position: 'top', align: 'end' } },
+                animation: {
+                    y: {
+                        from: 500
+                    },
+                    delay: (context) => context.dataIndex * 10,
+                }
+            }
+        });
+    }
+
+    function renderTable() {
+        document.getElementById('tableHeader').innerHTML = `<tr><th class="p-4">Employee</th><th class="p-4">Status</th><th class="p-4">Contractor</th>${Array.from({length: 31}, (_, i) => `<th class="p-4 text-center">${i+1}</th>`).join('')}</tr>`;
+        const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+        
+        document.getElementById('tableBody').innerHTML = pageData.map((row, i) => `
+            <tr class="transition-colors">
+                <td class="p-4 font-semibold whitespace-nowrap"><a href="#" class="hover:text-teal-600" onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i}); event.preventDefault();">${row.name}</a><span class="block text-xs text-slate-500 font-normal">${row.code}</span></td>
+                <td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600">${row.contractor}</td>
+                ${row.dates.slice(0, 31).map(d => {
+                    const displayVal = getDisplayStatus(d);
+                    const sClass = getStatusClass(d);
+                    return `<td class="p-2 text-center"><span class="status-badge status-${sClass}">${displayVal}</span></td>`;
+                }).join('')}
+            </tr>`).join('');
+        renderPagination();
+    }
+    
+    function renderPagination() {
+        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+        const container = document.getElementById('pagination-controls');
+        if (totalPages <= 1) { container.innerHTML = ''; return; }
+        container.innerHTML = `<span class="text-slate-600">Showing ${((currentPage-1)*rowsPerPage)+1}-${Math.min(currentPage*rowsPerPage, filteredData.length)} of ${filteredData.length}</span><div class="flex gap-2"><button onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1 border border-slate-300 rounded-md bg-white hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">Prev</button><button onclick="changePage(1)" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1 border border-slate-300 rounded-md bg-white hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">Next</button></div>`;
+    }
+
+    function populateFilters() {
+        const contractors = [...new Set(globalData.map(d => d.contractor))].sort();
+        document.getElementById('statusFilter').innerHTML = `<option value="">All Statuses</option><option value="Active">Active</option><option value="Left">Left</option>`;
+        document.getElementById('contractorFilter').innerHTML = `<option value="">All Contractors</option>${contractors.map(c => `<option value="${c}">${c}</option>`).join('')}`;
+    }
+    
+    function applyFilters() {
+        const search = document.getElementById('searchInput').value.toLowerCase(), status = document.getElementById('statusFilter').value, contractor = document.getElementById('contractorFilter').value;
+        filteredData = globalData.filter(row => (row.name.toLowerCase().includes(search) || row.code.toLowerCase().includes(search)) && (status ? row.status === status : true) && (contractor ? row.contractor === contractor : true));
+        currentPage = 1;
+
+        // Contractor Count Feature
+        const countBadge = document.getElementById('contractor-count');
+        if (contractor || status || search) {
+            countBadge.textContent = `${filteredData.length} Employee(s)`;
+            countBadge.classList.remove('hidden');
+        } else {
+            countBadge.classList.add('hidden');
+        }
+
+        renderTable();
+    }
+
+    function changePage(direction) {
+        currentPage += direction;
+        renderTable();
+    }
+
+    function openEmployeeModal(index) {
+        const employee = filteredData[index];
+        if (!employee) return;
+        
+        document.getElementById('modal-info-panel').innerHTML = `
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-slate-900">${employee.name}</h2>
+                <p class="text-slate-500">${employee.code} &bull; ${employee.contractor} &bull; ${employee.status}</p>
+            </div>
+            <div class="mt-auto">
+                <h4 class="font-semibold text-slate-800 mb-3">Legend</h4>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <div class="flex items-center gap-2"><span class="legend-badge status-p">P</span><span>Present</span></div>
+                    <div class="flex items-center gap-2"><span class="legend-badge status-fd">FD</span><span>Full Day</span></div>
+                    <div class="flex items-center gap-2"><span class="legend-badge status-a">A</span><span>Absent</span></div>
+                    <div class="flex items-center gap-2"><span class="legend-badge status-hd">HD</span><span>Half Day</span></div>
+                    <div class="flex items-center gap-2"><span class="legend-badge status-wo">WO</span><span>Week Off</span></div>
+                    <div class="flex items-center gap-2"><span class="legend-badge status-slwp">SLWP</span><span>Sick Leave</span></div>
+                    <div class="flex items-center gap-2"><span class="legend-badge status-mp">MP</span><span>Miss Punch</span></div>
+                    <div class="flex items-center gap-2"><span class="legend-badge status-l">L</span><span>Leave</span></div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('modal-calendar-title').textContent = `Attendance Calendar for ${currentMonthStr}`;
+        const calendar = document.getElementById('modal-calendar'), date = new Date(currentMonthStr), firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+        let daysHTML = Array(firstDay).fill('<div></div>').join('');
+        for (let i = 0; i < new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(); i++) {
+            const rawStatus = employee.dates[i] || '-';
+            const displayVal = getDisplayStatus(rawStatus);
+            const sClass = getStatusClass(rawStatus);
+            daysHTML += `<div class="status-${sClass} flex flex-col justify-center items-center rounded-lg font-medium"><span class="text-base">${i+1}</span><span class="text-xs font-bold opacity-80">${displayVal}</span></div>`;
+        }
+        calendar.innerHTML = daysHTML;
+
+        employeeModal.classList.remove('opacity-0', 'pointer-events-none');
+        document.getElementById('modal-content').classList.remove('scale-95');
+        history.pushState({}, '', `?Employee=${encodeURIComponent(employee.name)}`);
+    }
+
+    function closeEmployeeModal() {
+        employeeModal.classList.add('opacity-0', 'pointer-events-none');
+        document.getElementById('modal-content').classList.add('scale-95');
+        history.pushState({}, '', window.location.pathname);
+    }
+    
+    function checkUrlForEmployee() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const employeeName = urlParams.get('Employee');
+        if (employeeName) {
+            const decodedName = decodeURIComponent(employeeName);
+            const index = globalData.findIndex(e => e.name === decodedName);
+            if (index !== -1) {
+                filteredData = [...globalData];
+                renderTable();
+                openEmployeeModal(index);
+            } else {
+                alert(`Employee "${decodedName}" not found.`);
+            }
+        }
+    }
+</script>
 </body>
 </html>
