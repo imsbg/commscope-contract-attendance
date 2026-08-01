@@ -76,6 +76,12 @@
 
     <!-- Splash Screen -->
     <div id="splash-screen" class="fixed inset-0 flex justify-center items-center">
+        
+        <!-- Floating View Original PDF Button (Fades in if load > 10s, disappears with splash screen) -->
+        <button id="floating-pdf-btn" onclick="openPdfModal()" class="absolute top-6 right-6 lg:top-8 lg:right-8 bg-[var(--primary)] text-white px-4 py-2 rounded-lg shadow-lg hover:bg-teal-700 transition-opacity duration-1000 flex items-center justify-center gap-2 text-sm font-medium cursor-pointer opacity-0 pointer-events-none z-[105]">
+            <i class="fa-solid fa-folder-open"></i> View Original PDF
+        </button>
+
         <div class="text-center w-80">
             <div class="flex items-center justify-center gap-3 mb-4">
                 <img src="https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0" alt="Logo" class="h-8 w-8">
@@ -202,7 +208,7 @@
           pdfAlertModal = document.getElementById('pdf-alert-modal'),
           pdfAlertContent = document.getElementById('pdf-alert-content');
     
-    let longLoadTimer, messageInterval;
+    let longLoadTimer, messageInterval, floatingPdfTimer;
 
     document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -210,6 +216,14 @@
         if (employeeName) {
             splashText.textContent = `Loading details for ${decodeURIComponent(employeeName)}...`;
         }
+
+        // Start timer for floating PDF button (Fade in after 10s if still loading)
+        floatingPdfTimer = setTimeout(() => {
+            const floatingBtn = document.getElementById('floating-pdf-btn');
+            if (floatingBtn) {
+                floatingBtn.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        }, 10000);
 
         // Start timer for long load message (Fonts dynamically support Odia and Hindi)
         longLoadTimer = setTimeout(() => {
@@ -278,6 +292,7 @@
             console.error(error);
             splashText.innerHTML = `<span class="text-red-600 font-bold">${error.message}</span>`;
             clearTimeout(longLoadTimer);
+            clearTimeout(floatingPdfTimer);
             clearInterval(messageInterval);
             longLoadMessage.style.display = 'none';
         }
@@ -326,6 +341,7 @@
 
     function initializeAppUI() {
         clearTimeout(longLoadTimer);
+        clearTimeout(floatingPdfTimer);
         clearInterval(messageInterval);
         populateFilters();
         updateDashboardMetrics();
