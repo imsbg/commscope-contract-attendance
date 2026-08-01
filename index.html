@@ -285,7 +285,7 @@
 
     async function fetchPDF() {
         if (!new URLSearchParams(window.location.search).get('Employee')) {
-            splashText.textContent = 'Connecting to Drive folder...';
+            splashText.textContent = 'Connecting to Shopfloor_Attendance_Current.pdf';
         }
         
         const fetchUrl = GAS_URL + "?t=" + new Date().getTime();
