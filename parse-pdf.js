@@ -1,52 +1,69 @@
 const fs = require('fs');
 const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
+const puppeteer = require('puppeteer');
 
 // The exact Folder and File Name you provided
 const FOLDER_ID = "1H5tR99F-DsbT9wQnlLqXST0aLsa0B1sO";
 const FILE_NAME = "Shopfloor_Attendance_Current.pdf";
 
-async function getFileIdFromFolder(folderId, fileName) {
-    console.log(`🔍 Scraping Google Drive Folder (${folderId}) to find ID for ${fileName}...`);
-    const url = `https://drive.google.com/drive/folders/${folderId}`;
-    
-    // Disguise the request as a real Chrome browser to bypass Google's bot protection
-    const response = await fetch(url, {
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept-Language': 'en-US,en;q=0.9'
-        }
+async function getFileId(folderId, fileName) {
+    console.log(`🔍 Launching headless browser to load Google Drive folder...`);
+    const browser = await puppeteer.launch({ 
+        headless: "new",
+        args: ['--no-sandbox', '--disable-setuid-sandbox'] 
     });
     
-    if (!response.ok) {
-        throw new Error(`Failed to load folder URL. HTTP ${response.status}`);
+    const page = await browser.newPage();
+    const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
+    
+    console.log(`🌐 Navigating to ${folderUrl} and waiting for files to render...`);
+    // This waits for Google Drive's JavaScript to fully load the files on the screen
+    await page.goto(folderUrl, { waitUntil: 'networkidle0', timeout: 30000 });
+    
+    console.log(`📄 Scanning the page for "${fileName}"...`);
+    
+    const fileId = await page.evaluate((searchName) => {
+        // Strategy 1: Find element with data-id containing the filename
+        const elements = document.querySelectorAll('div[data-id]');
+        for (const el of elements) {
+            const text = el.innerText || "";
+            const ariaLabel = el.getAttribute('aria-label') || "";
+            if (text.includes(searchName) || ariaLabel.includes(searchName)) {
+                return el.getAttribute('data-id');
+            }
+        }
+        
+        // Strategy 2: Absolute fallback, regex on fully rendered HTML
+        const html = document.body.innerHTML;
+        const escaped = searchName.replace(/\./g, '\\.');
+        const regex = new RegExp(`([a-zA-Z0-9_-]{25,40})(?:[^a-zA-Z0-9_-]{1,150}?)${escaped}`, 'i');
+        const match = html.match(regex);
+        if (match) return match[1];
+
+        return null;
+    }, FILE_NAME);
+    
+    await browser.close();
+    
+    if (!fileId) {
+        throw new Error(`❌ Could not find "${fileName}" in folder. Ensure the folder is public and the file exists.`);
     }
     
-    const html = await response.text();
-    
-    // Search the Google Drive HTML for the File ID that immediately precedes our File Name.
-    // Google Drive File IDs are typically 25 to 40 characters long.
-    const escapedFileName = fileName.replace(/\./g, '\\.');
-    const regex = new RegExp(`([a-zA-Z0-9_-]{25,40})(?:[^a-zA-Z0-9_-]{1,50}?)${escapedFileName}`, 'i');
-    
-    const match = html.match(regex);
-    if (!match) {
-        throw new Error(`❌ Could not find "${fileName}" in folder. Make sure the file exists and the folder is Public.`);
-    }
-    
-    const fileId = match[1];
-    console.log(`✅ Found File ID: ${fileId}`);
+    console.log(`✅ Found exact File ID: ${fileId}`);
     return fileId;
 }
 
 async function fetchAndParsePDF() {
-    // 1. Get the dynamic file ID directly from the folder
-    const fileId = await getFileIdFromFolder(FOLDER_ID, FILE_NAME);
+    const fileId = await getFileId(FOLDER_ID, FILE_NAME);
 
     console.log(`⬇️ Downloading PDF from Google Drive...`);
     const driveUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
     
     const response = await fetch(driveUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36' },
+        headers: { 
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
+        },
         redirect: 'follow'
     });
     
@@ -56,7 +73,7 @@ async function fetchAndParsePDF() {
 
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('text/html')) {
-        throw new Error("❌ Google Drive returned a webpage instead of the PDF. Google might be blocking it with a virus scan warning.");
+        throw new Error("❌ Google Drive returned a webpage instead of the PDF. Check if the folder is Public.");
     }
     
     const arrayBuffer = await response.arrayBuffer();
@@ -102,13 +119,11 @@ async function fetchAndParsePDF() {
     }
 
     console.log(`✅ Successfully parsed ${globalData.length} employee records.`);
-    
-    // Save to data.json
     fs.writeFileSync('data.json', JSON.stringify({ currentMonthStr, globalData }));
     console.log("🚀 Saved to data.json!");
 }
 
 fetchAndParsePDF().catch(err => {
-    console.error(err.message);
+    console.error(err.stack || err.message);
     process.exit(1);
 });
