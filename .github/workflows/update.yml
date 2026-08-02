@@ -1,0 +1,37 @@
+name: Update Attendance Data
+
+on:
+  schedule:
+    - cron: '0 */2 * * *' # Runs every 2 hours
+  workflow_dispatch:      # Allows manual trigger from GitHub UI
+  push:
+    branches: [ "main" ]  # Or "gh-pages" depending on your default branch
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Fetch and Parse PDF
+        run: node parse-pdf.js
+
+      - name: Commit and Push data.json
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          git commit -m "Auto-update attendance data" || echo "No changes to commit"
+          git push
