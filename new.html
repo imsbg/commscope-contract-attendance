@@ -28,7 +28,7 @@
         html { scroll-behavior: smooth; }
         body { font-family: 'Google Sans', sans-serif; background-color: var(--background); color: #0f172a; }
         
-        #splash-screen { background-color: var(--card-bg); z-index: 100; transition: opacity 0.3s ease-out; }
+        #splash-screen { background-color: var(--card-bg); z-index: 100; transition: opacity 0.4s ease-out; }
         .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #e2e8f0; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
@@ -57,11 +57,6 @@
 
     <!-- Splash Screen -->
     <div id="splash-screen" class="fixed inset-0 flex justify-center items-center">
-        <!-- Floating View Original PDF Button -->
-        <button id="floating-pdf-btn" onclick="openPdfModal()" class="absolute top-6 right-6 lg:top-8 lg:right-8 bg-[var(--primary)] text-white px-4 py-2 rounded-lg shadow-lg hover:bg-teal-700 transition flex items-center justify-center gap-2 text-sm font-medium cursor-pointer z-[105]">
-            <i class="fa-solid fa-folder-open"></i> View Original PDF
-        </button>
-
         <div class="text-center w-80">
             <div class="flex items-center justify-center gap-3 mb-4">
                 <img src="https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0" alt="Logo" class="h-8 w-8">
@@ -84,7 +79,7 @@
                 <h3 class="text-xl font-bold text-slate-800">Notice</h3>
             </div>
             <p class="text-slate-600 mb-6 text-sm leading-relaxed">
-                If you think this data is incorrect, please view the original PDF in the Drive folder.
+                If you think this data is incorrect, please view the original PDF in the Drive folder. Occasionally, the script may fail to load the latest data due to system overloads.
             </p>
             <div class="flex justify-end gap-3">
                 <button onclick="closePdfModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition text-sm font-semibold">Close</button>
@@ -113,9 +108,18 @@
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-           <div id="metric-total" class="bg-[var(--primary)] text-white p-6 rounded-2xl shadow-lg"></div>
-           <div id="metric-present" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"></div>
-           <div id="metric-absent" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"></div>
+           <div class="bg-[var(--primary)] text-white p-6 rounded-2xl shadow-lg transform transition hover:-translate-y-1">
+               <p class="text-sm font-medium text-teal-200">Total Employees</p>
+               <p class="text-4xl font-bold" id="metric-total-val">0</p>
+           </div>
+           <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transform transition hover:-translate-y-1">
+               <p class="text-sm font-medium text-slate-500">Total Presents</p>
+               <p class="text-3xl font-bold text-emerald-600" id="metric-present-val">0</p>
+           </div>
+           <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transform transition hover:-translate-y-1">
+               <p class="text-sm font-medium text-slate-500">Total Absents</p>
+               <p class="text-3xl font-bold text-red-600" id="metric-absent-val">0</p>
+           </div>
         </div>
 
         <section class="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -123,14 +127,17 @@
                 <h2 class="text-xl font-bold mb-4 text-slate-800">Daily Attendance Trends</h2>
                 <div class="h-80"><canvas id="dayWiseChart"></canvas></div>
             </div>
-            <div id="status-donut-chart" class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200"></div>
+            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold mb-4 text-slate-800">Employee Status</h2>
+                <div class="h-64"><canvas id="statusChart"></canvas></div>
+            </div>
         </section>
 
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
                 <h2 class="text-xl font-bold text-slate-800">Employee Records <span id="contractor-count" class="hidden bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full"></span></h2>
                 <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-                    <input type="text" id="searchInput" placeholder="Search Employee..." class="px-4 py-2 border rounded-lg w-full md:w-48 outline-none focus:ring-2 focus:ring-teal-500">
+                    <input type="text" id="searchInput" placeholder="Search Employee..." class="px-4 py-2 border rounded-lg w-full md:w-48 outline-none focus:ring-2 focus:ring-teal-500 transition">
                     <select id="statusFilter" class="px-4 py-2 border rounded-lg bg-white"></select>
                     <select id="contractorFilter" class="px-4 py-2 border rounded-lg bg-white"></select>
                 </div>
@@ -148,10 +155,10 @@
         </footer>
     </main>
     
-    <!-- Employee Modal -->
+    <!-- Employee Details Modal -->
     <div id="employee-modal" class="fixed inset-0 bg-black/60 z-50 p-4 lg:p-8 opacity-0 pointer-events-none transition-opacity duration-300">
         <div id="modal-content" class="bg-slate-50 rounded-2xl w-full h-full flex flex-col lg:flex-row overflow-hidden scale-95 transition-transform duration-300">
-             <button onclick="closeEmployeeModal()" class="absolute top-4 right-4 text-slate-600 bg-white/50 hover:bg-white/80 rounded-full h-10 w-10 text-2xl z-20">&times;</button>
+             <button onclick="closeEmployeeModal()" class="absolute top-4 right-4 text-slate-600 bg-white/50 hover:bg-white/80 rounded-full h-10 w-10 text-2xl z-20 transition">&times;</button>
              <div id="modal-info-panel" class="w-full lg:w-72 p-6 bg-white border-r flex flex-col"></div>
              <div class="p-6 flex-1 flex flex-col">
                 <h3 id="modal-calendar-title" class="text-xl font-semibold mb-4 text-slate-700"></h3>
@@ -211,15 +218,31 @@
         return (val.trim() === '--' || val.trim().toUpperCase() === 'L') ? 'l' : val.trim().toLowerCase(); 
     }
 
+    // Number counting animation
+    function animateValue(id, start, end, duration) {
+        const obj = document.getElementById(id);
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
+            if (progress < 1) window.requestAnimationFrame(step);
+        };
+        window.requestAnimationFrame(step);
+    }
+
     function initializeAppUI() {
         populateFilters();
-        updateDashboardMetrics();
         renderTable();
         
         document.getElementById('splash-screen').style.opacity = '0';
+        
+        // Let the splash screen fade out, THEN render charts and start animations so the user sees them grow!
         setTimeout(() => {
             document.getElementById('splash-screen').style.display = 'none';
             document.getElementById('main-content').classList.remove('hidden');
+            
+            updateDashboardMetrics();
             
             const urlParams = new URLSearchParams(window.location.search);
             const employeeName = urlParams.get('Employee');
@@ -227,7 +250,7 @@
                 const idx = filteredData.findIndex(e => e.name === decodeURIComponent(employeeName));
                 if (idx !== -1) openEmployeeModal(idx);
             }
-        }, 300);
+        }, 400); // 400ms delay matches the CSS opacity transition
     }
     
     function updateDashboardMetrics() {
@@ -242,18 +265,39 @@
             });
         });
 
+        // Set Headers
         document.getElementById('current-month-header').textContent = `Overview for ${currentMonthStr}`;
-        document.getElementById('metric-total').innerHTML = `<p class="text-sm font-medium text-teal-200">Total Employees</p><p class="text-4xl font-bold">${total.toLocaleString()}</p>`;
-        document.getElementById('metric-present').innerHTML = `<p class="text-sm font-medium text-slate-500">Total Presents</p><p class="text-3xl font-bold text-emerald-600">${totalPresents.toLocaleString()}</p>`;
-        document.getElementById('metric-absent').innerHTML = `<p class="text-sm font-medium text-slate-500">Total Absents</p><p class="text-3xl font-bold text-red-600">${totalAbsents.toLocaleString()}</p>`;
+
+        // Trigger smooth counter animations
+        animateValue('metric-total-val', 0, total, 1200);
+        animateValue('metric-present-val', 0, totalPresents, 1200);
+        animateValue('metric-absent-val', 0, totalAbsents, 1200);
         
-        document.getElementById('status-donut-chart').innerHTML = `<h2 class="text-xl font-bold mb-4">Employee Status</h2><div class="h-64"><canvas id="statusChart"></canvas></div>`;
-        new Chart(document.getElementById('statusChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Active', 'Left'], datasets: [{ data: [active, total - active], backgroundColor: ['#10b981', '#64748b'] }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }});
+        // Render Charts dynamically
+        new Chart(document.getElementById('statusChart').getContext('2d'), { 
+            type: 'doughnut', 
+            data: { labels: ['Active', 'Left'], datasets: [{ data: [active, total - active], backgroundColor: ['#10b981', '#64748b'] }] }, 
+            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', animation: { duration: 1500 } }
+        });
 
         new Chart(document.getElementById('dayWiseChart').getContext('2d'), {
             type: 'bar',
-            data: { labels: Array.from({length:31}, (_,i)=>i+1), datasets: [{ label: 'Present', data: daily.map(d=>d.p), backgroundColor: '#10b981' }, { label: 'Absent', data: daily.map(d=>d.a), backgroundColor: '#f43f5e' }] },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false } } } }
+            data: { 
+                labels: Array.from({length:31}, (_,i)=>i+1), 
+                datasets: [
+                    { label: 'Present', data: daily.map(d=>d.p), backgroundColor: '#10b981', borderRadius: 4 }, 
+                    { label: 'Absent', data: daily.map(d=>d.a), backgroundColor: '#f43f5e', borderRadius: 4 }
+                ] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                scales: { x: { grid: { display: false } }, y: { beginAtZero: true } },
+                animation: {
+                    duration: 1500,
+                    y: { from: 500 } // Gives the bars a pronounced upward growing effect
+                }
+            }
         });
     }
 
@@ -266,7 +310,7 @@
         pageData.forEach((row, i) => {
             const tr = document.createElement('tr');
             tr.className = "hover:bg-f0fdfa transition-colors";
-            let html = `<td class="p-4 font-semibold whitespace-nowrap"><a href="#" class="hover:text-teal-600" onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i}); return false;">${row.name}</a><span class="block text-xs text-slate-500 font-normal">${row.code}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}</td>`;
+            let html = `<td class="p-4 font-semibold whitespace-nowrap"><a href="#" class="hover:text-teal-600 transition" onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i}); return false;">${row.name}</a><span class="block text-xs text-slate-500 font-normal">${row.code}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}</td>`;
             row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
             tr.innerHTML = html;
             fragment.appendChild(tr);
@@ -307,7 +351,6 @@
     function openEmployeeModal(index) {
         const employee = filteredData[index];
         
-        // Modal UI upgraded to display Reporting Person & Sanctioner
         document.getElementById('modal-info-panel').innerHTML = `
             <div class="mb-6">
                 <h2 class="text-3xl font-bold text-slate-900">${employee.name}</h2>
@@ -332,22 +375,37 @@
             </div>
         `;
 
-        document.getElementById('modal-calendar-title').textContent = `Attendance for ${currentMonthStr}`;
-        
-        // This Date logic maps the days perfectly to the month parsed from the PDF text!
-        const date = new Date(currentMonthStr);
+        let date = new Date(currentMonthStr);
         let firstDay = 0;
         let totalDays = 31;
+        let displayMonthStr = currentMonthStr;
         
         if (!isNaN(date.getTime())) {
             firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+            
+            // SMART CALENDAR FIX: Check if Weekly Off (WO) aligns with Sunday.
+            // If it doesn't, automatically test the previous month to fix the offset.
+            const woIndex = employee.dates.findIndex(d => d === 'WO');
+            if (woIndex !== -1) {
+                const expectedFirstDay = (7 - (woIndex % 7)) % 7;
+                if (firstDay !== expectedFirstDay) {
+                    const prevDate = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+                    if (prevDate.getDay() === expectedFirstDay) {
+                        date = prevDate;
+                        firstDay = expectedFirstDay;
+                        displayMonthStr = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+                    }
+                }
+            }
             totalDays = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
         }
+
+        document.getElementById('modal-calendar-title').textContent = `Attendance for ${displayMonthStr}`;
 
         let daysHTML = Array(firstDay).fill('<div></div>').join('');
         for (let i = 0; i < totalDays; i++) {
             const rawStatus = employee.dates[i] || '-';
-            daysHTML += `<div class="status-${getStatusClass(rawStatus)} flex flex-col justify-center items-center rounded-lg font-medium py-2"><span class="text-base">${i+1}</span><span class="text-xs font-bold opacity-80">${getDisplayStatus(rawStatus)}</span></div>`;
+            daysHTML += `<div class="status-${getStatusClass(rawStatus)} flex flex-col justify-center items-center rounded-lg font-medium py-2 shadow-sm transition hover:scale-105"><span class="text-base">${i+1}</span><span class="text-xs font-bold opacity-80">${getDisplayStatus(rawStatus)}</span></div>`;
         }
         document.getElementById('modal-calendar').innerHTML = daysHTML;
 
