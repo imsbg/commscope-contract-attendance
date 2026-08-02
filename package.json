@@ -1,0 +1,7 @@
+{
+  "name": "commscope-attendance",
+  "version": "1.0.0",
+  "dependencies": {
+    "pdfjs-dist": "3.11.174"
+  }
+}
