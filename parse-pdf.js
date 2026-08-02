@@ -1,12 +1,13 @@
 const fs = require('fs');
 const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
 
-// Your EXACT working Google Apps Script URL from your original code
+// Your EXACT working Google Apps Script URL
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzBMx-fZAifindtXbsXVueYEYQz4uBT1cA8CnlrZH3MTHEyR4RMv6uxaPhdKwskiP4T/exec";
 
 async function fetchAndParsePDF() {
     console.log("🌐 Fetching PDF from Google Apps Script...");
     
+    // Fetch using the built-in Node fetch
     const response = await fetch(GAS_URL);
     if (!response.ok) throw new Error("Network response was not ok");
     
@@ -14,7 +15,7 @@ async function fetchAndParsePDF() {
     if (!json.success) throw new Error("GAS Error: " + json.error);
     
     console.log("📦 Decoding Base64 PDF data...");
-    // Convert base64 from GAS back into a usable PDF buffer
+    // Convert base64 from your GAS back into a usable PDF buffer
     const pdfBuffer = Buffer.from(json.data, 'base64');
     const pdfData = new Uint8Array(pdfBuffer);
     
