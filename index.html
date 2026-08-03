@@ -22,404 +22,127 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400..700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root { --primary: #0d9488; --background: #f1f5f9; --card-bg: #ffffff; }
-        html { scroll-behavior: smooth; }
-        body { font-family: 'Google Sans', sans-serif; background-color: var(--background); color: #0f172a; }
-        
-        #splash-screen { background-color: var(--card-bg); z-index: 100; transition: opacity 0.4s ease-out; }
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #e2e8f0; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
-        
-        .status-badge, .legend-badge { padding: 4px 10px; border-radius: 99px; font-weight: 600; font-size: 12px; text-align: center; display: inline-block; min-width: 28px; }
-        .status-p { background-color: #dcfce7; color: #166534; } 
-        .status-fd { background-color: #cffafe; color: #155e75; } 
-        .status-f { background-color: #d9f99d; color: #3f6212; } 
-        .status-a { background-color: #fee2e2; color: #991b1b; } 
-        .status-wo { background-color: #e2e8f0; color: #475569; } 
-        .status-hd { background-color: #fef9c3; color: #854d0e; } 
-        .status-mp { background-color: #ffedd5; color: #c2410c; } 
-        .status-slwp { background-color: #f3e8ff; color: #6b21a8; } 
-        .status-l { background-color: #fce7f3; color: #be185d; } 
-        .status-pending { background-color: #f8fafc; color: #94a3b8; } 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        .table-container { max-height: 65vh; }
-        thead th { position: sticky; top: 0; z-index: 10; background-color: #f8fafc; }
-        tbody td:first-child, thead th:first-child { position: sticky; left: 0; z-index: 5; background-color: var(--card-bg);}
-        thead th:first-child { z-index: 15; background-color: #f8fafc; }
-        
-        #employee-modal.visible, #pdf-alert-modal.visible { backdrop-filter: blur(4px); }
+    <title>Under Maintenance</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body{
+            font-family:'Poppins',sans-serif;
+            background:#f1f5f9;
+        }
+
+        .card{
+            animation:fadeUp .7s ease;
+        }
+
+        @keyframes fadeUp{
+            from{
+                opacity:0;
+                transform:translateY(30px);
+            }
+            to{
+                opacity:1;
+                transform:translateY(0);
+            }
+        }
+
+        .spinner{
+            width:80px;
+            height:80px;
+            border:7px solid #dbeafe;
+            border-top:7px solid #0d9488;
+            border-radius:50%;
+            animation:spin 1s linear infinite;
+        }
+
+        @keyframes spin{
+            to{
+                transform:rotate(360deg);
+            }
+        }
+
+        .dot{
+            animation:blink 1.5s infinite;
+        }
+
+        .dot:nth-child(2){
+            animation-delay:.2s;
+        }
+
+        .dot:nth-child(3){
+            animation-delay:.4s;
+        }
+
+        @keyframes blink{
+            0%,80%,100%{
+                opacity:.2;
+            }
+            40%{
+                opacity:1;
+            }
+        }
     </style>
 </head>
-<body class="antialiased">
 
-    <!-- Splash Screen -->
-    <div id="splash-screen" class="fixed inset-0 flex justify-center items-center">
-        <div class="text-center w-80">
-            <div class="flex items-center justify-center gap-3 mb-4">
-                <img src="https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0" alt="Logo" class="h-8 w-8">
-                <h1 class="text-xl font-bold text-slate-700">CommScope Attendance</h1>
-            </div>
-            <div class="animate-pulse flex space-x-4 justify-center items-center">
-                <div class="h-2 w-32 bg-teal-500 rounded"></div>
-            </div>
-            <p class="mt-3 text-sm text-slate-500">Loading Attendance</p>
+<body>
+
+<div class="min-h-screen flex items-center justify-center px-6">
+
+    <div class="card bg-white rounded-3xl shadow-xl border border-slate-200 max-w-xl w-full p-10 text-center">
+
+        <div class="flex justify-center mb-8">
+            <div class="spinner"></div>
         </div>
-    </div>
 
-    <!-- PDF Notice Alert Modal -->
-    <div id="pdf-alert-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none">
-        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300" id="pdf-alert-content">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="bg-amber-100 text-amber-600 p-2 rounded-full h-10 w-10 flex items-center justify-center">
-                    <i class="fa-solid fa-triangle-exclamation text-lg"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800">Notice</h3>
-            </div>
-            <p class="text-slate-600 mb-6 text-sm leading-relaxed">
-                If you think this data is incorrect, please view the original PDF in the Drive folder. Occasionally, the script may fail to load the latest data due to system overloads.
+        <h1 class="text-4xl font-bold text-slate-800">
+            Under Maintenance
+        </h1>
+
+        <p class="mt-5 text-slate-600 leading-7 text-lg">
+            We are currently updating some attendance data to provide more
+            accurate information.
+        </p>
+
+        <p class="mt-3 text-slate-500">
+            Please check back again in a few minutes.
+        </p>
+
+        <div class="mt-8 inline-flex items-center gap-2 bg-teal-50 text-teal-700 px-5 py-3 rounded-full font-semibold">
+            Updating
+            <span class="dot">●</span>
+            <span class="dot">●</span>
+            <span class="dot">●</span>
+        </div>
+
+        <div class="mt-10 border-t pt-6">
+
+            <p class="text-slate-500">
+                Thank you for your patience.
             </p>
-            <div class="flex justify-end gap-3">
-                <button onclick="closePdfModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition text-sm font-semibold">Close</button>
-                <a href="https://drive.google.com/drive/folders/1H5tR99F-DsbT9wQnlLqXST0aLsa0B1sO?usp=drive_link" target="_blank" onclick="closePdfModal()" class="px-4 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-teal-700 transition text-sm font-semibold shadow-sm">
-                    Open Folder
-                </a>
-            </div>
+
+            <p class="mt-2 text-sm text-slate-400">
+                © <span id="year"></span> Sandeep Biswal G Apps
+            </p>
+
         </div>
+
     </div>
 
-    <!-- Main Content -->
-    <main id="main-content" class="hidden p-6 lg:p-8 max-w-screen-2xl mx-auto space-y-6">
-        <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-slate-900">CommScope Contractor Attendance Portal</h1>
-                <p id="current-month-header" class="text-slate-500">Loading Data...</p>
-            </div>
-            <div class="flex items-center gap-3 w-full lg:w-auto">
-                <a href="https://imsbg.github.io/commscope/" class="bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium w-full lg:w-auto">
-                    <i class="fa-solid fa-house"></i> Home
-                </a>
-                <button onclick="openPdfModal()" class="bg-[var(--primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-teal-700 transition flex items-center justify-center gap-2 text-sm font-medium w-full lg:w-auto cursor-pointer">
-                    <i class="fa-solid fa-folder-open"></i> View Original PDF
-                </button>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-           <div class="bg-[var(--primary)] text-white p-6 rounded-2xl shadow-lg transform transition hover:-translate-y-1">
-               <p class="text-sm font-medium text-teal-200">Total Employees</p>
-               <p class="text-4xl font-bold" id="metric-total-val">0</p>
-           </div>
-           <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transform transition hover:-translate-y-1">
-               <p class="text-sm font-medium text-slate-500">Total Presents</p>
-               <p class="text-3xl font-bold text-emerald-600" id="metric-present-val">0</p>
-           </div>
-           <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transform transition hover:-translate-y-1">
-               <p class="text-sm font-medium text-slate-500">Total Absents</p>
-               <p class="text-3xl font-bold text-red-600" id="metric-absent-val">0</p>
-           </div>
-        </div>
-
-        <section class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold mb-4 text-slate-800">Daily Attendance Trends</h2>
-                <div class="h-80"><canvas id="dayWiseChart"></canvas></div>
-            </div>
-            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold mb-4 text-slate-800">Employee Status</h2>
-                <div class="h-64"><canvas id="statusChart"></canvas></div>
-            </div>
-        </section>
-
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
-                <h2 class="text-xl font-bold text-slate-800">Employee Records <span id="contractor-count" class="hidden bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full"></span></h2>
-                <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-                    <input type="text" id="searchInput" placeholder="Search Employee..." class="px-4 py-2 border rounded-lg w-full md:w-48 outline-none focus:ring-2 focus:ring-teal-500 transition">
-                    <select id="statusFilter" class="px-4 py-2 border rounded-lg bg-white"></select>
-                    <select id="contractorFilter" class="px-4 py-2 border rounded-lg bg-white"></select>
-                </div>
-            </div>
-            
-            <div class="table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg">
-                <table class="w-full text-left min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
-            </div>
-            <div id="pagination-controls" class="pt-4 flex justify-between items-center text-sm"></div>
-        </div>
-        
-        <footer class="text-center text-xs text-slate-500 pt-4">
-            <p>Disclaimer: This site is not made by, endorsed by, or affiliated with Commscope.</p>
-            <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
-        </footer>
-    </main>
-    
-    <!-- Employee Details Modal -->
-    <div id="employee-modal" class="fixed inset-0 bg-black/60 z-50 p-4 lg:p-8 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div id="modal-content" class="bg-slate-50 rounded-2xl w-full h-full flex flex-col lg:flex-row overflow-hidden scale-95 transition-transform duration-300">
-             <button onclick="closeEmployeeModal()" class="absolute top-4 right-4 text-slate-600 bg-white/50 hover:bg-white/80 rounded-full h-10 w-10 text-2xl z-20 transition">&times;</button>
-             <div id="modal-info-panel" class="w-full lg:w-72 p-6 bg-white border-r flex flex-col"></div>
-             <div class="p-6 flex-1 flex flex-col">
-                <h3 id="modal-calendar-title" class="text-xl font-semibold mb-4 text-slate-700"></h3>
-                <div class="grid grid-cols-7 gap-1.5 mb-2 text-xs font-bold text-center text-slate-500">
-                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-                </div>
-                <div id="modal-calendar" class="grid grid-cols-7 grid-rows-6 gap-1.5 flex-1"></div>
-            </div>
-        </div>
-    </div>
+</div>
 
 <script>
-    let globalData = [], filteredData = [], currentPage = 1, currentMonthStr = "";
-    const rowsPerPage = 15;
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        document.getElementById('footer-year').textContent = new Date().getFullYear();
-        
-        try {
-            const res = await fetch('data.json?t=' + new Date().getTime());
-            if (!res.ok) throw new Error("Could not load data.json");
-            
-            const rawData = await res.json();
-            globalData = rawData.globalData;
-            currentMonthStr = rawData.currentMonthStr;
-            filteredData = [...globalData];
-
-            initializeAppUI();
-        } catch (error) {
-            document.querySelector('#splash-screen p').innerHTML = `<span class="text-red-500 font-bold">Error: ${error.message}. Checking GitHub Action Sync...</span>`;
-        }
-        
-        ['searchInput', 'statusFilter', 'contractorFilter'].forEach(id => {
-            document.getElementById(id).addEventListener(id === 'searchInput' ? 'keyup' : 'change', () => {
-                currentPage = 1; applyFilters();
-            });
-        });
-    });
-
-    function openPdfModal() {
-        const modal = document.getElementById('pdf-alert-modal');
-        const content = document.getElementById('pdf-alert-content');
-        modal.classList.remove('opacity-0', 'pointer-events-none');
-        content.classList.remove('scale-95');
-    }
-    
-    function closePdfModal() {
-        const modal = document.getElementById('pdf-alert-modal');
-        const content = document.getElementById('pdf-alert-content');
-        modal.classList.add('opacity-0', 'pointer-events-none');
-        content.classList.add('scale-95');
-    }
-
-    function getDisplayStatus(val) { return (!val || val.trim() === '-') ? '-' : (val.trim() === '--' ? 'L' : val.trim()); }
-    function getStatusClass(val) { 
-        if (!val || val.trim() === '-') return 'pending'; 
-        return (val.trim() === '--' || val.trim().toUpperCase() === 'L') ? 'l' : val.trim().toLowerCase(); 
-    }
-
-    // Number counting animation
-    function animateValue(id, start, end, duration) {
-        const obj = document.getElementById(id);
-        let startTimestamp = null;
-        const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
-            if (progress < 1) window.requestAnimationFrame(step);
-        };
-        window.requestAnimationFrame(step);
-    }
-
-    function initializeAppUI() {
-        populateFilters();
-        renderTable();
-        
-        document.getElementById('splash-screen').style.opacity = '0';
-        
-        // Let the splash screen fade out, THEN render charts and start animations so the user sees them grow!
-        setTimeout(() => {
-            document.getElementById('splash-screen').style.display = 'none';
-            document.getElementById('main-content').classList.remove('hidden');
-            
-            updateDashboardMetrics();
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const employeeName = urlParams.get('Employee');
-            if (employeeName) {
-                const idx = filteredData.findIndex(e => e.name === decodeURIComponent(employeeName));
-                if (idx !== -1) openEmployeeModal(idx);
-            }
-        }, 400); // 400ms delay matches the CSS opacity transition
-    }
-    
-    function updateDashboardMetrics() {
-        const total = globalData.length, active = globalData.filter(e => e.status === 'Active').length;
-        let totalPresents = 0, totalAbsents = 0;
-        const daily = Array(31).fill(null).map(() => ({ p: 0, a: 0 }));
-
-        globalData.forEach(row => {
-            row.dates.forEach((d, i) => {
-                if (['P', 'FD', 'F'].includes(d)) { totalPresents++; if (i < 31) daily[i].p++; }
-                else if (d === 'A') { totalAbsents++; if (i < 31) daily[i].a++; }
-            });
-        });
-
-        // Set Headers
-        document.getElementById('current-month-header').textContent = `Overview for ${currentMonthStr}`;
-
-        // Trigger smooth counter animations
-        animateValue('metric-total-val', 0, total, 1200);
-        animateValue('metric-present-val', 0, totalPresents, 1200);
-        animateValue('metric-absent-val', 0, totalAbsents, 1200);
-        
-        // Render Charts dynamically
-        new Chart(document.getElementById('statusChart').getContext('2d'), { 
-            type: 'doughnut', 
-            data: { labels: ['Active', 'Left'], datasets: [{ data: [active, total - active], backgroundColor: ['#10b981', '#64748b'] }] }, 
-            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', animation: { duration: 1500 } }
-        });
-
-        new Chart(document.getElementById('dayWiseChart').getContext('2d'), {
-            type: 'bar',
-            data: { 
-                labels: Array.from({length:31}, (_,i)=>i+1), 
-                datasets: [
-                    { label: 'Present', data: daily.map(d=>d.p), backgroundColor: '#10b981', borderRadius: 4 }, 
-                    { label: 'Absent', data: daily.map(d=>d.a), backgroundColor: '#f43f5e', borderRadius: 4 }
-                ] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                scales: { x: { grid: { display: false } }, y: { beginAtZero: true } },
-                animation: {
-                    duration: 1500,
-                    y: { from: 500 } // Gives the bars a pronounced upward growing effect
-                }
-            }
-        });
-    }
-
-    function renderTable() {
-        document.getElementById('tableHeader').innerHTML = `<tr><th class="p-4">Employee</th><th class="p-4">Status</th><th class="p-4">Contractor</th>${Array.from({length: 31}, (_, i) => `<th class="p-4 text-center">${i+1}</th>`).join('')}</tr>`;
-        
-        const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-        const fragment = document.createDocumentFragment();
-        
-        pageData.forEach((row, i) => {
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-f0fdfa transition-colors";
-            let html = `<td class="p-4 font-semibold whitespace-nowrap"><a href="#" class="hover:text-teal-600 transition" onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i}); return false;">${row.name}</a><span class="block text-xs text-slate-500 font-normal">${row.code}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}</td>`;
-            row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
-            tr.innerHTML = html;
-            fragment.appendChild(tr);
-        });
-        
-        document.getElementById('tableBody').innerHTML = '';
-        document.getElementById('tableBody').appendChild(fragment);
-        renderPagination();
-    }
-    
-    function renderPagination() {
-        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-        const container = document.getElementById('pagination-controls');
-        if (filteredData.length === 0) { container.innerHTML = '<span class="text-slate-500">No records found.</span>'; return; }
-        
-        container.innerHTML = `<span class="text-slate-600">Showing ${((currentPage-1)*rowsPerPage)+1}-${Math.min(currentPage*rowsPerPage, filteredData.length)} of ${filteredData.length}</span>
-            <div class="flex gap-2">
-                <button onclick="currentPage--; renderTable();" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-100 disabled:opacity-50 transition">Prev</button>
-                <button onclick="currentPage++; renderTable();" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-100 disabled:opacity-50 transition">Next</button>
-            </div>`;
-    }
-
-    function populateFilters() {
-        const contractors = [...new Set(globalData.map(d => d.contractor))].sort();
-        document.getElementById('statusFilter').innerHTML = `<option value="">All Statuses</option><option value="Active">Active</option><option value="Left">Left</option>`;
-        document.getElementById('contractorFilter').innerHTML = `<option value="">All Contractors</option>${contractors.map(c => `<option value="${c}">${c}</option>`).join('')}`;
-    }
-    
-    function applyFilters() {
-        const search = document.getElementById('searchInput').value.toLowerCase(), status = document.getElementById('statusFilter').value, contractor = document.getElementById('contractorFilter').value;
-        filteredData = globalData.filter(row => (row.name.toLowerCase().includes(search) || row.code.toLowerCase().includes(search)) && (status ? row.status === status : true) && (contractor ? row.contractor === contractor : true));
-        
-        const count = document.getElementById('contractor-count');
-        (contractor || status || search) ? (count.textContent = `${filteredData.length} Employee(s)`, count.classList.remove('hidden')) : count.classList.add('hidden');
-        renderTable();
-    }
-
-    function openEmployeeModal(index) {
-        const employee = filteredData[index];
-        
-        document.getElementById('modal-info-panel').innerHTML = `
-            <div class="mb-6">
-                <h2 class="text-3xl font-bold text-slate-900">${employee.name}</h2>
-                <p class="text-slate-500 mt-1">${employee.code} &bull; ${employee.contractor} &bull; ${employee.status}</p>
-                <div class="mt-4 p-4 bg-slate-100 rounded-lg text-sm text-slate-700 space-y-2 border border-slate-200">
-                    <p><i class="fa-solid fa-user-tie text-teal-600 w-4"></i> <strong>Reporting Person:</strong> ${employee.tl || 'N/A'}</p>
-                    <p><i class="fa-solid fa-file-signature text-teal-600 w-4"></i> <strong>Sanctioner:</strong> ${employee.sanctioner || 'N/A'}</p>
-                </div>
-            </div>
-            <div class="mt-auto">
-                <h4 class="font-semibold text-slate-800 mb-3">Legend</h4>
-                <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                    <div class="flex items-center gap-2"><span class="legend-badge status-p">P</span><span>Present</span></div>
-                    <div class="flex items-center gap-2"><span class="legend-badge status-fd">FD</span><span>Full Day</span></div>
-                    <div class="flex items-center gap-2"><span class="legend-badge status-a">A</span><span>Absent</span></div>
-                    <div class="flex items-center gap-2"><span class="legend-badge status-hd">HD</span><span>Half Day</span></div>
-                    <div class="flex items-center gap-2"><span class="legend-badge status-wo">WO</span><span>Week Off</span></div>
-                    <div class="flex items-center gap-2"><span class="legend-badge status-slwp">SLWP</span><span>Sick Leave</span></div>
-                    <div class="flex items-center gap-2"><span class="legend-badge status-mp">MP</span><span>Miss Punch</span></div>
-                    <div class="flex items-center gap-2"><span class="legend-badge status-l">L</span><span>Leave</span></div>
-                </div>
-            </div>
-        `;
-
-        let date = new Date(currentMonthStr);
-        let firstDay = 0;
-        let totalDays = 31;
-        let displayMonthStr = currentMonthStr;
-        
-        if (!isNaN(date.getTime())) {
-            firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-            
-            // SMART CALENDAR FIX: Check if Weekly Off (WO) aligns with Sunday.
-            // If it doesn't, automatically test the previous month to fix the offset.
-            const woIndex = employee.dates.findIndex(d => d === 'WO');
-            if (woIndex !== -1) {
-                const expectedFirstDay = (7 - (woIndex % 7)) % 7;
-                if (firstDay !== expectedFirstDay) {
-                    const prevDate = new Date(date.getFullYear(), date.getMonth() - 1, 1);
-                    if (prevDate.getDay() === expectedFirstDay) {
-                        date = prevDate;
-                        firstDay = expectedFirstDay;
-                        displayMonthStr = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-                    }
-                }
-            }
-            totalDays = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-        }
-
-        document.getElementById('modal-calendar-title').textContent = `Attendance for ${displayMonthStr}`;
-
-        let daysHTML = Array(firstDay).fill('<div></div>').join('');
-        for (let i = 0; i < totalDays; i++) {
-            const rawStatus = employee.dates[i] || '-';
-            daysHTML += `<div class="status-${getStatusClass(rawStatus)} flex flex-col justify-center items-center rounded-lg font-medium py-2 shadow-sm transition hover:scale-105"><span class="text-base">${i+1}</span><span class="text-xs font-bold opacity-80">${getDisplayStatus(rawStatus)}</span></div>`;
-        }
-        document.getElementById('modal-calendar').innerHTML = daysHTML;
-
-        const modal = document.getElementById('employee-modal');
-        modal.classList.remove('opacity-0', 'pointer-events-none');
-        document.getElementById('modal-content').classList.remove('scale-95');
-        history.pushState({}, '', `?Employee=${encodeURIComponent(employee.name)}`);
-    }
-
-    function closeEmployeeModal() {
-        document.getElementById('employee-modal').classList.add('opacity-0', 'pointer-events-none');
-        document.getElementById('modal-content').classList.add('scale-95');
-        history.pushState({}, '', window.location.pathname);
-    }
+document.getElementById("year").textContent = new Date().getFullYear();
 </script>
+
 </body>
 </html>
