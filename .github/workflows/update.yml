@@ -2,7 +2,7 @@ name: Update Attendance Data
 
 on:
   schedule:
-    - cron: '0 */2 * * *' # Runs every 2 hours
+    - cron: '0 * * * *' # Runs every 1 hours
   workflow_dispatch:      # Allows manual trigger from GitHub UI
   push:
     branches: [ "main" ]  # Or "gh-pages" depending on your default branch
