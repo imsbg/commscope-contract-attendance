@@ -75,7 +75,7 @@
             <div class="animate-pulse flex space-x-4 justify-center items-center">
                 <div class="h-2 w-32 bg-teal-500 rounded"></div>
             </div>
-            <p class="mt-3 text-sm text-slate-500">Loading instant data...</p>
+            <p class="mt-3 text-sm text-slate-500">Loading data...</p>
         </div>
     </div>
 
@@ -165,10 +165,26 @@
             <div id="pagination-controls" class="pt-4 flex flex-col md:flex-row justify-between items-center text-sm gap-4"></div>
         </div>
         
-        <footer class="text-center text-xs text-slate-500 pt-4 pb-8">
-            <p>Disclaimer: This site is not made by, endorsed by, or affiliated with Commscope.</p>
-            <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
-        </footer>
+       <footer class="text-center text-xs text-slate-500 pt-4 pb-8">
+    <!-- Visitor Counter Display -->
+    <div class="flex justify-center gap-4 mb-4">
+        <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Today</p>
+            <p class="text-lg font-bold text-indigo-600" id="vis-today">--</p>
+        </div>
+        <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Yesterday</p>
+            <p class="text-lg font-bold text-slate-700" id="vis-yday">--</p>
+        </div>
+        <div class="bg-[var(--primary)] px-4 py-2 rounded-lg shadow-sm text-center text-white">
+            <p class="text-[10px] font-bold text-teal-200 uppercase tracking-wider">Total Views</p>
+            <p class="text-lg font-bold" id="vis-total">--</p>
+        </div>
+    </div>
+
+    <p>Disclaimer: This site is not made by, endorsed by, or affiliated with Commscope.</p>
+    <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
+</footer>
     </main>
     
     <!-- Employee Details Modal (Mobile optimized) -->
@@ -612,5 +628,51 @@
         content.classList.add('scale-95');
     }
 </script>
+
+    <script type="module">
+    // Import Firebase from Google's CDN
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, increment, update, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    // ⚠️ PASTE YOUR FIREBASE INFO HERE ⚠️
+    const firebaseConfig = {
+      projectId: "sg-fun",
+      databaseURL: "https://sg-fun-default-rtdb.firebaseio.com"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Get today's and yesterday's date formatted as YYYY-MM-DD (India Standard Time)
+    const d = new Date();
+    const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+    const ist = new Date(utc + (3600000 * 5.5)); // Convert to IST
+    
+    const todayStr = ist.toISOString().split('T')[0];
+    const yesterday = new Date(ist);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    // Atomic increment (prevents bugs if 10 people refresh at the exact same millisecond)
+    const updates = {};
+    updates['/visitors/total'] = increment(1);
+    updates['/visitors/daily/' + todayStr] = increment(1);
+
+    // Send the +1 to Firebase, then read the database to show the numbers
+    update(ref(db), updates).then(() => {
+        get(ref(db, 'visitors')).then((snapshot) => {
+            if(snapshot.exists()) {
+                const data = snapshot.val();
+                
+                // Add commas to numbers (e.g. 1,000)
+                document.getElementById('vis-total').innerText = (data.total || 0).toLocaleString();
+                document.getElementById('vis-today').innerText = (data.daily[todayStr] || 0).toLocaleString();
+                document.getElementById('vis-yday').innerText = (data.daily[yesterdayStr] || 0).toLocaleString();
+            }
+        });
+    });
+</script>
+    
 </body>
 </html>
