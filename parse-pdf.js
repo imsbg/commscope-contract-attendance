@@ -46,11 +46,29 @@ async function fetchAndParsePDF() {
                 if (match) currentMonthStr = match[1];
             }
             
-            if (sortedItems.length >= 28 && !sortedItems[0].toLowerCase().includes("employee")) {
+            // SMART FIX FOR NEW MONTHS: 
+            // We lowered the required items from 28 to 6, because at the start of the month, 
+            // there are only a few days of data. We check for "Active" or "Left" to ensure it's an employee row.
+            const hasStatus = sortedItems[2] === "Active" || sortedItems[2] === "Left";
+            
+            if (sortedItems.length >= 6 && !sortedItems[0].toLowerCase().includes("employee") && hasStatus) {
+                
+                // Extract whatever days exist (e.g. only 2 days for August 2nd)
+                let datesArray = sortedItems.slice(4, -2);
+                
+                // Pad the remaining days of the month with blank dashes so the frontend calendar doesn't break
+                while (datesArray.length < 31) {
+                    datesArray.push('-');
+                }
+
                 globalData.push({ 
-                    code: sortedItems[0], name: sortedItems[1], status: sortedItems[2], 
-                    contractor: sortedItems[3], dates: sortedItems.slice(4, -2), 
-                    tl: sortedItems.slice(-2, -1)[0], sanctioner: sortedItems.slice(-1)[0] 
+                    code: sortedItems[0], 
+                    name: sortedItems[1], 
+                    status: sortedItems[2], 
+                    contractor: sortedItems[3], 
+                    dates: datesArray, 
+                    tl: sortedItems.slice(-2, -1)[0], 
+                    sanctioner: sortedItems.slice(-1)[0] 
                 });
             }
         });
