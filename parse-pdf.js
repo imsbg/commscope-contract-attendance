@@ -7,7 +7,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbzBMx-fZAifindtXbsXVueY
 async function fetchAndParsePDF() {
     console.log("🌐 Fetching PDF from Google Apps Script...");
     
-    // Fetch using the built-in Node fetch
     const response = await fetch(GAS_URL);
     if (!response.ok) throw new Error("Network response was not ok");
     
@@ -15,7 +14,6 @@ async function fetchAndParsePDF() {
     if (!json.success) throw new Error("GAS Error: " + json.error);
     
     console.log("📦 Decoding Base64 PDF data...");
-    // Convert base64 from your GAS back into a usable PDF buffer
     const pdfBuffer = Buffer.from(json.data, 'base64');
     const pdfData = new Uint8Array(pdfBuffer);
     
@@ -30,45 +28,62 @@ async function fetchAndParsePDF() {
         const textContent = await page.getTextContent();
         
         const rows = {};
+        
+        // BULLETPROOF Y-TOLERANCE: 
+        // Prevents rows from breaking if text is slightly misaligned in the PDF.
         textContent.items.forEach(item => {
-            if (!item.str.trim()) return;
-            const y = Math.round(item.transform[5]);
-            if (!rows[y]) rows[y] = [];
-            rows[y].push({ text: item.str.trim(), x: item.transform[4] });
+            const text = item.str.trim();
+            if (!text) return;
+            const y = item.transform[5];
+            
+            let rowY = Object.keys(rows).find(key => Math.abs(key - y) <= 4);
+            if (!rowY) {
+                rowY = y;
+                rows[rowY] = [];
+            }
+            rows[rowY].push({ text: text, x: item.transform[4] });
         });
         
         Object.values(rows).forEach(rowItems => {
+            // Sort left-to-right to recreate the exact table row
             const sortedItems = rowItems.sort((a, b) => a.x - b.x).map(item => item.text);
             const rowText = sortedItems.join(" ");
             
+            // Extract Month Header
             if (currentMonthStr === "Unknown Month" && rowText.toLowerCase().includes("attendance for the month of")) {
                 const match = rowText.match(/Attendance for the Month of\s*([A-Za-z]+\s*\d{4})/i);
                 if (match) currentMonthStr = match[1];
             }
             
-            // SMART FIX FOR NEW MONTHS: 
-            // We lowered the required items from 28 to 6, because at the start of the month, 
-            // there are only a few days of data. We check for "Active" or "Left" to ensure it's an employee row.
-            const hasStatus = sortedItems[2] === "Active" || sortedItems[2] === "Left";
+            // DYNAMIC COLUMN PARSING:
+            // Find the exact index of the Status column (handles invisible spaces and capitalization)
+            let statusIdx = sortedItems.findIndex(str => str.toLowerCase() === 'active' || str.toLowerCase() === 'left');
             
-            if (sortedItems.length >= 6 && !sortedItems[0].toLowerCase().includes("employee") && hasStatus) {
+            // If it's a valid employee row (has a status, and is not the header row)
+            if (statusIdx !== -1 && sortedItems.length >= 6 && !sortedItems[0].toLowerCase().includes("employee")) {
                 
-                // Extract whatever days exist (e.g. only 2 days for August 2nd)
-                let datesArray = sortedItems.slice(4, -2);
+                let code = sortedItems[0];
                 
-                // Pad the remaining days of the month with blank dashes so the frontend calendar doesn't break
+                // Slice catches the full name perfectly even if PDF.js splits it
+                let name = sortedItems.slice(1, statusIdx).join(' ');
+                let status = sortedItems[statusIdx];
+                let contractor = sortedItems[statusIdx + 1];
+                
+                // The last two columns are always Reporting Person and Sanctioner
+                let tl = sortedItems[sortedItems.length - 2];
+                let sanctioner = sortedItems[sortedItems.length - 1];
+                
+                // DYNAMIC DATES: Automatically captures everything between Contractor and TL.
+                // Works perfectly whether it's Day 1, Day 15, or Day 31!
+                let datesArray = sortedItems.slice(statusIdx + 2, sortedItems.length - 2);
+                
+                // Automatically pad the missing days of the month with blank dashes
                 while (datesArray.length < 31) {
                     datesArray.push('-');
                 }
 
                 globalData.push({ 
-                    code: sortedItems[0], 
-                    name: sortedItems[1], 
-                    status: sortedItems[2], 
-                    contractor: sortedItems[3], 
-                    dates: datesArray, 
-                    tl: sortedItems.slice(-2, -1)[0], 
-                    sanctioner: sortedItems.slice(-1)[0] 
+                    code, name, status, contractor, dates: datesArray, tl, sanctioner 
                 });
             }
         });
