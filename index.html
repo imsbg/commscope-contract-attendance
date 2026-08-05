@@ -169,12 +169,12 @@
     <!-- Visitor Counter Display -->
     <div class="flex justify-center gap-4 mb-4">
         <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Today</p>
-            <p class="text-lg font-bold text-indigo-600" id="vis-today">--</p>
-        </div>
-        <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Yesterday</p>
             <p class="text-lg font-bold text-slate-700" id="vis-yday">--</p>
+        </div>
+                <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Today</p>
+            <p class="text-lg font-bold text-indigo-600" id="vis-today">--</p>
         </div>
         <div class="bg-[var(--primary)] px-4 py-2 rounded-lg shadow-sm text-center text-white">
             <p class="text-[10px] font-bold text-teal-200 uppercase tracking-wider">Total Views</p>
@@ -629,49 +629,57 @@
     }
 </script>
 
-    <script type="module">
-    // Import Firebase from Google's CDN
+ <!-- FIREBASE COUNTER SCRIPT (WITH JITTER FOR 1000+ USERS) -->
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getDatabase, ref, increment, update, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    import { getDatabase, ref, increment, update, get, goOffline } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-    // ⚠️ PASTE YOUR FIREBASE INFO HERE ⚠️
+    // ⚠️ PASTE YOUR EXACT FIREBASE INFO HERE ⚠️
     const firebaseConfig = {
       projectId: "sg-fun",
       databaseURL: "https://sg-fun-default-rtdb.firebaseio.com"
     };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    // The JITTER: Wait a random amount of time between 0 and 3 seconds
+    // This prevents 1,000 workers from hitting the database at the exact same millisecond!
+    const randomDelay = Math.random() * 3000; 
 
-    // Get today's and yesterday's date formatted as YYYY-MM-DD (India Standard Time)
-    const d = new Date();
-    const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-    const ist = new Date(utc + (3600000 * 5.5)); // Convert to IST
-    
-    const todayStr = ist.toISOString().split('T')[0];
-    const yesterday = new Date(ist);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    setTimeout(() => {
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-    // Atomic increment (prevents bugs if 10 people refresh at the exact same millisecond)
-    const updates = {};
-    updates['/visitors/total'] = increment(1);
-    updates['/visitors/daily/' + todayStr] = increment(1);
+        // Get IST time
+        const d = new Date();
+        const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+        const ist = new Date(utc + (3600000 * 5.5)); 
+        
+        const todayStr = ist.toISOString().split('T')[0];
+        const yesterday = new Date(ist);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-    // Send the +1 to Firebase, then read the database to show the numbers
-    update(ref(db), updates).then(() => {
-        get(ref(db, 'visitors')).then((snapshot) => {
-            if(snapshot.exists()) {
-                const data = snapshot.val();
+        // Prepare +1
+        const updates = {};
+        updates['/visitors/total'] = increment(1);
+        updates['/visitors/daily/' + todayStr] = increment(1);
+
+        // Execute Firebase update
+        update(ref(db), updates).then(() => {
+            get(ref(db, 'visitors')).then((snapshot) => {
+                if(snapshot.exists()) {
+                    const data = snapshot.val();
+                    document.getElementById('vis-total').innerText = (data.total || 0).toLocaleString();
+                    document.getElementById('vis-today').innerText = (data.daily[todayStr] || 0).toLocaleString();
+                    document.getElementById('vis-yday').innerText = (data.daily[yesterdayStr] || 0).toLocaleString();
+                }
                 
-                // Add commas to numbers (e.g. 1,000)
-                document.getElementById('vis-total').innerText = (data.total || 0).toLocaleString();
-                document.getElementById('vis-today').innerText = (data.daily[todayStr] || 0).toLocaleString();
-                document.getElementById('vis-yday').innerText = (data.daily[yesterdayStr] || 0).toLocaleString();
-            }
-        });
-    });
+                // Instantly free up the database slot for the next employee
+                goOffline(db); 
+            }).catch(() => goOffline(db));
+        }).catch(() => goOffline(db));
+
+    }, randomDelay);
+
 </script>
     
 </body>
