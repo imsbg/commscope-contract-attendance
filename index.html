@@ -630,6 +630,7 @@
 </script>
 
 <!-- FIREBASE COUNTER SCRIPT-->
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getDatabase, ref, increment, update, get, goOffline } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
@@ -639,9 +640,7 @@
       projectId: "sg-fun",
       databaseURL: "https://sg-fun-default-rtdb.firebaseio.com"
     };
-
-    // --- GHOST TRAFFIC ALGORITHM ---
-    // Generates a consistent random target (300-500) for the day
+    
     function getDailyGhostTarget(dateStr) {
         let seed = parseInt(dateStr.replace(/-/g, ''));
         let x = Math.sin(seed) * 10000;
@@ -737,6 +736,5 @@
 
     }, randomDelay);
 </script>
-    
 </body>
 </html>
