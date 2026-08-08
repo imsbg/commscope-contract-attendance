@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,11 +56,11 @@
 
         /* Shift Calendar Custom CSS */
         .sc-cell { border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; min-height: 48px; }
-        .sc-shift-A { background-color: #dcfce7; color: #166534; }
-        .sc-shift-B { background-color: #e0f2fe; color: #0369a1; }
-        .sc-shift-C { background-color: #f3e8ff; color: #6b21a8; }
-        .sc-shift-OFF { background-color: #ffe4e6; color: #be123c; }
-        .sc-holiday { background-color: #fef3c7 !important; color: #92400e !important; border: 1px dashed #92400e; }
+        .sc-shift-A { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0;}
+        .sc-shift-B { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;}
+        .sc-shift-C { background-color: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff;}
+        .sc-shift-OFF { background-color: #ffe4e6; color: #be123c; border: 1px solid #fecdd3;}
+        .sc-holiday { background-color: #fef3c7 !important; color: #92400e !important; border: 1px dashed #d97706; }
     </style>
 </head>
 <body class="antialiased">
@@ -167,25 +166,25 @@
         </div>
         
        <footer class="text-center text-xs text-slate-500 pt-4 pb-8">
-    <!-- Visitor Counter Display -->
-    <div class="flex justify-center gap-4 mb-4">
-        <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Yesterday</p>
-            <p class="text-lg font-bold text-slate-700" id="vis-yday">--</p>
-        </div>
+            <!-- Visitor Counter Display -->
+            <div class="flex justify-center gap-4 mb-4">
                 <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Today</p>
-            <p class="text-lg font-bold text-indigo-600" id="vis-today">--</p>
-        </div>
-        <div class="bg-[var(--primary)] px-4 py-2 rounded-lg shadow-sm text-center text-white">
-            <p class="text-[10px] font-bold text-teal-200 uppercase tracking-wider">Total Views</p>
-            <p class="text-lg font-bold" id="vis-total">--</p>
-        </div>
-    </div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Yesterday</p>
+                    <p class="text-lg font-bold text-slate-700" id="vis-yday">--</p>
+                </div>
+                        <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Today</p>
+                    <p class="text-lg font-bold text-indigo-600" id="vis-today">--</p>
+                </div>
+                <div class="bg-[var(--primary)] px-4 py-2 rounded-lg shadow-sm text-center text-white">
+                    <p class="text-[10px] font-bold text-teal-200 uppercase tracking-wider">Total Views</p>
+                    <p class="text-lg font-bold" id="vis-total">--</p>
+                </div>
+            </div>
 
-    <p>Disclaimer: This site is not made by, endorsed by, or affiliated with Commscope.</p>
-    <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
-</footer>
+            <p>Disclaimer: This site is not made by, endorsed by, or affiliated with Commscope.</p>
+            <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
+        </footer>
     </main>
     
     <!-- Employee Details Modal (Mobile optimized) -->
@@ -231,16 +230,21 @@
                 <h4 class="font-bold text-slate-800 mb-3 text-lg flex items-center gap-2"><i class="fa-solid fa-gear text-indigo-500"></i> Shift Settings</h4>
                 <div class="space-y-4 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Base Shift</label>
-                        <select id="sc-setup-shift" onchange="saveShiftSettings()" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
-                            <option value="A">A Shift</option>
-                            <option value="B">B Shift</option>
-                            <option value="C">C Shift</option>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Shift Pattern</label>
+                        <select id="sc-setup-pattern" onchange="onPatternChange()" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all">
+                            <option value="ACB">3 Shifts (A - C - B)</option>
+                            <option value="BC">2 Shifts (Only B & C)</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Base Date (Monday)</label>
-                        <input type="date" id="sc-setup-date" onchange="saveShiftSettings()" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Current/Base Shift</label>
+                        <select id="sc-setup-shift" onchange="saveShiftSettings()" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Start Date (Monday)</label>
+                        <input type="date" id="sc-setup-date" onchange="saveShiftSettings()" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all">
                     </div>
                 </div>
 
@@ -255,11 +259,20 @@
     const rowsPerPage = 15;
 
     // -- Shift Calendar Logic Setup --
-    let shiftSettings = JSON.parse(localStorage.getItem('shiftSettings')) || { baseDate: '2026-01-05', baseShift: 'A' }; // Jan 5 2026 is a Mon
+    const DEFAULT_SETTINGS = { pattern: 'ACB', baseDate: '2026-01-05', baseShift: 'A' }; // Jan 5 2026 is a Mon
+    let shiftSettings = JSON.parse(localStorage.getItem('shiftSettings')) || DEFAULT_SETTINGS;
+    
+    // Safety check for older saved settings without a pattern
+    if(!shiftSettings.pattern) shiftSettings.pattern = 'ACB';
+    
     let calCurrentDate = new Date();
     if(calCurrentDate.getFullYear() !== 2026) calCurrentDate.setFullYear(2026); // Default view to 2026
 
-    const SHIFT_SEQ = ['A', 'C', 'B'];
+    const SEQUENCES = {
+        'ACB': ['A', 'C', 'B'],
+        'BC': ['B', 'C']
+    };
+
     const holidays2026 = {
         "2026-01-01": "New Year Day", "2026-01-26": "Republic Day", "2026-04-03": "Good Friday", "2026-04-14": "Ambedkar Jayanti", "2026-05-01": "May Day", "2026-08-15": "Independence Day", "2026-09-14": "Ganesh Chaturthi (Day 1)", "2026-09-15": "Ganesh Chaturthi (Day 2)", "2026-10-02": "Gandhi Jayanti", "2026-10-20": "Dussehra", "2026-12-19": "Goa Liberation Day", "2026-12-25": "Christmas Day"
     };
@@ -544,16 +557,51 @@
         const diff = date.getDate() - day + (day === 0 ? -6 : 1);
         return new Date(date.setDate(diff));
     }
+    
+    function updateShiftDropdown() {
+        const shiftSelect = document.getElementById('sc-setup-shift');
+        const pattern = shiftSettings.pattern;
+        shiftSelect.innerHTML = '';
+        
+        if (pattern === 'ACB') {
+            shiftSelect.innerHTML = '<option value="A">A Shift</option><option value="B">B Shift</option><option value="C">C Shift</option>';
+        } else if (pattern === 'BC') {
+            shiftSelect.innerHTML = '<option value="B">B Shift</option><option value="C">C Shift</option>';
+            if (shiftSettings.baseShift === 'A') shiftSettings.baseShift = 'B';
+        }
+        
+        shiftSelect.value = shiftSettings.baseShift;
+    }
+
+    function onPatternChange() {
+        shiftSettings.pattern = document.getElementById('sc-setup-pattern').value;
+        updateShiftDropdown();
+        saveShiftSettings();
+    }
+
+    function saveShiftSettings() {
+        shiftSettings.pattern = document.getElementById('sc-setup-pattern').value;
+        shiftSettings.baseShift = document.getElementById('sc-setup-shift').value;
+        shiftSettings.baseDate = document.getElementById('sc-setup-date').value || shiftSettings.baseDate;
+        localStorage.setItem('shiftSettings', JSON.stringify(shiftSettings));
+        renderShiftCalendar();
+    }
 
     function getShiftForDate(dateObj) {
         if (dateObj.getDay() === 0) return 'OFF'; 
-        const tMon = getMonday(dateObj);
-        const bMon = getMonday(new Date(shiftSettings.baseDate));
-        const diffWeeks = Math.floor(Math.round((tMon - bMon) / (1000 * 60 * 60 * 24)) / 7);
-        let bIdx = SHIFT_SEQ.indexOf(shiftSettings.baseShift);
-        let curIdx = (bIdx + diffWeeks) % 3; 
-        if (curIdx < 0) curIdx += 3;
-        return SHIFT_SEQ[curIdx];
+        
+        const targetMon = getMonday(dateObj);
+        const baseMon = getMonday(new Date(shiftSettings.baseDate));
+        const diffWeeks = Math.floor(Math.round((targetMon - baseMon) / (1000 * 60 * 60 * 24)) / 7);
+        
+        const activeSeq = SEQUENCES[shiftSettings.pattern] || SEQUENCES['ACB'];
+        let baseIndex = activeSeq.indexOf(shiftSettings.baseShift);
+        if (baseIndex === -1) baseIndex = 0; 
+        
+        let currentIndex = (baseIndex + diffWeeks) % activeSeq.length; 
+        if (currentIndex < 0) currentIndex += activeSeq.length;
+        
+        return activeSeq[currentIndex];
     }
 
     function formatISODate(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0'); }
@@ -580,12 +628,18 @@
             const isHol = holidays2026[isoDate];
             
             let cls = `sc-cell sc-shift-${sCode}`;
-            if (d === today.getDate() && m === today.getMonth() && y === today.getFullYear()) {
+            let isToday = (d === today.getDate() && m === today.getMonth() && y === today.getFullYear());
+            
+            if (isToday) {
                 cls += ' ring-2 ring-indigo-500 ring-offset-2 scale-105 shadow-md z-10';
             }
             if (isHol) cls += ' sc-holiday';
             
-            grid.innerHTML += `<div class="${cls} text-xs md:text-sm shadow-sm transition hover:scale-105 border border-slate-100"><div class="font-bold text-slate-700 ${isHol ? 'text-amber-900' : ''}">${d}</div><div class="text-[9px] md:text-xs mt-1 px-1.5 py-0.5 rounded-full bg-white/50">${sCode}</div></div>`;
+            grid.innerHTML += `
+                <div class="${cls} text-xs md:text-sm shadow-sm transition hover:scale-105">
+                    <div class="font-bold text-slate-700 ${isHol ? 'text-amber-900' : ''} ${isToday && !isHol ? 'text-indigo-900' : ''}">${d}</div>
+                    <div class="text-[9px] md:text-xs font-bold mt-1 px-1.5 py-0.5 rounded-full bg-white/60 tracking-wider">${sCode}</div>
+                </div>`;
         }
 
         let holHtml = '';
@@ -603,16 +657,10 @@
         calCurrentDate.setMonth(calCurrentDate.getMonth() + dir);
         renderShiftCalendar();
     }
-
-    function saveShiftSettings() {
-        shiftSettings.baseShift = document.getElementById('sc-setup-shift').value;
-        shiftSettings.baseDate = document.getElementById('sc-setup-date').value || shiftSettings.baseDate;
-        localStorage.setItem('shiftSettings', JSON.stringify(shiftSettings));
-        renderShiftCalendar();
-    }
     
     function openShiftModal() {
-        document.getElementById('sc-setup-shift').value = shiftSettings.baseShift;
+        document.getElementById('sc-setup-pattern').value = shiftSettings.pattern;
+        updateShiftDropdown();
         document.getElementById('sc-setup-date').value = shiftSettings.baseDate;
         renderShiftCalendar();
         
