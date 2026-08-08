@@ -243,7 +243,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Start Date (Monday)</label>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Start Date</label>
                         <input type="date" id="sc-setup-date" onchange="saveShiftSettings()" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all">
                     </div>
                 </div>
@@ -678,8 +678,7 @@
     }
 </script>
 
-<!-- FIREBASE COUNTER SCRIPT-->
-
+<!-- FIREBASE COUNTER SCRIPT (LEGITIMATE TRAFFIC ONLY) -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getDatabase, ref, increment, update, get, goOffline } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
@@ -689,57 +688,9 @@
       projectId: "sg-fun",
       databaseURL: "https://sg-fun-default-rtdb.firebaseio.com"
     };
-    
-    function getDailyGhostTarget(dateStr) {
-        let seed = parseInt(dateStr.replace(/-/g, ''));
-        let x = Math.sin(seed) * 10000;
-        let rand = x - Math.floor(x);
-        return Math.floor(300 + (rand * 201)); // Random 300 to 500
-    }
-
-    function calculateGhostViews(istNow, todayStr, yesterdayStr) {
-        let totalGhost = 0; let todayGhost = 0; let yesterdayGhost = 0;
-        
-        // Ghost traffic history starts on August 1, 2026
-        let loopDate = new Date("2026-08-01T00:00:00+05:30");
-        
-        while (loopDate <= istNow) {
-            let loopStr = loopDate.toISOString().split('T')[0];
-            let dailyTarget = getDailyGhostTarget(loopStr);
-
-            if (loopStr === todayStr) {
-                // Get current minutes of the day
-                let minsNow = istNow.getHours() * 60 + istNow.getMinutes();
-                
-                // 🔥 TIME BUCKETING: This makes the counter "jump" every 20 minutes
-                // instead of ticking up smoothly, which looks much more like real human traffic!
-                let bucketedMins = minsNow - (minsNow % 20); 
-
-                const startMins = 7 * 60;  // 7:00 AM
-                const endMins = 23 * 60;   // 11:00 PM
-
-                if (bucketedMins < startMins) {
-                    todayGhost = 0; 
-                } else if (bucketedMins >= endMins) {
-                    todayGhost = dailyTarget; 
-                } else {
-                    // Calculate how far along we are in the day
-                    let progress = (bucketedMins - startMins) / (endMins - startMins);
-                    todayGhost = Math.floor(dailyTarget * progress);
-                }
-                totalGhost += todayGhost;
-            } else {
-                totalGhost += dailyTarget;
-                if (loopStr === yesterdayStr) yesterdayGhost = dailyTarget;
-            }
-            // Add 1 day
-            loopDate.setDate(loopDate.getDate() + 1);
-        }
-        return { totalGhost, todayGhost, yesterdayGhost };
-    }
 
     // --- FIREBASE EXECUTION ---
-    const randomDelay = Math.random() * 3000; // Jitter to prevent 1000 simultaneous connections
+    const randomDelay = Math.random() * 3000; // Jitter to prevent simultaneous connection overload
 
     setTimeout(() => {
         const app = initializeApp(firebaseConfig);
@@ -771,13 +722,10 @@
                     realYday = data.daily[yesterdayStr] || 0;
                 }
 
-                // Calculate the automated ghost traffic
-                const ghosts = calculateGhostViews(ist, todayStr, yesterdayStr);
-
-                // Add Real + Ghost together and display!
-                document.getElementById('vis-total').innerText = (realTotal + ghosts.totalGhost).toLocaleString();
-                document.getElementById('vis-today').innerText = (realToday + ghosts.todayGhost).toLocaleString();
-                document.getElementById('vis-yday').innerText = (realYday + ghosts.yesterdayGhost).toLocaleString();
+                // Display ONLY legitimate data
+                document.getElementById('vis-total').innerText = realTotal.toLocaleString();
+                document.getElementById('vis-today').innerText = realToday.toLocaleString();
+                document.getElementById('vis-yday').innerText = realYday.toLocaleString();
                 
                 goOffline(db); 
             }).catch(() => goOffline(db));
