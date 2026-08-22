@@ -777,7 +777,7 @@
         
         const allLegends = [
             { code: 'P', label: 'Present', cls: 'status-p' },
-            { code: 'FD', label: 'Full Day', cls: 'status-fd' },
+            { code: 'FD', label: 'Full Day / Wrong Shift', cls: 'status-fd' },
             { code: 'F', label: 'Field', cls: 'status-f' },
             { code: 'A', label: 'Absent', cls: 'status-a' },
             { code: 'HD', label: 'Half Day', cls: 'status-hd' },
@@ -789,9 +789,15 @@
         ];
 
         let legendsHtml = allLegends.map(l => `
-            <div class="flex items-center gap-2 bg-[var(--surface-alt)] p-1.5 pr-2.5 rounded-xl border border-[var(--border)] flex-[1_1_30%] min-w-[100px] shadow-sm">
+            <div class="group relative flex items-center gap-2 bg-[var(--surface-alt)] p-1.5 pr-2.5 rounded-xl border border-[var(--border)] flex-[1_1_30%] min-w-[100px] shadow-sm hover:scale-110 hover:bg-[var(--surface)] hover:shadow-md hover:border-[var(--primary)] transition-all cursor-help z-10 hover:z-50">
                 <span class="status-badge ${l.cls} min-w-[32px] md:min-w-[40px] text-[10px] md:text-[11px]">${l.code}</span>
                 <span class="truncate">${l.label}</span>
+                
+                <!-- Tooltip for full visibility -->
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-[200px] p-2 bg-[var(--text)] text-[var(--surface)] text-[11px] font-bold rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-xl text-center whitespace-normal">
+                    ${l.code} - ${l.label}
+                    <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-[5px] border-transparent border-t-[var(--text)]"></div>
+                </div>
             </div>
         `).join('');
 
