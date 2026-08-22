@@ -80,6 +80,31 @@
         </div>
     </div>
 
+    <!-- NEW UI Announcement Modal -->
+    <div id="new-ui-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[110] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none modal-blur">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300 relative text-center" id="new-ui-content">
+            <!-- Decorative Icon -->
+            <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gradient-to-tr from-indigo-500 to-purple-600 text-white p-4 rounded-full shadow-lg h-20 w-20 flex items-center justify-center border-4 border-white">
+                <i class="fa-solid fa-rocket text-3xl"></i>
+            </div>
+            
+            <div class="mt-8">
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">Experience the New UI!</h3>
+                <p class="text-slate-600 mb-8 text-sm leading-relaxed">
+                    We've completely redesigned the CommScope Attendance Portal. It's faster, sleeker, and packed with new features. Click below to try it out!
+                </p>
+                <div class="flex flex-col gap-3">
+                    <a href="https://imsbg.github.io/commscope-contract-attendance/new" class="w-full px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl hover:opacity-90 transition text-sm font-bold shadow-md flex items-center justify-center gap-2">
+                        Go to New Website <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                    <button onclick="closeNewUiModal()" class="w-full px-4 py-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition text-sm font-semibold">
+                        Maybe Later
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- PDF Notice Alert Modal -->
     <div id="pdf-alert-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none modal-blur">
         <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300" id="pdf-alert-content">
@@ -109,6 +134,11 @@
                 <p id="current-month-header" class="text-slate-500 mt-1">Loading Data...</p>
             </div>
             <div class="flex flex-wrap items-center gap-2 md:gap-3 w-full xl:w-auto">
+                <!-- NEW UI BUTTON -->
+                <button onclick="openNewUiModal()" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 md:px-5 py-2 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2 text-sm font-bold flex-1 xl:flex-none animate-pulse">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Try New UI
+                </button>
+                
                 <a href="https://imsbg.github.io/commscope/" class="bg-white text-slate-700 border border-slate-300 px-3 md:px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
                     <i class="fa-solid fa-house"></i> Home
                 </a>
@@ -260,14 +290,13 @@
     const rowsPerPage = 15;
 
     // -- Shift Calendar Logic Setup --
-    const DEFAULT_SETTINGS = { pattern: 'ACB', baseDate: '2026-01-05', baseShift: 'A' }; // Jan 5 2026 is a Mon
+    const DEFAULT_SETTINGS = { pattern: 'ACB', baseDate: '2026-01-05', baseShift: 'A' }; 
     let shiftSettings = JSON.parse(localStorage.getItem('shiftSettings')) || DEFAULT_SETTINGS;
     
-    // Safety check for older saved settings without a pattern
     if(!shiftSettings.pattern) shiftSettings.pattern = 'ACB';
     
     let calCurrentDate = new Date();
-    if(calCurrentDate.getFullYear() !== 2026) calCurrentDate.setFullYear(2026); // Default view to 2026
+    if(calCurrentDate.getFullYear() !== 2026) calCurrentDate.setFullYear(2026);
 
     const SEQUENCES = {
         'ACB': ['A', 'C', 'B'],
@@ -302,6 +331,22 @@
         });
     });
 
+    // --- New UI Modal Logic ---
+    function openNewUiModal() {
+        const modal = document.getElementById('new-ui-modal');
+        const content = document.getElementById('new-ui-content');
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        content.classList.remove('scale-95');
+    }
+
+    function closeNewUiModal() {
+        const modal = document.getElementById('new-ui-modal');
+        const content = document.getElementById('new-ui-content');
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        content.classList.add('scale-95');
+    }
+
+    // --- PDF Notice Modal Logic ---
     function openPdfModal() {
         const modal = document.getElementById('pdf-alert-modal');
         const content = document.getElementById('pdf-alert-content');
@@ -370,6 +415,15 @@
                 const idx = filteredData.findIndex(e => e.name === decodeURIComponent(employeeName));
                 if (idx !== -1) openEmployeeModal(idx);
             }
+            
+            // Auto show the New UI modal once per session
+            if (!sessionStorage.getItem('newUiAlertShown')) {
+                setTimeout(() => {
+                    openNewUiModal();
+                    sessionStorage.setItem('newUiAlertShown', 'true');
+                }, 1000);
+            }
+            
         }, 400); 
     }
     
