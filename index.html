@@ -80,7 +80,7 @@
         </div>
     </div>
 
-    <!-- NEW UI Announcement Modal -->
+    <!-- NEW UI Announcement Modal (Triggered Only By Button Now) -->
     <div id="new-ui-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[110] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none modal-blur">
         <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300 relative text-center" id="new-ui-content">
             <!-- Decorative Icon -->
@@ -189,13 +189,6 @@
                     <input type="text" id="searchInput" placeholder="Search Employee..." class="px-4 py-2 border rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition">
                     <select id="statusFilter" class="px-4 py-2 border rounded-lg bg-white w-full"></select>
                     <select id="contractorFilter" class="px-4 py-2 border rounded-lg bg-white w-full"></select>
-                    <!-- ROWS PER PAGE SELECTOR -->
-                    <select id="rowsFilter" class="px-4 py-2 border rounded-lg bg-white w-full outline-none focus:ring-2 focus:ring-teal-500 transition">
-                        <option value="15">15 Records</option>
-                        <option value="50">50 Records</option>
-                        <option value="100">100 Records</option>
-                        <option value="all">Show All</option>
-                    </select>
                 </div>
             </div>
             
@@ -248,7 +241,8 @@
                 <div class="grid grid-cols-7 gap-1 md:gap-1.5 mb-2 text-[10px] md:text-xs font-bold text-center text-slate-500">
                     <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                 </div>
-                <div id="modal-calendar" class="grid grid-cols-7 grid-rows-6 gap-1 md:gap-1.5 flex-1 min-h-[300px]"></div>
+                <!-- Removed min-height so it shows full on mobile without inner scrolling -->
+                <div id="modal-calendar" class="grid grid-cols-7 gap-1 md:gap-1.5 flex-1"></div>
             </div>
         </div>
     </div>
@@ -303,7 +297,7 @@
 
 <script>
     let globalData = [], filteredData = [], currentPage = 1, currentMonthStr = "";
-    let rowsPerPage = 15; // Made dynamic instead of const
+    let rowsPerPage = 15; // Set strictly to 15 default
 
     // -- Shift Calendar Logic Setup --
     const DEFAULT_SETTINGS = { pattern: 'ACB', baseDate: '2026-01-05', baseShift: 'A' }; 
@@ -346,7 +340,7 @@
             });
         });
 
-        // Add event listener for rows per page
+        // Toggle rows between 15 and All
         document.getElementById('rowsFilter').addEventListener('change', (e) => {
             currentPage = 1;
             rowsPerPage = e.target.value === 'all' ? filteredData.length : parseInt(e.target.value);
@@ -463,8 +457,17 @@
 
         globalData.forEach(row => {
             row.dates.forEach((d, i) => {
-                if (['P', 'FD', 'F'].includes(d)) { totalPresents++; if (i < 31) daily[i].p++; }
-                else if (d === 'A') { totalAbsents++; if (i < 31) daily[i].a++; }
+                const status = d ? d.trim().toUpperCase() : '';
+                // Count Present and Week Off as valid attendance
+                if (['P', 'WO'].includes(status)) { 
+                    totalPresents++; 
+                    if (i < 31) daily[i].p++; 
+                }
+                // Everything else (FD, A, HD, SLWP, MP) is counted as absence/non-attendance
+                else if (['A', 'FD', 'HD', 'SLWP', 'MP'].includes(status)) { 
+                    totalAbsents++; 
+                    if (i < 31) daily[i].a++; 
+                }
             });
         });
 
@@ -485,8 +488,8 @@
             data: { 
                 labels: Array.from({length:31}, (_,i)=>i+1), 
                 datasets: [
-                    { label: 'Present', data: daily.map(d=>d.p), backgroundColor: '#10b981', borderRadius: 4 }, 
-                    { label: 'Absent', data: daily.map(d=>d.a), backgroundColor: '#f43f5e', borderRadius: 4 }
+                    { label: 'Present / WO', data: daily.map(d=>d.p), backgroundColor: '#10b981', borderRadius: 4 }, 
+                    { label: 'Absent / Leave', data: daily.map(d=>d.a), backgroundColor: '#f43f5e', borderRadius: 4 }
                 ] 
             },
             options: { 
@@ -552,8 +555,8 @@
     function changePage(dir) {
         currentPage += dir;
         renderTable();
-        // Scroll to top of table section
-        document.getElementById('table-section-header').scrollIntoView({ behavior: 'smooth' });
+        // Scroll to top of table section on pagination
+        document.getElementById('table-section-header').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function renderPagination() {
@@ -594,7 +597,7 @@
     function openEmployeeModal(index) {
         const employee = filteredData[index];
         
-        // --- Calculate Attendance Stats ---
+        // --- Calculate Attendance Stats dynamically avoiding '-' ---
         let date = new Date(currentMonthStr);
         let firstDay = 0;
         let totalDays = 31;
@@ -617,21 +620,23 @@
             totalDays = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
         }
 
-        let p = 0, a = 0, mp = 0, fd = 0, hd = 0, validDays = 0;
+        let p = 0, wo = 0, a = 0, mp = 0, fd = 0, validDays = 0;
         
         for (let i = 0; i < totalDays; i++) {
             const rawStatus = employee.dates[i] ? employee.dates[i].trim().toUpperCase() : '';
+            // Only count valid non-empty days
             if (rawStatus && rawStatus !== '-' && rawStatus !== '--' && rawStatus !== 'L') {
                 validDays++;
-                if (rawStatus === 'P' || rawStatus === 'F') p++;
+                if (rawStatus === 'P') p++;
+                else if (rawStatus === 'WO') wo++;
                 else if (rawStatus === 'A') a++;
                 else if (rawStatus === 'MP') mp++;
                 else if (rawStatus === 'FD') fd++;
-                else if (rawStatus === 'HD') hd++;
             }
         }
 
-        let totalPresentEquiv = p + fd; 
+        // P and WO count as Valid Attendance Points
+        let totalPresentEquiv = p + wo; 
         let attendancePercentage = validDays > 0 ? Math.round((totalPresentEquiv / validDays) * 100) : 0;
 
         // Modal UI Info Panel with integrated stats
@@ -645,7 +650,7 @@
                     <p class="flex items-center gap-2 border-t border-slate-200 pt-2"><i class="fa-solid fa-file-signature text-teal-600 w-4"></i> <strong>Shift Supervisor:</strong> <span class="ml-auto text-right">${employee.sanctioner || 'N/A'}</span></p>
                 </div>
 
-                <!-- NEW: Attendance Summary Stats -->
+                <!-- NEW: Attendance Summary Stats (Present, Absent, Full Day, MP) -->
                 <div class="mt-4 grid grid-cols-4 gap-2 text-sm">
                     <div class="bg-emerald-50 text-emerald-800 p-2 rounded-lg text-center border border-emerald-100 flex flex-col justify-center">
                         <p class="font-bold text-xl">${totalPresentEquiv}</p>
@@ -656,8 +661,8 @@
                         <p class="text-[9px] font-bold uppercase tracking-wide mt-1 opacity-80">Absent</p>
                     </div>
                     <div class="bg-amber-50 text-amber-800 p-2 rounded-lg text-center border border-amber-100 flex flex-col justify-center">
-                        <p class="font-bold text-xl">${hd}</p>
-                        <p class="text-[9px] font-bold uppercase tracking-wide mt-1 opacity-80">Half Day</p>
+                        <p class="font-bold text-xl">${fd}</p>
+                        <p class="text-[9px] font-bold uppercase tracking-wide mt-1 opacity-80">Full Day</p>
                     </div>
                     <div class="bg-orange-50 text-orange-800 p-2 rounded-lg text-center border border-orange-100 flex flex-col justify-center">
                         <p class="font-bold text-xl">${mp}</p>
