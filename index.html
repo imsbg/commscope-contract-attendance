@@ -191,7 +191,7 @@
             </div>
             
             <div class="table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg">
-                <table class="w-full text-left min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
+                <table class="w-full text-left md:min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
             </div>
             <div id="pagination-controls" class="pt-4 flex flex-col md:flex-row justify-between items-center text-sm gap-4"></div>
         </div>
@@ -239,11 +239,12 @@
 
     <!-- Shift Calendar Modal -->
     <div id="shift-modal" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
-        <div id="shift-modal-content" class="bg-slate-50 rounded-2xl w-full h-full flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto lg:overflow-hidden max-w-6xl mx-auto relative shadow-2xl custom-scrollbar">
+        <!-- Made the container h-auto and max-h-[95vh] with overall overflow to avoid internal nested scrolling -->
+        <div id="shift-modal-content" class="bg-slate-50 rounded-2xl w-full max-h-[95vh] h-auto flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto max-w-6xl mx-auto relative shadow-2xl custom-scrollbar">
              <button onclick="closeShiftModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
              
              <!-- Left: Calendar Area -->
-             <div class="p-4 md:p-6 flex-1 flex flex-col overflow-y-auto custom-scrollbar bg-slate-50">
+             <div class="p-4 md:p-6 flex-1 flex flex-col bg-slate-50">
                 <div class="flex justify-between items-center mb-6">
                     <button onclick="changeShiftMonth(-1)" class="w-10 h-10 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold transition shadow-sm">&lt;</button>
                     <h3 id="sc-month-title" class="text-xl md:text-2xl font-bold text-indigo-900">Month Year</h3>
@@ -253,7 +254,7 @@
                 <div class="grid grid-cols-7 gap-1 md:gap-2 text-center font-bold text-xs md:text-sm text-slate-500 mb-2">
                     <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                 </div>
-                <div id="sc-days" class="grid grid-cols-7 gap-1 md:gap-2 flex-1 min-h-[350px]"></div>
+                <div id="sc-days" class="grid grid-cols-7 gap-1 md:gap-2 flex-1"></div>
              </div>
 
              <!-- Right: Settings & Holidays -->
@@ -280,7 +281,7 @@
                 </div>
 
                 <h4 class="font-bold text-slate-800 mb-3 text-lg flex items-center gap-2"><i class="fa-solid fa-gift text-rose-500"></i> Holidays 2026</h4>
-                <div id="sc-holiday-list" class="space-y-2 flex-1 overflow-y-auto custom-scrollbar pr-2"></div>
+                <div id="sc-holiday-list" class="space-y-2 flex-1 pr-2"></div>
              </div>
         </div>
     </div>
@@ -416,11 +417,11 @@
                 if (idx !== -1) openEmployeeModal(idx);
             }
             
-            // Auto show the New UI modal once per session
-            if (!sessionStorage.getItem('newUiAlertShown')) {
+            // Auto show the New UI modal once EVER (using localStorage instead of sessionStorage)
+            if (!localStorage.getItem('newUiAlertShown')) {
                 setTimeout(() => {
                     openNewUiModal();
-                    sessionStorage.setItem('newUiAlertShown', 'true');
+                    localStorage.setItem('newUiAlertShown', 'true');
                 }, 1000);
             }
             
@@ -473,7 +474,8 @@
     }
 
     function renderTable() {
-        document.getElementById('tableHeader').innerHTML = `<tr><th class="p-4">Employee</th><th class="p-4">Status</th><th class="p-4">Contractor</th>${Array.from({length: 31}, (_, i) => `<th class="p-4 text-center">${i+1}</th>`).join('')}</tr>`;
+        // Hiding 1 to 31 columns on mobile by using hidden md:table-cell classes
+        document.getElementById('tableHeader').innerHTML = `<tr><th class="p-4">Employee</th><th class="p-4">Status</th><th class="p-4">Contractor</th>${Array.from({length: 31}, (_, i) => `<th class="p-4 text-center hidden md:table-cell">${i+1}</th>`).join('')}</tr>`;
         
         const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
         const fragment = document.createDocumentFragment();
@@ -482,7 +484,7 @@
             const tr = document.createElement('tr');
             tr.className = "hover:bg-f0fdfa transition-colors";
             let html = `<td class="p-4 font-semibold whitespace-nowrap"><a href="#" class="hover:text-teal-600 transition" onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i}); return false;">${row.name}</a><span class="block text-xs text-slate-500 font-normal">${row.code}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}</td>`;
-            row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
+            row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center hidden md:table-cell"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
             tr.innerHTML = html;
             fragment.appendChild(tr);
         });
@@ -524,13 +526,14 @@
         const employee = filteredData[index];
         
         // Modal UI Info Panel (includes Share Button & Collapsible Mobile Legend)
+        // Renamed Reporting Person to Team Leader and Sanctioner to Shift Supervisor
         document.getElementById('modal-info-panel').innerHTML = `
             <div class="mb-4">
                 <h2 class="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">${employee.name}</h2>
                 <p class="text-slate-500 mt-1 font-medium">${employee.code} &bull; ${employee.contractor} &bull; ${employee.status}</p>
                 <div class="mt-4 p-4 bg-slate-50 rounded-xl text-sm text-slate-700 space-y-2 border border-slate-200">
-                    <p class="flex items-center gap-2"><i class="fa-solid fa-user-tie text-teal-600"></i> <strong>Reporting Person:</strong> <span class="ml-auto text-right">${employee.tl || 'N/A'}</span></p>
-                    <p class="flex items-center gap-2 border-t border-slate-200 pt-2"><i class="fa-solid fa-file-signature text-teal-600"></i> <strong>Sanctioner:</strong> <span class="ml-auto text-right">${employee.sanctioner || 'N/A'}</span></p>
+                    <p class="flex items-center gap-2"><i class="fa-solid fa-user-tie text-teal-600"></i> <strong>Team Leader:</strong> <span class="ml-auto text-right">${employee.tl || 'N/A'}</span></p>
+                    <p class="flex items-center gap-2 border-t border-slate-200 pt-2"><i class="fa-solid fa-file-signature text-teal-600"></i> <strong>Shift Supervisor:</strong> <span class="ml-auto text-right">${employee.sanctioner || 'N/A'}</span></p>
                 </div>
                 
                 <button onclick="shareEmployeeURL('${employee.name.replace(/'/g, "\\'")}')" class="w-full mt-4 bg-teal-100 hover:bg-teal-200 text-teal-800 py-2.5 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 shadow-sm">
