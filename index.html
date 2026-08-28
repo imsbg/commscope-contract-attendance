@@ -134,7 +134,7 @@
                 <p id="current-month-header" class="text-slate-500 mt-1">Loading Data...</p>
             </div>
             <div class="flex flex-wrap items-center gap-2 md:gap-3 w-full xl:w-auto">
-                <!-- NEW UI BUTTON WITH BETA BADGE (Hidden per request) -->
+                <!-- NEW UI BUTTON (Hidden per request) -->
                 <button onclick="openNewUiModal()" class="hidden bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 md:px-5 py-2 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all items-center justify-center text-sm font-bold flex-1 xl:flex-none">
                     <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Try New UI
                     <span class="bg-amber-400 text-amber-900 text-[10px] px-1.5 py-0.5 rounded-sm ml-2 uppercase tracking-wider font-extrabold">Beta</span>
@@ -168,9 +168,17 @@
         </div>
 
         <!-- GRAPHS SECTION (Hidden by default, toggled via button) -->
-        <section id="graphs-section" class="hidden grid grid-cols-1 lg:grid-cols-5 gap-6 transition-all duration-300 opacity-0">
+        <section id="graphs-section" class="hidden grid grid-cols-1 lg:grid-cols-5 gap-6 transition-all duration-300 opacity-0 mb-6">
             <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold mb-4 text-slate-800">Daily Attendance Trends</h2>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                    <h2 class="text-xl font-bold text-slate-800">Daily Attendance Trends</h2>
+                    <!-- GRAPH CUSTOMIZATION SELECTOR -->
+                    <select id="chartTypeSelector" onchange="changeChartType(this.value)" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition">
+                        <option value="bar">Bar Graph</option>
+                        <option value="line">Line Graph</option>
+                        <option value="radar">Radar Chart</option>
+                    </select>
+                </div>
                 <div class="h-80"><canvas id="dayWiseChart"></canvas></div>
             </div>
             <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -241,7 +249,6 @@
                 <div class="grid grid-cols-7 gap-1 md:gap-1.5 mb-2 text-[10px] md:text-xs font-bold text-center text-slate-500">
                     <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                 </div>
-                <!-- Removed min-height so it shows full on mobile without inner scrolling -->
                 <div id="modal-calendar" class="grid grid-cols-7 gap-1 md:gap-1.5 flex-1"></div>
             </div>
         </div>
@@ -299,6 +306,10 @@
     let globalData = [], filteredData = [], currentPage = 1, currentMonthStr = "";
     const rowsPerPage = 15; // Locked strictly to 15 to prevent rendering lag
 
+    // --- Chart Global Variables ---
+    let trendChartInstance = null;
+    let trendChartData = null;
+
     // List of exact codes that count as Absence/Decrease Percentage
     // Note: WO/Week Off is NOT here, meaning it counts as present/positive.
     const absenceList = ['A', 'ABSENT', 'FD', 'FULL DAY', 'HD', 'HALF DAY', 'SLWP', 'SICK LEAVE', 'MP', 'MISS PUNCH'];
@@ -345,7 +356,46 @@
         });
     });
 
-    // --- Graph Toggle Logic ---
+    // --- Graph Logic & Customization ---
+    function initOrUpdateTrendChart(type) {
+        if(trendChartInstance) {
+            trendChartInstance.destroy();
+        }
+        
+        const ctx = document.getElementById('dayWiseChart').getContext('2d');
+        const options = { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            animation: { duration: 1000 }
+        };
+
+        // Smooth lines if user selects line chart
+        if (type === 'line') {
+            trendChartData.datasets.forEach(ds => {
+                ds.tension = 0.4; // Smooth curve
+                ds.fill = true;   // Shaded area under line
+            });
+        } else if (type === 'radar') {
+            trendChartData.datasets.forEach(ds => ds.fill = true);
+        } else {
+            trendChartData.datasets.forEach(ds => ds.fill = false);
+        }
+
+        if (type !== 'radar') {
+            options.scales = { x: { grid: { display: false } }, y: { beginAtZero: true } };
+        }
+
+        trendChartInstance = new Chart(ctx, {
+            type: type,
+            data: trendChartData,
+            options: options
+        });
+    }
+
+    function changeChartType(type) {
+        initOrUpdateTrendChart(type);
+    }
+
     function toggleGraphs() {
         const section = document.getElementById('graphs-section');
         const text = document.getElementById('toggle-graphs-text');
@@ -483,25 +533,31 @@
             options: { responsive: true, maintainAspectRatio: false, cutout: '70%', animation: { duration: 1500 } }
         });
 
-        new Chart(document.getElementById('dayWiseChart').getContext('2d'), {
-            type: 'bar',
-            data: { 
-                labels: Array.from({length:31}, (_,i)=>i+1), 
-                datasets: [
-                    { label: 'Present / Default', data: daily.map(d=>d.p), backgroundColor: '#10b981', borderRadius: 4 }, 
-                    { label: 'Absent / Reduced', data: daily.map(d=>d.a), backgroundColor: '#f43f5e', borderRadius: 4 }
-                ] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                scales: { x: { grid: { display: false } }, y: { beginAtZero: true } },
-                animation: {
-                    duration: 1500,
-                    y: { from: 500 } 
+        // Save data to global variable so chart type can be switched dynamically
+        trendChartData = {
+            labels: Array.from({length:31}, (_,i)=>i+1), 
+            datasets: [
+                { 
+                    label: 'Present / Default', 
+                    data: daily.map(d=>d.p), 
+                    backgroundColor: 'rgba(16, 185, 129, 0.5)', 
+                    borderColor: '#10b981', 
+                    borderWidth: 2,
+                    borderRadius: 4
+                }, 
+                { 
+                    label: 'Absent / Reduced', 
+                    data: daily.map(d=>d.a), 
+                    backgroundColor: 'rgba(244, 63, 94, 0.5)', 
+                    borderColor: '#f43f5e', 
+                    borderWidth: 2,
+                    borderRadius: 4
                 }
-            }
-        });
+            ] 
+        };
+        
+        // Initialize the default chart type selected in HTML
+        initOrUpdateTrendChart(document.getElementById('chartTypeSelector').value || 'bar');
     }
 
     function renderTable() {
@@ -643,7 +699,7 @@
         // Attendance formula: (Present Equivalent / Total Valid Logged Days) * 100
         let attendancePercentage = validDays > 0 ? Math.round((p / validDays) * 100) : 0;
 
-        // Modal UI Info Panel with correctly aligned stats
+        // Modal UI Info Panel with correctly aligned stats and new blue color for Full Day
         document.getElementById('modal-info-panel').innerHTML = `
             <div class="mb-4">
                 <h2 class="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">${employee.name}</h2>
@@ -654,7 +710,7 @@
                     <p class="flex items-center gap-2 border-t border-slate-200 pt-2"><i class="fa-solid fa-file-signature text-teal-600 w-4"></i> <strong>Shift Supervisor:</strong> <span class="ml-auto text-right">${employee.sanctioner || 'N/A'}</span></p>
                 </div>
 
-                <!-- FIXED ALIGNMENT: Attendance Summary Stats (Present, Absent, Full Day, MP) -->
+                <!-- FIXED ALIGNMENT & COLOR: Attendance Summary Stats (Present, Absent, Full Day, MP) -->
                 <div class="mt-4 grid grid-cols-4 gap-2 text-sm h-16">
                     <div class="bg-emerald-50 text-emerald-800 p-1.5 rounded-lg border border-emerald-100 flex flex-col items-center justify-between h-full">
                         <span class="font-bold text-xl leading-none mt-1">${p}</span>
@@ -664,7 +720,7 @@
                         <span class="font-bold text-xl leading-none mt-1">${a}</span>
                         <span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Absent</span>
                     </div>
-                    <div class="bg-amber-50 text-amber-800 p-1.5 rounded-lg border border-amber-100 flex flex-col items-center justify-between h-full">
+                    <div class="bg-blue-50 text-blue-800 p-1.5 rounded-lg border border-blue-200 flex flex-col items-center justify-between h-full">
                         <span class="font-bold text-xl leading-none mt-1">${fd}</span>
                         <span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Full Day</span>
                     </div>
