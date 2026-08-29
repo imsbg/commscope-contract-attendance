@@ -29,24 +29,35 @@ async function fetchAndParsePDF() {
         
         const rows = {};
         
-        // BULLETPROOF Y-TOLERANCE: 
-        // Prevents rows from breaking if text is slightly misaligned in the PDF.
+        // Group items by Y coordinate (row)
         textContent.items.forEach(item => {
             const text = item.str.trim();
             if (!text) return;
+            
             const y = item.transform[5];
+            const x = item.transform[4];
             
             let rowY = Object.keys(rows).find(key => Math.abs(key - y) <= 4);
             if (!rowY) {
                 rowY = y;
                 rows[rowY] = [];
             }
-            rows[rowY].push({ text: text, x: item.transform[4] });
+            
+            // FIX 1: ANTI-DUPLICATION
+            // If the same exact text exists at almost the exact same X coordinate, ignore it.
+            // This prevents "Active Active" and "ADECCO ADECCO" from fake-bolding in the PDF.
+            const isDuplicate = rows[rowY].some(existing => 
+                existing.text === text && Math.abs(existing.x - x) < 5
+            );
+            
+            if (!isDuplicate) {
+                rows[rowY].push({ text: text, x: x });
+            }
         });
         
         Object.values(rows).forEach(rowItems => {
             // Sort left-to-right to recreate the exact table row
-            const sortedItems = rowItems.sort((a, b) => a.x - b.x).map(item => item.text);
+            let sortedItems = rowItems.sort((a, b) => a.x - b.x).map(item => item.text);
             const rowText = sortedItems.join(" ");
             
             // Extract Month Header
@@ -55,36 +66,69 @@ async function fetchAndParsePDF() {
                 if (match) currentMonthStr = match[1];
             }
             
-            // DYNAMIC COLUMN PARSING:
-            // Find the exact index of the Status column (handles invisible spaces and capitalization)
+            // FIX 2: Combine 'HO' and '(ROTA)' if PDF.js split them apart
+            for (let j = 0; j < sortedItems.length - 1; j++) {
+                if (sortedItems[j] === 'HO' && sortedItems[j+1] === '(ROTA)') {
+                    sortedItems[j] = 'HO (ROTA)';
+                    sortedItems.splice(j+1, 1);
+                }
+            }
+            
             let statusIdx = sortedItems.findIndex(str => str.toLowerCase() === 'active' || str.toLowerCase() === 'left');
             
-            // If it's a valid employee row (has a status, and is not the header row)
             if (statusIdx !== -1 && sortedItems.length >= 6 && !sortedItems[0].toLowerCase().includes("employee")) {
                 
                 let code = sortedItems[0];
-                
-                // Slice catches the full name perfectly even if PDF.js splits it
                 let name = sortedItems.slice(1, statusIdx).join(' ');
                 let status = sortedItems[statusIdx];
-                let contractor = sortedItems[statusIdx + 1];
                 
-                // The last two columns are always Reporting Person and Sanctioner
-                let tl = sortedItems[sortedItems.length - 2];
-                let sanctioner = sortedItems[sortedItems.length - 1];
+                // FIX 3: Dynamic Date Boundary
+                // Find exactly where the dates start, so Contractor name lengths don't break the array
+                const attendanceMarks = ['p', 'a', 'wo', 'hd', 'fd', 'slwp', 'mp', 'l', '-', '--', 'ho', 'rota', 'ho (rota)'];
+                let firstDateIdx = -1;
                 
-                // DYNAMIC DATES: Automatically captures everything between Contractor and TL.
-                // Works perfectly whether it's Day 1, Day 15, or Day 31!
-                let datesArray = sortedItems.slice(statusIdx + 2, sortedItems.length - 2);
+                for (let j = statusIdx + 1; j < sortedItems.length; j++) {
+                    if (attendanceMarks.includes(sortedItems[j].toLowerCase())) {
+                        firstDateIdx = j;
+                        break;
+                    }
+                }
                 
-                // Automatically pad the missing days of the month with blank dashes
-                while (datesArray.length < 31) {
-                    datesArray.push('-');
+                if (firstDateIdx === -1) firstDateIdx = statusIdx + 2; 
+                let contractor = sortedItems.slice(statusIdx + 1, firstDateIdx).join(' ');
+                
+                // Find exactly where the dates end
+                let lastDateIdx = firstDateIdx - 1;
+                while (lastDateIdx + 1 < sortedItems.length && 
+                      attendanceMarks.includes(sortedItems[lastDateIdx + 1].toLowerCase())) {
+                    lastDateIdx++;
+                }
+                
+                let datesArray = sortedItems.slice(firstDateIdx, lastDateIdx + 1);
+                
+                // Pad to 31 days
+                while (datesArray.length < 31) datesArray.push('-');
+
+                // FIX 4: Handle multiple words for TL and Sanctioner accurately
+                let remainingWords = sortedItems.slice(lastDateIdx + 1);
+                let tl = "N/A";
+                let sanctioner = "N/A";
+                
+                if (remainingWords.length >= 2) {
+                    if (remainingWords.length === 2) {
+                        tl = remainingWords[0];
+                        sanctioner = remainingWords[1];
+                    } else {
+                        // Split remaining words in half for TL and Sanctioner
+                        let half = Math.floor(remainingWords.length / 2);
+                        tl = remainingWords.slice(0, half).join(' ');
+                        sanctioner = remainingWords.slice(half).join(' ');
+                    }
+                } else if (remainingWords.length === 1) {
+                    tl = remainingWords[0];
                 }
 
-                globalData.push({ 
-                    code, name, status, contractor, dates: datesArray, tl, sanctioner 
-                });
+                globalData.push({ code, name, status, contractor, dates: datesArray, tl, sanctioner });
             }
         });
     }
