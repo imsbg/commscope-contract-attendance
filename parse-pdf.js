@@ -1,6 +1,7 @@
 const fs = require('fs');
 const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
 
+// Your EXACT working Google Apps Script URL
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzBMx-fZAifindtXbsXVueYEYQz4uBT1cA8CnlrZH3MTHEyR4RMv6uxaPhdKwskiP4T/exec";
  
 async function fetchAndParsePDF() {
@@ -22,8 +23,8 @@ async function fetchAndParsePDF() {
     let globalData = [];
     let currentMonthStr = "Unknown Month";
     
-    // Memory Grid for physical X-coordinates of Days 1-31
-    let globalDayXCoords = new Array(31).fill(null);
+    // Stores the physical X-coordinates of the 31 columns
+    let globalDayXCoords = new Array(31).fill(null); 
 
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
@@ -33,110 +34,96 @@ async function fetchAndParsePDF() {
             .map(item => ({ text: item.str.trim(), x: item.transform[4], y: item.transform[5] }))
             .filter(item => item.text !== '');
 
-        // 1. EXTRACT MONTH (Runs on first page)
-        if (currentMonthStr === "Unknown Month") {
-            let fullPageText = items.map(item => item.text).join(' ');
-            const monthMatch = fullPageText.match(/Attendance for the Month of\s*([A-Za-z]+\s*\d{4})/i);
-            if (monthMatch) currentMonthStr = monthMatch[1];
+        // 1. EXTRACT MONTH
+        let fullPageText = items.map(item => item.text).join(' ');
+        const monthMatch = fullPageText.match(/Attendance for the Month of\s*([A-Za-z]+\s*\d{4})/i);
+        if (monthMatch && currentMonthStr === "Unknown Month") {
+            currentMonthStr = monthMatch[1];
         }
 
-        // 2. STABLE 2D SORT (Top to Bottom, Left to Right)
+        // 2. STABLE 2D SORT (Top-to-Bottom, Left-to-Right)
         items.sort((a, b) => {
-            if (Math.abs(b.y - a.y) > 4) return b.y - a.y; 
+            if (Math.abs(b.y - a.y) > 3) return b.y - a.y; 
             return a.x - b.x; 
         });
 
-        // 3. BUILD THE SPATIAL GRID (Only runs once, remembers for all pages)
-        if (!globalDayXCoords[0]) {
-            // Find the word "Contractor" in the header to anchor our vertical height
-            let headerAnchor = items.find(u => u.text.toLowerCase() === 'contractor');
-            if (headerAnchor) {
-                // Grab everything within a generous 15-pixel horizontal band
-                let headerRow = items.filter(u => Math.abs(u.y - headerAnchor.y) < 15);
-                
-                for (let d = 1; d <= 31; d++) {
-                    let match = headerRow.find(u => u.text === d.toString());
-                    if (match) globalDayXCoords[d-1] = match.x;
-                }
-                
-                // Auto-fill tiny gaps if a number was blurry
-                for (let d = 1; d < 30; d++) {
-                    if (!globalDayXCoords[d] && globalDayXCoords[d-1] && globalDayXCoords[d+1]) {
-                        globalDayXCoords[d] = (globalDayXCoords[d-1] + globalDayXCoords[d+1]) / 2;
-                    }
-                }
-            }
-            
-            // Fallback just in case the PDF completely breaks (prevents 0 data)
-            if (!globalDayXCoords[0]) {
-                for(let d=0; d<31; d++) globalDayXCoords[d] = 215 + (d * 14.5); 
-            }
-        }
-
-        // 4. ANCHOR GROUPING (Splits rows exactly on Employee Code)
+        // 3. ANCHOR GROUPING (Splits rows exactly on Employee Code)
         let lines = [];
         let currentRow = [];
 
         for (let item of items) {
             let t = item.text.toLowerCase();
+            if (t === 'page' || t === 'of') continue; // Destroy footers
             
-            // Destroy all header/footer words so they don't enter our data
-            if (t === 'employee code' || t === 'employee name' || t === 'status' || t === 'contractor' || t === 'reporting person' || t === 'sanctioner') continue;
-            if (t === 'page' || t === 'of') continue; 
-            
-            // Skip stray page numbers
-            if (/^\d+$/.test(item.text) && parseInt(item.text) > 31) continue; 
-            
-            // Detect the start of a new employee row
+            // Is it an Employee ID on the far left?
             const isEmployeeCode = /^[A-Z0-9]{2,6}-\d{3,8}$/i.test(item.text) && item.x < 150;
 
             if (isEmployeeCode) {
                 if (currentRow.length > 0) lines.push(currentRow);
                 currentRow = [item];
-            } else if (currentRow.length > 0) {
-                // By only pushing when currentRow has data, we automatically ignore 
-                // the "1 2 3... 31" header numbers on Pages 2-38!
-                currentRow.push(item);
+            } else {
+                // Also capture the Header Row to map columns
+                if (currentRow.length === 0 && (item.text === '1' || item.text === 'Employee Code')) {
+                    currentRow.push(item);
+                }
+                else if (currentRow.length > 0) {
+                    if (/^\d+$/.test(item.text) && parseInt(item.text) > 31) continue; // Ignore page numbers
+                    currentRow.push(item);
+                }
             }
         }
         if (currentRow.length > 0) lines.push(currentRow);
 
-        // 5. PROCESS ROWS INTO ZONES
-        let gridStartX = (globalDayXCoords[0] || 215) - 12;
-        let gridEndX = (globalDayXCoords[30] || 650) + 15; 
+        // 4. PROCESS ZONES (Left: Info, Middle: Grid, Right: Leaders)
+        for (let line of lines) {
+            line.sort((a, b) => a.x - b.x);
 
-        for (let row of lines) {
-            row.sort((a, b) => a.x - b.x);
-
-            // Clean text inside the row
-            let cleanRow = [];
-            for (let j = 0; j < row.length; j++) {
-                let t = row[j].text.replace(/\s*\(Pending\)/ig, '').trim();
-                if (t === 'HO' && row[j+1] && row[j+1].text === '(ROTA)') {
-                    t = 'HO (ROTA)';
-                    j++; 
+            // Is this the Header Row? (Update physical column coordinates)
+            let isHeader = line.some(u => u.text === '1') && line.some(u => u.text === '15');
+            if (isHeader) {
+                for (let d = 1; d <= 31; d++) {
+                    let item = line.find(u => u.text === d.toString() && u.x > 150); // x>150 ensures we don't grab IDs
+                    if (item) globalDayXCoords[d-1] = item.x;
                 }
-                let isDuplicate = cleanRow.some(u => u.text === t && Math.abs(u.x - row[j].x) < 8);
-                if (!isDuplicate && t !== '') cleanRow.push({ text: t, x: row[j].x });
+                continue; 
             }
 
-            // Split into 3 physical zones
-            let leftItems = cleanRow.filter(i => i.x < gridStartX).map(i => i.text);
-            let gridItems = cleanRow.filter(i => i.x >= gridStartX && i.x <= gridEndX);
-            let rightItems = cleanRow.filter(i => i.x > gridEndX).map(i => i.text);
+            // Anti-duplication filter
+            let uniqueLine = [];
+            for (let item of line) {
+                let isDuplicate = uniqueLine.some(u => u.text === item.text && Math.abs(u.x - item.x) < 12);
+                if (!isDuplicate) uniqueLine.push(item);
+            }
 
-            let statusIdx = leftItems.findIndex(str => str.toLowerCase() === 'active' || str.toLowerCase() === 'left');
+            // Clean text (Remove Pending, merge HO ROTA)
+            for (let j = 0; j < uniqueLine.length; j++) {
+                uniqueLine[j].text = uniqueLine[j].text.replace(/\s*\(Pending\)/ig, '').trim();
+                if (uniqueLine[j].text === 'HO' && uniqueLine[j+1] && uniqueLine[j+1].text === '(ROTA)') {
+                    uniqueLine[j].text = 'HO (ROTA)';
+                    uniqueLine.splice(j+1, 1);
+                    j--;
+                }
+            }
+
+            // Define physical boundary zones
+            let gridStartX = globalDayXCoords[0] ? globalDayXCoords[0] - 15 : 200;
+            let gridEndX = globalDayXCoords[30] ? globalDayXCoords[30] + 15 : 750;
+
+            // ZONE 1: Employee Info (Left side of the page)
+            let empItems = uniqueLine.filter(item => item.x < gridStartX).map(u => u.text);
             
-            if (statusIdx >= 1 && leftItems.length >= 3) {
-                let code = leftItems[0];
-                let name = leftItems.slice(1, statusIdx).join(' ');
-                let status = leftItems[statusIdx];
+            let statusIdx = empItems.findIndex(str => str.toLowerCase() === 'active' || str.toLowerCase() === 'left');
+            
+            if (statusIdx >= 1 && empItems.length >= 3) {
+                let code = empItems[0];
+                let name = empItems.slice(1, statusIdx).join(' ');
+                let status = empItems[statusIdx];
                 
-                // SMART CONTRACTOR SANITIZER
-                let rawContractor = leftItems.slice(statusIdx + 1).join(' ');
+                let rawContractor = empItems.slice(statusIdx + 1).join(' ');
+                
+                // Smart Contractor Sanitizer
                 let contractor = rawContractor;
                 let cLower = rawContractor.toLowerCase();
-                
                 if (cLower.includes('adecco')) contractor = 'ADECCO';
                 else if (cLower.includes('ananya')) contractor = 'ANANYA';
                 else if (cLower.includes('dibya')) contractor = 'Dibya Industrial Service';
@@ -146,17 +133,17 @@ async function fetchAndParsePDF() {
                 else if (cLower.includes('sham')) contractor = 'SHAM';
                 else if (cLower.includes('vasudeva')) contractor = 'VASUDEVA';
                 else if (cLower.includes('yashaswi')) contractor = 'YASHASWI';
-                else contractor = contractor.replace(/left|active/ig, '').trim();
+                else contractor = contractor.replace(/left/ig, '').trim(); // Fallback clean
 
-                // ATTENDANCE GRID SNAPPER
+                // ZONE 2: Attendance Grid (Middle of the page - Exact Coordinate Placement)
+                const attCodes = new Set(['p', 'a', 'wo', 'hd', 'fd', 'slwp', 'lwp', 'mp', 'l', '-', '--', 'ho', 'rota', 'ho (rota)']);
                 let datesArray = new Array(31).fill('-');
-                const attCodes = new Set(['p', 'a', 'wo', 'hd', 'fd', 'slwp', 'lwp', 'pl', 'hp', 'mp', 'l', '-', '--', 'ho', 'rota', 'ho (rota)']);
                 
+                let gridItems = uniqueLine.filter(item => item.x >= gridStartX && item.x <= gridEndX);
                 for (let item of gridItems) {
                     if (attCodes.has(item.text.toLowerCase())) {
                         let bestDay = -1;
-                        let minDiff = 12; // Snap tolerance
-                        
+                        let minDiff = 15; // Max tolerance
                         for (let d = 0; d < 31; d++) {
                             if (globalDayXCoords[d] !== null) {
                                 let diff = Math.abs(item.x - globalDayXCoords[d]);
@@ -166,18 +153,22 @@ async function fetchAndParsePDF() {
                                 }
                             }
                         }
-                        if (bestDay !== -1) datesArray[bestDay] = item.text.toUpperCase();
+                        if (bestDay !== -1) {
+                            datesArray[bestDay] = item.text;
+                        }
                     }
                 }
 
-                // TEAM LEADERS
+                // ZONE 3: Leaders (Right side of the page)
+                let leaderItems = uniqueLine.filter(item => item.x > gridEndX).map(u => u.text);
                 let tl = "N/A", sanctioner = "N/A";
-                if (rightItems.length >= 2) {
-                    let half = Math.floor(rightItems.length / 2);
-                    tl = rightItems.slice(0, half).join(' ');
-                    sanctioner = rightItems.slice(half).join(' ');
-                } else if (rightItems.length === 1) {
-                    tl = rightItems[0];
+                
+                if (leaderItems.length >= 2) {
+                    let half = Math.floor(leaderItems.length / 2);
+                    tl = leaderItems.slice(0, half).join(' ');
+                    sanctioner = leaderItems.slice(half).join(' ');
+                } else if (leaderItems.length === 1) {
+                    tl = leaderItems[0];
                 }
 
                 if (code.length > 2 && name.length > 2) {
