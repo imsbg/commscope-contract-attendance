@@ -27,82 +27,92 @@ async function fetchAndParsePDF() {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         
-        // 1. Extract all text items
         let items = textContent.items
             .map(item => ({ text: item.str.trim(), x: item.transform[4], y: item.transform[5] }))
             .filter(item => item.text !== '');
 
-        // 2. STABLE 2D SORT: Top-to-Bottom, then Left-to-Right
+        // 1. EXTRACT MONTH (Safe extraction from full page text)
+        let fullPageText = items.map(i => i.text).join(' ');
+        const monthMatch = fullPageText.match(/Attendance for the Month of\s*([A-Za-z]+\s*\d{4})/i);
+        if (monthMatch && currentMonthStr === "Unknown Month") {
+            currentMonthStr = monthMatch[1];
+        }
+
+        // 2. STABLE 2D SORT
         items.sort((a, b) => {
-            if (Math.abs(b.y - a.y) > 3) {
-                return b.y - a.y; // Distinctly different vertical heights
-            }
-            return a.x - b.x; // Roughly same height, sort left to right
+            if (Math.abs(b.y - a.y) > 3) return b.y - a.y; 
+            return a.x - b.x; 
         });
 
-        // 3. BULLETPROOF ANCHOR GROUPING (Using Employee ID to split rows)
+        // 3. ANCHOR GROUPING (Splits rows exactly on Employee Code, drops Headers/Footers)
         let lines = [];
         let currentRow = [];
 
         for (let item of items) {
-            // REGEX CHECK: Does this look like an Employee Code? (e.g. AD-12345, ESJ-999) 
-            // AND is it sitting in the first column on the far left? (x < 100)
-            const isEmployeeCode = /^[A-Z0-9]{2,6}-\d{3,8}$/i.test(item.text) && item.x < 100;
+            let t = item.text.toLowerCase();
+            
+            // Instantly destroy known footer garbage
+            if (t === 'page' || t === 'of') continue;
+            
+            const isEmployeeCode = /^[A-Z0-9]{2,6}-\d{3,8}$/i.test(item.text) && item.x < 150;
 
             if (isEmployeeCode) {
-                // We found a new Employee ID! Push the old row and start a completely new one.
-                if (currentRow.length > 0) {
-                    lines.push(currentRow);
-                }
+                if (currentRow.length > 0) lines.push(currentRow);
                 currentRow = [item];
             } else {
-                // Otherwise, add the text to the current row
-                currentRow.push(item);
+                // Only push data if we are actively inside an employee row (Drops Page Headers)
+                if (currentRow.length > 0) {
+                    // Ignore solitary large numbers (like Page 38)
+                    if (/^\d+$/.test(item.text) && parseInt(item.text) > 31) continue; 
+                    currentRow.push(item);
+                }
             }
         }
-        if (currentRow.length > 0) lines.push(currentRow); // Push the very last row
+        if (currentRow.length > 0) lines.push(currentRow);
 
-        // 4. Process each perfect row into employee data
+        // 4. PROCESS EACH ROW
         for (let line of lines) {
-            // Ensure strict left-to-right sorting within the isolated row
             line.sort((a, b) => a.x - b.x);
 
             // Anti-duplication filter
             let uniqueLine = [];
             for (let item of line) {
                 let isDuplicate = uniqueLine.some(u => u.text === item.text && Math.abs(u.x - item.x) < 12);
-                if (!isDuplicate) {
-                    uniqueLine.push(item);
-                }
+                if (!isDuplicate) uniqueLine.push(item);
             }
 
             let sortedItems = uniqueLine.map(u => u.text);
-            const rowText = sortedItems.join(" ");
 
-            // Grab Month Header
-            if (currentMonthStr === "Unknown Month" && rowText.toLowerCase().includes("attendance for the month of")) {
-                const match = rowText.match(/Attendance for the Month of\s*([A-Za-z]+\s*\d{4})/i);
-                if (match) currentMonthStr = match[1];
-            }
-
-            // Re-merge HO and (ROTA) if split
-            for (let j = 0; j < sortedItems.length - 1; j++) {
+            // PRE-CLEANUP: Remove "(Pending)" from SLWP to prevent it bleeding into Contractor
+            for (let j = 0; j < sortedItems.length; j++) {
+                sortedItems[j] = sortedItems[j].replace(/\s*\(Pending\)/ig, '').trim();
+                
+                // Re-merge HO (ROTA)
                 if (sortedItems[j] === 'HO' && sortedItems[j+1] === '(ROTA)') {
                     sortedItems[j] = 'HO (ROTA)';
                     sortedItems.splice(j+1, 1);
+                    j--;
                 }
             }
 
             let statusIdx = sortedItems.findIndex(str => str.toLowerCase() === 'active' || str.toLowerCase() === 'left');
             
-            // Validate the row
-            if (statusIdx >= 1 && sortedItems.length >= 6 && !sortedItems[0].toLowerCase().includes("employee")) {
-                
+            if (statusIdx >= 1 && sortedItems.length >= 6) {
                 let code = sortedItems[0];
                 let name = sortedItems.slice(1, statusIdx).join(' ');
                 let status = sortedItems[statusIdx];
                 
-                const attCodes = new Set(['p', 'a', 'wo', 'hd', 'fd', 'slwp', 'mp', 'l', '-', '--', 'ho', 'rota', 'ho (rota)']);
+                // PRE-CLEANUP: Remove duplicate Statuses (e.g. 'Left SHAM' fix)
+                for(let j = statusIdx + 1; j < sortedItems.length; j++) {
+                    let t = sortedItems[j].toLowerCase();
+                    if (t === 'active' || t === 'left') {
+                        sortedItems.splice(j, 1);
+                        j--; 
+                    }
+                }
+                
+                // Extended attendance codes including LWP
+                const attCodes = new Set(['p', 'a', 'wo', 'hd', 'fd', 'slwp', 'lwp', 'mp', 'l', '-', '--', 'ho', 'rota', 'ho (rota)']);
                 
                 let firstDateIdx = -1;
                 for(let j = statusIdx + 1; j < sortedItems.length; j++) {
@@ -113,8 +123,22 @@ async function fetchAndParsePDF() {
                 }
 
                 if (firstDateIdx !== -1) {
-                    let contractor = sortedItems.slice(statusIdx + 1, firstDateIdx).join(' ');
+                    let rawContractor = sortedItems.slice(statusIdx + 1, firstDateIdx).join(' ');
                     
+                    // ⭐ SMART SANITIZER: Forces perfect Contractor Names ⭐
+                    let contractor = rawContractor;
+                    let cLower = rawContractor.toLowerCase();
+                    
+                    if (cLower.includes('adecco')) contractor = 'ADECCO';
+                    else if (cLower.includes('ananya')) contractor = 'ANANYA';
+                    else if (cLower.includes('dibya')) contractor = 'Dibya Industrial Service';
+                    else if (cLower.includes('esjay')) contractor = 'ESJAY';
+                    else if (cLower.includes('mathew')) contractor = 'MATHEW';
+                    else if (cLower.includes('om sai')) contractor = 'Om Sai Krupa Enterprise';
+                    else if (cLower.includes('sham')) contractor = 'SHAM';
+                    else if (cLower.includes('vasudeva')) contractor = 'VASUDEVA';
+                    else if (cLower.includes('yashaswi')) contractor = 'YASHASWI';
+
                     let lastDateIdx = firstDateIdx;
                     while (lastDateIdx < sortedItems.length && attCodes.has(sortedItems[lastDateIdx].toLowerCase())) {
                         lastDateIdx++;
