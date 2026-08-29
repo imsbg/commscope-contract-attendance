@@ -27,115 +27,120 @@ async function fetchAndParsePDF() {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         
-        const rows = {};
-        
-        // Group items by Y coordinate (row)
-        textContent.items.forEach(item => {
-            const text = item.str.trim();
-            if (!text) return;
+        // 1. Extract all text items
+        let items = textContent.items
+            .map(item => ({ text: item.str.trim(), x: item.transform[4], y: item.transform[5] }))
+            .filter(item => item.text !== '');
+
+        // 2. Sort strictly top-to-bottom
+        items.sort((a, b) => b.y - a.y);
+
+        // 3. Group into lines safely (Prevents row merging)
+        let lines = [];
+        let currentLine = [];
+        let currentY = null;
+
+        for (let item of items) {
+            if (currentY === null) currentY = item.y;
             
-            const y = item.transform[5];
-            const x = item.transform[4];
-            
-            let rowY = Object.keys(rows).find(key => Math.abs(key - y) <= 4);
-            if (!rowY) {
-                rowY = y;
-                rows[rowY] = [];
+            if (Math.abs(currentY - item.y) > 5) {
+                lines.push(currentLine);
+                currentLine = [];
+                currentY = item.y;
             }
-            
-            // FIX 1: ANTI-DUPLICATION
-            // If the same exact text exists at almost the exact same X coordinate, ignore it.
-            // This prevents "Active Active" and "ADECCO ADECCO" from fake-bolding in the PDF.
-            const isDuplicate = rows[rowY].some(existing => 
-                existing.text === text && Math.abs(existing.x - x) < 5
-            );
-            
-            if (!isDuplicate) {
-                rows[rowY].push({ text: text, x: x });
+            currentLine.push(item);
+        }
+        if (currentLine.length > 0) lines.push(currentLine);
+
+        // 4. Process each line into employee data
+        for (let line of lines) {
+            // Sort line left-to-right
+            line.sort((a, b) => a.x - b.x);
+
+            // ⭐ ANTI-DUPLICATION FILTER (Fixes the "Active Active" bug) ⭐
+            let uniqueLine = [];
+            for (let item of line) {
+                let isDuplicate = uniqueLine.some(u => u.text === item.text && Math.abs(u.x - item.x) < 12);
+                if (!isDuplicate) {
+                    uniqueLine.push(item);
+                }
             }
-        });
-        
-        Object.values(rows).forEach(rowItems => {
-            // Sort left-to-right to recreate the exact table row
-            let sortedItems = rowItems.sort((a, b) => a.x - b.x).map(item => item.text);
+
+            let sortedItems = uniqueLine.map(u => u.text);
             const rowText = sortedItems.join(" ");
-            
-            // Extract Month Header
+
+            // Grab Month Header
             if (currentMonthStr === "Unknown Month" && rowText.toLowerCase().includes("attendance for the month of")) {
                 const match = rowText.match(/Attendance for the Month of\s*([A-Za-z]+\s*\d{4})/i);
                 if (match) currentMonthStr = match[1];
             }
-            
-            // FIX 2: Combine 'HO' and '(ROTA)' if PDF.js split them apart
+
+            // Re-merge HO and (ROTA) if split
             for (let j = 0; j < sortedItems.length - 1; j++) {
                 if (sortedItems[j] === 'HO' && sortedItems[j+1] === '(ROTA)') {
                     sortedItems[j] = 'HO (ROTA)';
                     sortedItems.splice(j+1, 1);
                 }
             }
-            
+
             let statusIdx = sortedItems.findIndex(str => str.toLowerCase() === 'active' || str.toLowerCase() === 'left');
             
-            if (statusIdx !== -1 && sortedItems.length >= 6 && !sortedItems[0].toLowerCase().includes("employee")) {
+            // Check if it's a valid employee row
+            if (statusIdx >= 1 && sortedItems.length >= 6 && !sortedItems[0].toLowerCase().includes("employee")) {
                 
                 let code = sortedItems[0];
                 let name = sortedItems.slice(1, statusIdx).join(' ');
                 let status = sortedItems[statusIdx];
                 
-                // FIX 3: Dynamic Date Boundary
-                // Find exactly where the dates start, so Contractor name lengths don't break the array
-                const attendanceMarks = ['p', 'a', 'wo', 'hd', 'fd', 'slwp', 'mp', 'l', '-', '--', 'ho', 'rota', 'ho (rota)'];
-                let firstDateIdx = -1;
+                const attCodes = new Set(['p', 'a', 'wo', 'hd', 'fd', 'slwp', 'mp', 'l', '-', '--', 'ho', 'rota', 'ho (rota)']);
                 
-                for (let j = statusIdx + 1; j < sortedItems.length; j++) {
-                    if (attendanceMarks.includes(sortedItems[j].toLowerCase())) {
+                let firstDateIdx = -1;
+                for(let j = statusIdx + 1; j < sortedItems.length; j++) {
+                    if (attCodes.has(sortedItems[j].toLowerCase())) {
                         firstDateIdx = j;
                         break;
                     }
                 }
-                
-                if (firstDateIdx === -1) firstDateIdx = statusIdx + 2; 
-                let contractor = sortedItems.slice(statusIdx + 1, firstDateIdx).join(' ');
-                
-                // Find exactly where the dates end
-                let lastDateIdx = firstDateIdx - 1;
-                while (lastDateIdx + 1 < sortedItems.length && 
-                      attendanceMarks.includes(sortedItems[lastDateIdx + 1].toLowerCase())) {
-                    lastDateIdx++;
-                }
-                
-                let datesArray = sortedItems.slice(firstDateIdx, lastDateIdx + 1);
-                
-                // Pad to 31 days
-                while (datesArray.length < 31) datesArray.push('-');
 
-                // FIX 4: Handle multiple words for TL and Sanctioner accurately
-                let remainingWords = sortedItems.slice(lastDateIdx + 1);
-                let tl = "N/A";
-                let sanctioner = "N/A";
-                
-                if (remainingWords.length >= 2) {
-                    if (remainingWords.length === 2) {
-                        tl = remainingWords[0];
-                        sanctioner = remainingWords[1];
-                    } else {
-                        // Split remaining words in half for TL and Sanctioner
-                        let half = Math.floor(remainingWords.length / 2);
-                        tl = remainingWords.slice(0, half).join(' ');
-                        sanctioner = remainingWords.slice(half).join(' ');
+                if (firstDateIdx !== -1) {
+                    let contractor = sortedItems.slice(statusIdx + 1, firstDateIdx).join(' ');
+                    
+                    let lastDateIdx = firstDateIdx;
+                    while (lastDateIdx < sortedItems.length && attCodes.has(sortedItems[lastDateIdx].toLowerCase())) {
+                        lastDateIdx++;
                     }
-                } else if (remainingWords.length === 1) {
-                    tl = remainingWords[0];
-                }
+                    lastDateIdx--;
 
-                globalData.push({ code, name, status, contractor, dates: datesArray, tl, sanctioner });
+                    let datesArray = sortedItems.slice(firstDateIdx, lastDateIdx + 1);
+                    while (datesArray.length < 31) datesArray.push('-');
+
+                    let remainingWords = sortedItems.slice(lastDateIdx + 1);
+                    let tl = "N/A";
+                    let sanctioner = "N/A";
+                    
+                    if (remainingWords.length >= 2) {
+                        if (remainingWords.length === 2) {
+                            tl = remainingWords[0];
+                            sanctioner = remainingWords[1];
+                        } else {
+                            let half = Math.floor(remainingWords.length / 2);
+                            tl = remainingWords.slice(0, half).join(' ');
+                            sanctioner = remainingWords.slice(half).join(' ');
+                        }
+                    } else if (remainingWords.length === 1) {
+                        tl = remainingWords[0];
+                    }
+
+                    // Only push clean rows to prevent UI crashing
+                    if (code.length > 2 && name.length > 2) {
+                        globalData.push({ code, name, status, contractor, dates: datesArray, tl, sanctioner });
+                    }
+                }
             }
-        });
+        }
     }
 
     console.log(`✅ Successfully parsed ${globalData.length} employee records.`);
-    
-    // Save to data.json
     fs.writeFileSync('data.json', JSON.stringify({ currentMonthStr, globalData }));
     console.log("🚀 Saved to data.json successfully!");
 }
