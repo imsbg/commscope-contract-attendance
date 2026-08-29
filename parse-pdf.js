@@ -43,7 +43,9 @@ async function fetchAndParsePDF() {
         for (let item of items) {
             if (currentY === null) currentY = item.y;
             
-            if (Math.abs(currentY - item.y) > 5) {
+            // ⭐ FIX APPLIED HERE: Changed threshold from 5 to 2.
+            // This prevents consecutive employee rows from merging together.
+            if (Math.abs(currentY - item.y) > 2) {
                 lines.push(currentLine);
                 currentLine = [];
                 currentY = item.y;
