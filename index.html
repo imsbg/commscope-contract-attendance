@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -9,11 +10,18 @@
     <link rel="canonical" href="https://imsbg.github.io/commscope-contract-attendance/" />
     <link rel="icon" type="image/png" href="https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0">
     <meta name="description" content="Check your CommScope contractor attendance online. Track daily logs and attendance records for ADECCO, ANANYA, Dibya, ESJAY, Om Sai Krupa, and YASHASWI.">
-    
-    <!-- Updated Google Sans Font -->
+    <meta name="keywords" content="CommScope contractor attendance, CommScope attendance portal, CommScope worker login, ADECCO CommScope attendance, ANANYA contractor attendance, Dibya Industrial Service attendance, ESJAY CommScope attendance, MATHEW contractor attendance, Om Sai Krupa Enterprise attendance, SHAM contractor attendance, VASUDEVA CommScope attendance, YASHASWI contractor attendance, contractor attendance tracking, vendor employee attendance login, Sandeep Biswal, Sandeep Biswal G" />
+    <meta name="author" content="Sandeep Biswal G">
+    <meta property="og:title" content="CommScope Contractor Attendance Portal - Sandeep Biswal G">
+    <meta property="og:description" content="Check your CommScope contractor attendance online. Track daily logs and attendance records for ADECCO, ANANYA, Dibya, ESJAY, Om Sai Krupa, and YASHASWI.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://imsbg.github.io/commscope-contract-attendance/">
+    <meta property="og:image" content="https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0">
+
+    <!-- Fonts: Google Sans (English) + Noto Sans Oriya (Odia support) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@0,400..700;1,400..700&family=Noto+Sans+Oriya:wght@400;600;700&display=swap" rel="stylesheet">
     
     <!-- External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,7 +31,8 @@
     <style>
         :root { --primary: #0d9488; --background: #f1f5f9; --card-bg: #ffffff; }
         html { scroll-behavior: smooth; }
-        body { font-family: 'Google Sans', sans-serif; background-color: var(--background); color: #0f172a; }
+        /* Notice the font-family stack includes Noto Sans Oriya now */
+        body { font-family: 'Google Sans', 'Noto Sans Oriya', sans-serif; background-color: var(--background); color: #0f172a; }
         
         #splash-screen { background-color: var(--card-bg); z-index: 100; transition: opacity 0.4s ease-out; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -76,73 +85,34 @@
         </div>
     </div>
 
-    <!-- MAINTENANCE OVERLAY -->
-    <div id="maintenance-screen" class="fixed inset-0 bg-slate-900 z-[200] hidden flex-col items-center justify-center p-6 text-center">
+    <!-- MAINTENANCE OVERLAY (LIGHT THEME) -->
+    <div id="maintenance-screen" class="fixed inset-0 bg-slate-50 z-[200] hidden flex-col items-center justify-center p-6 text-center">
+        
         <!-- Language Toggle -->
-        <div class="absolute top-6 right-6 md:top-8 md:right-8 bg-slate-800 border border-slate-700 rounded-lg p-1.5 flex gap-1 shadow-lg">
-            <button onclick="setLang('en')" id="btn-en" class="px-3 py-1.5 text-sm font-bold rounded-md bg-teal-500 text-white transition-all shadow-sm">EN</button>
-            <button onclick="setLang('or')" id="btn-or" class="px-3 py-1.5 text-sm font-bold rounded-md text-slate-400 hover:text-white hover:bg-slate-700 transition-all">OD</button>
-            <button onclick="setLang('hi')" id="btn-hi" class="px-3 py-1.5 text-sm font-bold rounded-md text-slate-400 hover:text-white hover:bg-slate-700 transition-all">HI</button>
+        <div class="absolute top-6 right-6 md:top-8 md:right-8 bg-white border border-slate-200 rounded-xl p-1 flex gap-1 shadow-sm">
+            <button onclick="setLang('en')" id="btn-en" class="px-3 py-1.5 text-sm font-bold rounded-lg bg-teal-600 text-white transition-all shadow-sm">EN</button>
+            <button onclick="setLang('or')" id="btn-or" class="px-3 py-1.5 text-sm font-bold rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all">OD</button>
+            <button onclick="setLang('hi')" id="btn-hi" class="px-3 py-1.5 text-sm font-bold rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all">HI</button>
         </div>
         
-        <div class="bg-slate-800/50 p-6 md:p-10 rounded-3xl border border-slate-700/50 backdrop-blur-md max-w-2xl w-full shadow-2xl flex flex-col items-center">
-            <i class="fa-solid fa-triangle-exclamation text-6xl text-amber-400 mb-6 drop-shadow-[0_0_15px_rgba(251,191,36,0.4)] animate-bounce"></i>
-            <h1 class="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-6" id="maint-title">Under Maintenance</h1>
+        <div class="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 max-w-2xl w-full shadow-2xl flex flex-col items-center">
             
-            <p class="text-slate-300 text-base md:text-lg mb-10 leading-relaxed font-medium" id="maint-desc">
+            <div class="bg-amber-100 h-24 w-24 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                <i class="fa-solid fa-triangle-exclamation text-5xl text-amber-500 animate-bounce"></i>
+            </div>
+            
+            <h1 class="text-3xl md:text-5xl font-extrabold text-slate-800 mb-6 tracking-tight" id="maint-title">Under Maintenance</h1>
+            
+            <p class="text-slate-600 text-base md:text-lg mb-10 leading-relaxed font-medium" id="maint-desc">
                 We are currently experiencing technical issues with the PDF file structure. For accurate attendance data, please view the original PDF directly from Google Drive. I am working hard to fix this issue and the portal will be back to normal next month. Until then, please adjust with the PDF. I understand your frustration and feel your pain!
             </p>
             
             <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                <a href="https://drive.google.com/drive/folders/1H5tR99F-DsbT9wQnlLqXST0aLsa0B1sO?usp=drive_link" target="_blank" class="px-6 py-3.5 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-xl font-bold hover:scale-105 transition-all shadow-[0_0_20px_rgba(20,184,166,0.4)] flex items-center justify-center gap-3 text-sm md:text-base">
+                <a href="https://drive.google.com/drive/folders/1H5tR99F-DsbT9wQnlLqXST0aLsa0B1sO?usp=drive_link" target="_blank" class="px-6 py-3.5 bg-teal-600 text-white rounded-xl font-bold hover:scale-105 hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/30 flex items-center justify-center gap-3 text-sm md:text-base">
                     <i class="fa-solid fa-file-pdf text-xl"></i> <span id="maint-btn-pdf">View Original PDF</span>
                 </a>
-                <a href="https://imsbg.github.io/commscope/" class="px-6 py-3.5 bg-slate-700 text-white hover:bg-slate-600 rounded-xl font-bold transition-all flex items-center justify-center gap-3 text-sm md:text-base border border-slate-600 shadow-md">
-                    <i class="fa-solid fa-house text-lg"></i> <span id="maint-btn-home">Go to Home</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- NEW UI Announcement Modal -->
-    <div id="new-ui-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[110] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none modal-blur">
-        <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300 relative text-center" id="new-ui-content">
-            <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gradient-to-tr from-indigo-500 to-purple-600 text-white p-4 rounded-full shadow-lg h-20 w-20 flex items-center justify-center border-4 border-white">
-                <i class="fa-solid fa-rocket text-3xl"></i>
-            </div>
-            <div class="mt-8">
-                <h3 class="text-2xl font-bold text-slate-800 mb-2">Experience the New UI!</h3>
-                <p class="text-slate-600 mb-8 text-sm leading-relaxed">
-                    We've completely redesigned the CommScope Attendance Portal. It's faster, sleeker, and packed with new features. Click below to try it out!
-                </p>
-                <div class="flex flex-col gap-3">
-                    <a href="https://imsbg.github.io/commscope-contract-attendance/new" class="w-full px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl hover:opacity-90 transition text-sm font-bold shadow-md flex items-center justify-center gap-2">
-                        Go to New Website <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                    <button onclick="closeNewUiModal()" class="w-full px-4 py-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition text-sm font-semibold">
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- PDF Notice Alert Modal -->
-    <div id="pdf-alert-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none modal-blur">
-        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300" id="pdf-alert-content">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="bg-amber-100 text-amber-600 p-2 rounded-full h-10 w-10 flex items-center justify-center">
-                    <i class="fa-solid fa-triangle-exclamation text-lg"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800">Notice</h3>
-            </div>
-            <p class="text-slate-600 mb-6 text-sm leading-relaxed">
-                If you think this data is incorrect, please view the original PDF in the Drive folder. Occasionally, the script may fail to load the latest data due to system overloads.
-            </p>
-            <div class="flex justify-end gap-3">
-                <button onclick="closePdfModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition text-sm font-semibold">Close</button>
-                <a href="https://drive.google.com/drive/folders/1H5tR99F-DsbT9wQnlLqXST0aLsa0B1sO?usp=drive_link" target="_blank" onclick="closePdfModal()" class="px-4 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-teal-700 transition text-sm font-semibold shadow-sm">
-                    Open Folder
+                <a href="https://imsbg.github.io/commscope/" class="px-6 py-3.5 bg-white text-slate-700 hover:bg-slate-50 rounded-xl font-bold transition-all flex items-center justify-center gap-3 text-sm md:text-base border border-slate-200 shadow-sm hover:shadow">
+                    <i class="fa-solid fa-house text-lg text-slate-400"></i> <span id="maint-btn-home">Go to Home</span>
                 </a>
             </div>
         </div>
@@ -165,7 +135,6 @@
                 <button onclick="openPdfModal()" class="bg-[var(--primary)] text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-teal-700 transition flex items-center justify-center gap-2 text-sm font-medium w-full md:w-auto cursor-pointer">
                     <i class="fa-solid fa-folder-open"></i> Original PDF
                 </button>
-                <!-- NEW HOME BUTTON -->
                 <a href="https://imsbg.github.io/commscope/" class="bg-slate-800 text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-slate-700 transition flex items-center justify-center gap-2 text-sm font-medium w-full md:w-auto cursor-pointer">
                     <i class="fa-solid fa-house"></i> Home
                 </a>
@@ -219,12 +188,10 @@
                 </div>
             </div>
             
-            <!-- DESKTOP TABLE VIEW -->
             <div class="hidden md:block table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg">
                 <table class="w-full text-left min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
             </div>
 
-            <!-- MOBILE CARD VIEW -->
             <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3"></div>
 
             <div id="pagination-controls" class="pt-4 flex flex-col md:flex-row justify-between items-center text-sm gap-4"></div>
@@ -250,8 +217,29 @@
             <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
         </footer>
     </main>
+
+    <!-- PDF Notice Alert Modal -->
+    <div id="pdf-alert-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none modal-blur">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300" id="pdf-alert-content">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="bg-amber-100 text-amber-600 p-2 rounded-full h-10 w-10 flex items-center justify-center">
+                    <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800">Notice</h3>
+            </div>
+            <p class="text-slate-600 mb-6 text-sm leading-relaxed">
+                If you think this data is incorrect, please view the original PDF in the Drive folder. Occasionally, the script may fail to load the latest data due to system overloads.
+            </p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closePdfModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition text-sm font-semibold">Close</button>
+                <a href="https://drive.google.com/drive/folders/1H5tR99F-DsbT9wQnlLqXST0aLsa0B1sO?usp=drive_link" target="_blank" onclick="closePdfModal()" class="px-4 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-teal-700 transition text-sm font-semibold shadow-sm">
+                    Open Folder
+                </a>
+            </div>
+        </div>
+    </div>
     
-    <!-- MODALS HERE (Skipped for brevity but included in output) -->
+    <!-- Employee Details Modal -->
     <div id="employee-modal" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
         <div id="modal-content" class="bg-slate-50 rounded-2xl w-full h-full flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto lg:overflow-hidden max-w-7xl mx-auto relative shadow-2xl custom-scrollbar">
              <button onclick="closeEmployeeModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
@@ -332,11 +320,13 @@
         ['en', 'hi', 'or'].forEach(l => {
             const btn = document.getElementById(`btn-${l}`);
             if(l === lang) {
-                btn.classList.add('bg-teal-500', 'text-white', 'shadow-sm');
-                btn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-700', 'bg-transparent');
+                // Active State (Teal background)
+                btn.classList.add('bg-teal-600', 'text-white', 'shadow-sm');
+                btn.classList.remove('text-slate-500', 'hover:text-slate-800', 'hover:bg-slate-100', 'bg-transparent');
             } else {
-                btn.classList.remove('bg-teal-500', 'text-white', 'shadow-sm');
-                btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-700', 'bg-transparent');
+                // Inactive State (Grey text, hover effect)
+                btn.classList.remove('bg-teal-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-500', 'hover:text-slate-800', 'hover:bg-slate-100', 'bg-transparent');
             }
         });
     }
@@ -417,15 +407,6 @@
             setTimeout(() => section.classList.add('hidden'), 300);
             text.textContent = 'Show Graphs';
         }
-    }
-
-    function openNewUiModal() {
-        document.getElementById('new-ui-modal').classList.remove('opacity-0', 'pointer-events-none');
-        document.getElementById('new-ui-content').classList.remove('scale-95');
-    }
-    function closeNewUiModal() {
-        document.getElementById('new-ui-modal').classList.add('opacity-0', 'pointer-events-none');
-        document.getElementById('new-ui-content').classList.add('scale-95');
     }
 
     function openPdfModal() {
@@ -747,7 +728,6 @@
     const randomDelay = Math.random() * 3000; 
 
     setTimeout(() => {
-        // Do not record visits if site is under maintenance
         if(IS_MAINTENANCE_MODE) return; 
 
         const app = initializeApp(firebaseConfig);
