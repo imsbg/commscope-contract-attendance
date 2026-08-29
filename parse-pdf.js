@@ -32,38 +32,42 @@ async function fetchAndParsePDF() {
             .map(item => ({ text: item.str.trim(), x: item.transform[4], y: item.transform[5] }))
             .filter(item => item.text !== '');
 
-        // 2. BULLETPROOF BUCKET GROUPING (Prevents rows from cascading into each other)
-        let rowMap = new Map();
-        const Y_TOLERANCE = 4; // Safely snaps items within a strict 4-point vertical band
+        // 2. STABLE 2D SORT: Top-to-Bottom, then Left-to-Right
+        items.sort((a, b) => {
+            if (Math.abs(b.y - a.y) > 3) {
+                return b.y - a.y; // Distinctly different vertical heights
+            }
+            return a.x - b.x; // Roughly same height, sort left to right
+        });
+
+        // 3. BULLETPROOF ANCHOR GROUPING (Using Employee ID to split rows)
+        let lines = [];
+        let currentRow = [];
 
         for (let item of items) {
-            let placed = false;
-            
-            // Look for an existing row bucket this item belongs to
-            for (let [baseY, rowItems] of rowMap.entries()) {
-                if (Math.abs(baseY - item.y) <= Y_TOLERANCE) {
-                    rowItems.push(item);
-                    placed = true;
-                    break;
+            // REGEX CHECK: Does this look like an Employee Code? (e.g. AD-12345, ESJ-999) 
+            // AND is it sitting in the first column on the far left? (x < 100)
+            const isEmployeeCode = /^[A-Z0-9]{2,6}-\d{3,8}$/i.test(item.text) && item.x < 100;
+
+            if (isEmployeeCode) {
+                // We found a new Employee ID! Push the old row and start a completely new one.
+                if (currentRow.length > 0) {
+                    lines.push(currentRow);
                 }
-            }
-            
-            // If it doesn't fit in any existing row, create a new row bucket
-            if (!placed) {
-                rowMap.set(item.y, [item]);
+                currentRow = [item];
+            } else {
+                // Otherwise, add the text to the current row
+                currentRow.push(item);
             }
         }
+        if (currentRow.length > 0) lines.push(currentRow); // Push the very last row
 
-        // 3. Sort the row buckets from Top of page to Bottom
-        let sortedYKeys = Array.from(rowMap.keys()).sort((a, b) => b - a);
-        let lines = sortedYKeys.map(y => rowMap.get(y));
-
-        // 4. Process each row line into employee data
+        // 4. Process each perfect row into employee data
         for (let line of lines) {
-            // Sort line items strictly left-to-right
+            // Ensure strict left-to-right sorting within the isolated row
             line.sort((a, b) => a.x - b.x);
 
-            // Anti-duplication filter (Fixes the "Active Active" bug in some PDFs)
+            // Anti-duplication filter
             let uniqueLine = [];
             for (let item of line) {
                 let isDuplicate = uniqueLine.some(u => u.text === item.text && Math.abs(u.x - item.x) < 12);
@@ -81,7 +85,7 @@ async function fetchAndParsePDF() {
                 if (match) currentMonthStr = match[1];
             }
 
-            // Re-merge HO and (ROTA) if they were split by spacing
+            // Re-merge HO and (ROTA) if split
             for (let j = 0; j < sortedItems.length - 1; j++) {
                 if (sortedItems[j] === 'HO' && sortedItems[j+1] === '(ROTA)') {
                     sortedItems[j] = 'HO (ROTA)';
@@ -91,7 +95,7 @@ async function fetchAndParsePDF() {
 
             let statusIdx = sortedItems.findIndex(str => str.toLowerCase() === 'active' || str.toLowerCase() === 'left');
             
-            // Check if it's a valid employee row (Status found, long enough, not header)
+            // Validate the row
             if (statusIdx >= 1 && sortedItems.length >= 6 && !sortedItems[0].toLowerCase().includes("employee")) {
                 
                 let code = sortedItems[0];
@@ -137,7 +141,6 @@ async function fetchAndParsePDF() {
                         tl = remainingWords[0];
                     }
 
-                    // Only push clean rows to prevent UI crashing
                     if (code.length > 2 && name.length > 2) {
                         globalData.push({ code, name, status, contractor, dates: datesArray, tl, sanctioner });
                     }
