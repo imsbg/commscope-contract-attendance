@@ -32,34 +32,38 @@ async function fetchAndParsePDF() {
             .map(item => ({ text: item.str.trim(), x: item.transform[4], y: item.transform[5] }))
             .filter(item => item.text !== '');
 
-        // 2. Sort strictly top-to-bottom
-        items.sort((a, b) => b.y - a.y);
-
-        // 3. Group into lines safely (Prevents row merging)
-        let lines = [];
-        let currentLine = [];
-        let currentY = null;
+        // 2. BULLETPROOF BUCKET GROUPING (Prevents rows from cascading into each other)
+        let rowMap = new Map();
+        const Y_TOLERANCE = 4; // Safely snaps items within a strict 4-point vertical band
 
         for (let item of items) {
-            if (currentY === null) currentY = item.y;
+            let placed = false;
             
-            // ⭐ FIX APPLIED HERE: Changed threshold from 5 to 2.
-            // This prevents consecutive employee rows from merging together.
-            if (Math.abs(currentY - item.y) > 2) {
-                lines.push(currentLine);
-                currentLine = [];
-                currentY = item.y;
+            // Look for an existing row bucket this item belongs to
+            for (let [baseY, rowItems] of rowMap.entries()) {
+                if (Math.abs(baseY - item.y) <= Y_TOLERANCE) {
+                    rowItems.push(item);
+                    placed = true;
+                    break;
+                }
             }
-            currentLine.push(item);
+            
+            // If it doesn't fit in any existing row, create a new row bucket
+            if (!placed) {
+                rowMap.set(item.y, [item]);
+            }
         }
-        if (currentLine.length > 0) lines.push(currentLine);
 
-        // 4. Process each line into employee data
+        // 3. Sort the row buckets from Top of page to Bottom
+        let sortedYKeys = Array.from(rowMap.keys()).sort((a, b) => b - a);
+        let lines = sortedYKeys.map(y => rowMap.get(y));
+
+        // 4. Process each row line into employee data
         for (let line of lines) {
-            // Sort line left-to-right
+            // Sort line items strictly left-to-right
             line.sort((a, b) => a.x - b.x);
 
-            // ⭐ ANTI-DUPLICATION FILTER (Fixes the "Active Active" bug) ⭐
+            // Anti-duplication filter (Fixes the "Active Active" bug in some PDFs)
             let uniqueLine = [];
             for (let item of line) {
                 let isDuplicate = uniqueLine.some(u => u.text === item.text && Math.abs(u.x - item.x) < 12);
@@ -77,7 +81,7 @@ async function fetchAndParsePDF() {
                 if (match) currentMonthStr = match[1];
             }
 
-            // Re-merge HO and (ROTA) if split
+            // Re-merge HO and (ROTA) if they were split by spacing
             for (let j = 0; j < sortedItems.length - 1; j++) {
                 if (sortedItems[j] === 'HO' && sortedItems[j+1] === '(ROTA)') {
                     sortedItems[j] = 'HO (ROTA)';
@@ -87,7 +91,7 @@ async function fetchAndParsePDF() {
 
             let statusIdx = sortedItems.findIndex(str => str.toLowerCase() === 'active' || str.toLowerCase() === 'left');
             
-            // Check if it's a valid employee row
+            // Check if it's a valid employee row (Status found, long enough, not header)
             if (statusIdx >= 1 && sortedItems.length >= 6 && !sortedItems[0].toLowerCase().includes("employee")) {
                 
                 let code = sortedItems[0];
