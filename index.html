@@ -98,7 +98,7 @@
                         Go to New Website <i class="fa-solid fa-arrow-right"></i>
                     </a>
                     <button onclick="closeNewUiModal()" class="w-full px-4 py-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition text-sm font-semibold">
-                        Maybe Later
+                        Close
                     </button>
                 </div>
             </div>
@@ -134,19 +134,20 @@
                 <p id="current-month-header" class="text-slate-500 mt-1">Loading Data...</p>
             </div>
             <div class="flex flex-wrap items-center gap-2 md:gap-3 w-full xl:w-auto">
-                <!-- NEW UI BUTTON -->
-                <button onclick="openNewUiModal()" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 md:px-5 py-2 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2 text-sm font-bold flex-1 xl:flex-none animate-pulse">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Try New UI
+                <!-- NEW UI BUTTON (Hidden per request) -->
+                <button onclick="openNewUiModal()" class="hidden bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 md:px-5 py-2 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all items-center justify-center text-sm font-bold flex-1 xl:flex-none">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Try New UI
+                    <span class="bg-amber-400 text-amber-900 text-[10px] px-1.5 py-0.5 rounded-sm ml-2 uppercase tracking-wider font-extrabold">Beta</span>
                 </button>
                 
-                <a href="https://imsbg.github.io/commscope/" class="bg-white text-slate-700 border border-slate-300 px-3 md:px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
-                    <i class="fa-solid fa-house"></i> Home
-                </a>
+                <button onclick="toggleGraphs()" class="bg-white text-slate-700 border border-slate-300 px-3 md:px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
+                    <i class="fa-solid fa-chart-line"></i> <span id="toggle-graphs-text">Show Graphs</span>
+                </button>
                 <button onclick="openShiftModal()" class="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
                     <i class="fa-solid fa-calendar-days"></i> Shift Calendar
                 </button>
                 <button onclick="openPdfModal()" class="bg-[var(--primary)] text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-teal-700 transition flex items-center justify-center gap-2 text-sm font-medium w-full md:w-auto cursor-pointer">
-                    <i class="fa-solid fa-folder-open"></i> View Original PDF
+                    <i class="fa-solid fa-folder-open"></i> Original PDF
                 </button>
             </div>
         </header>
@@ -156,7 +157,7 @@
                <p class="text-sm font-medium text-teal-200">Total Employees</p>
                <p class="text-4xl font-bold" id="metric-total-val">0</p>
            </div>
-           <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transform transition hover:-translate-y-1">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transform transition hover:-translate-y-1">
                <p class="text-sm font-medium text-slate-500">Total Presents</p>
                <p class="text-3xl font-bold text-emerald-600" id="metric-present-val">0</p>
            </div>
@@ -165,10 +166,18 @@
                <p class="text-3xl font-bold text-red-600" id="metric-absent-val">0</p>
            </div>
         </div>
-
-        <section class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <!-- GRAPHS SECTION (Hidden by default, toggled via button) -->
+        <section id="graphs-section" class="hidden grid grid-cols-1 lg:grid-cols-5 gap-6 transition-all duration-300 opacity-0 mb-6">
             <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold mb-4 text-slate-800">Daily Attendance Trends</h2>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                    <h2 class="text-xl font-bold text-slate-800">Daily Attendance Trends</h2>
+                    <!-- GRAPH CUSTOMIZATION SELECTOR -->
+                    <select id="chartTypeSelector" onchange="changeChartType(this.value)" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition">
+                        <option value="bar">Bar Graph</option>
+                        <option value="line">Line Graph</option>
+                        <option value="radar">Radar Chart</option>
+                    </select>
+                </div>
                 <div class="h-80"><canvas id="dayWiseChart"></canvas></div>
             </div>
             <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -177,7 +186,7 @@
             </div>
         </section>
 
-        <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200">
+        <div id="table-section-header" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4">
                 <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                     Employee Records 
@@ -190,9 +199,16 @@
                 </div>
             </div>
             
-            <div class="table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg">
+            <!-- DESKTOP TABLE VIEW (Hidden on Mobile) -->
+            <div class="hidden md:block table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg">
                 <table class="w-full text-left min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
             </div>
+
+            <!-- MOBILE CARD VIEW (Hidden on Desktop) -->
+            <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3">
+                <!-- Populated via JS -->
+            </div>
+
             <div id="pagination-controls" class="pt-4 flex flex-col md:flex-row justify-between items-center text-sm gap-4"></div>
         </div>
         
@@ -218,12 +234,12 @@
         </footer>
     </main>
     
-    <!-- Employee Details Modal (Mobile optimized) -->
+    <!-- Employee Details Modal -->
     <div id="employee-modal" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
         <div id="modal-content" class="bg-slate-50 rounded-2xl w-full h-full flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto lg:overflow-hidden max-w-7xl mx-auto relative shadow-2xl custom-scrollbar">
              <button onclick="closeEmployeeModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
              
-             <!-- Left Panel: Info -->
+             <!-- Left Panel: Info & Stats -->
              <div id="modal-info-panel" class="w-full lg:w-80 p-5 md:p-6 bg-white lg:border-r border-slate-200 flex flex-col flex-shrink-0"></div>
              
              <!-- Right Panel: Calendar -->
@@ -232,18 +248,18 @@
                 <div class="grid grid-cols-7 gap-1 md:gap-1.5 mb-2 text-[10px] md:text-xs font-bold text-center text-slate-500">
                     <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                 </div>
-                <div id="modal-calendar" class="grid grid-cols-7 grid-rows-6 gap-1 md:gap-1.5 flex-1 min-h-[300px]"></div>
+                <div id="modal-calendar" class="grid grid-cols-7 gap-1 md:gap-1.5 flex-1"></div>
             </div>
         </div>
     </div>
 
     <!-- Shift Calendar Modal -->
     <div id="shift-modal" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
-        <div id="shift-modal-content" class="bg-slate-50 rounded-2xl w-full h-full flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto lg:overflow-hidden max-w-6xl mx-auto relative shadow-2xl custom-scrollbar">
+        <div id="shift-modal-content" class="bg-slate-50 rounded-2xl w-full max-h-[95vh] h-auto flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto max-w-6xl mx-auto relative shadow-2xl custom-scrollbar">
              <button onclick="closeShiftModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
              
              <!-- Left: Calendar Area -->
-             <div class="p-4 md:p-6 flex-1 flex flex-col overflow-y-auto custom-scrollbar bg-slate-50">
+             <div class="p-4 md:p-6 flex-1 flex flex-col bg-slate-50">
                 <div class="flex justify-between items-center mb-6">
                     <button onclick="changeShiftMonth(-1)" class="w-10 h-10 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold transition shadow-sm">&lt;</button>
                     <h3 id="sc-month-title" class="text-xl md:text-2xl font-bold text-indigo-900">Month Year</h3>
@@ -253,7 +269,7 @@
                 <div class="grid grid-cols-7 gap-1 md:gap-2 text-center font-bold text-xs md:text-sm text-slate-500 mb-2">
                     <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                 </div>
-                <div id="sc-days" class="grid grid-cols-7 gap-1 md:gap-2 flex-1 min-h-[350px]"></div>
+                <div id="sc-days" class="grid grid-cols-7 gap-1 md:gap-2 flex-1"></div>
              </div>
 
              <!-- Right: Settings & Holidays -->
@@ -280,14 +296,22 @@
                 </div>
 
                 <h4 class="font-bold text-slate-800 mb-3 text-lg flex items-center gap-2"><i class="fa-solid fa-gift text-rose-500"></i> Holidays 2026</h4>
-                <div id="sc-holiday-list" class="space-y-2 flex-1 overflow-y-auto custom-scrollbar pr-2"></div>
+                <div id="sc-holiday-list" class="space-y-2 flex-1 pr-2"></div>
              </div>
         </div>
     </div>
 
 <script>
     let globalData = [], filteredData = [], currentPage = 1, currentMonthStr = "";
-    const rowsPerPage = 15;
+    const rowsPerPage = 15; // Locked strictly to 15 to prevent rendering lag
+
+    // --- Chart Global Variables ---
+    let trendChartInstance = null;
+    let trendChartData = null;
+
+    // List of exact codes that count as Absence/Decrease Percentage
+    // Note: WO/Week Off is NOT here, meaning it counts as present/positive.
+    const absenceList = ['A', 'ABSENT', 'FD', 'FULL DAY', 'HD', 'HALF DAY', 'SLWP', 'SICK LEAVE', 'MP', 'MISS PUNCH'];
 
     // -- Shift Calendar Logic Setup --
     const DEFAULT_SETTINGS = { pattern: 'ACB', baseDate: '2026-01-05', baseShift: 'A' }; 
@@ -330,6 +354,61 @@
             });
         });
     });
+
+    // --- Graph Logic & Customization ---
+    function initOrUpdateTrendChart(type) {
+        if(trendChartInstance) {
+            trendChartInstance.destroy();
+        }
+        
+        const ctx = document.getElementById('dayWiseChart').getContext('2d');
+        const options = { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            animation: { duration: 1000 }
+        };
+
+        // Smooth lines if user selects line chart
+        if (type === 'line') {
+            trendChartData.datasets.forEach(ds => {
+                ds.tension = 0.4; // Smooth curve
+                ds.fill = true;   // Shaded area under line
+            });
+        } else if (type === 'radar') {
+            trendChartData.datasets.forEach(ds => ds.fill = true);
+        } else {
+            trendChartData.datasets.forEach(ds => ds.fill = false);
+        }
+
+        if (type !== 'radar') {
+            options.scales = { x: { grid: { display: false } }, y: { beginAtZero: true } };
+        }
+
+        trendChartInstance = new Chart(ctx, {
+            type: type,
+            data: trendChartData,
+            options: options
+        });
+    }
+
+    function changeChartType(type) {
+        initOrUpdateTrendChart(type);
+    }
+
+    function toggleGraphs() {
+        const section = document.getElementById('graphs-section');
+        const text = document.getElementById('toggle-graphs-text');
+        
+        if (section.classList.contains('hidden')) {
+            section.classList.remove('hidden');
+            setTimeout(() => section.classList.remove('opacity-0'), 10);
+            text.textContent = 'Hide Graphs';
+        } else {
+            section.classList.add('opacity-0');
+            setTimeout(() => section.classList.add('hidden'), 300);
+            text.textContent = 'Show Graphs';
+        }
+    }
 
     // --- New UI Modal Logic ---
     function openNewUiModal() {
@@ -383,7 +462,6 @@
         }
     }
 
-    // Number counting animation
     function animateValue(id, start, end, duration) {
         const obj = document.getElementById(id);
         if(!obj) return;
@@ -415,15 +493,6 @@
                 const idx = filteredData.findIndex(e => e.name === decodeURIComponent(employeeName));
                 if (idx !== -1) openEmployeeModal(idx);
             }
-            
-            // Auto show the New UI modal once per session
-            if (!sessionStorage.getItem('newUiAlertShown')) {
-                setTimeout(() => {
-                    openNewUiModal();
-                    sessionStorage.setItem('newUiAlertShown', 'true');
-                }, 1000);
-            }
-            
         }, 400); 
     }
     
@@ -434,8 +503,20 @@
 
         globalData.forEach(row => {
             row.dates.forEach((d, i) => {
-                if (['P', 'FD', 'F'].includes(d)) { totalPresents++; if (i < 31) daily[i].p++; }
-                else if (d === 'A') { totalAbsents++; if (i < 31) daily[i].a++; }
+                const status = d ? d.trim().toUpperCase() : '';
+                
+                // Exclude empty cells, hyphens, and Left
+                if (status && status !== '-' && status !== '--' && status !== 'L') {
+                    // Check if the status belongs to the predefined Absence list
+                    if (absenceList.includes(status)) { 
+                        totalAbsents++; 
+                        if (i < 31) daily[i].a++; 
+                    } else { 
+                        // Everything else (P, WO, HO, ROTA, unknown values) defaults to Present
+                        totalPresents++; 
+                        if (i < 31) daily[i].p++; 
+                    }
+                }
             });
         });
 
@@ -451,28 +532,35 @@
             options: { responsive: true, maintainAspectRatio: false, cutout: '70%', animation: { duration: 1500 } }
         });
 
-        new Chart(document.getElementById('dayWiseChart').getContext('2d'), {
-            type: 'bar',
-            data: { 
-                labels: Array.from({length:31}, (_,i)=>i+1), 
-                datasets: [
-                    { label: 'Present', data: daily.map(d=>d.p), backgroundColor: '#10b981', borderRadius: 4 }, 
-                    { label: 'Absent', data: daily.map(d=>d.a), backgroundColor: '#f43f5e', borderRadius: 4 }
-                ] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                scales: { x: { grid: { display: false } }, y: { beginAtZero: true } },
-                animation: {
-                    duration: 1500,
-                    y: { from: 500 } 
+        // Save data to global variable so chart type can be switched dynamically
+        trendChartData = {
+            labels: Array.from({length:31}, (_,i)=>i+1), 
+            datasets: [
+                { 
+                    label: 'Present / Default', 
+                    data: daily.map(d=>d.p), 
+                    backgroundColor: 'rgba(16, 185, 129, 0.5)', 
+                    borderColor: '#10b981', 
+                    borderWidth: 2,
+                    borderRadius: 4
+                }, 
+                { 
+                    label: 'Absent / Reduced', 
+                    data: daily.map(d=>d.a), 
+                    backgroundColor: 'rgba(244, 63, 94, 0.5)', 
+                    borderColor: '#f43f5e', 
+                    borderWidth: 2,
+                    borderRadius: 4
                 }
-            }
-        });
+            ] 
+        };
+        
+        // Initialize the default chart type selected in HTML
+        initOrUpdateTrendChart(document.getElementById('chartTypeSelector').value || 'bar');
     }
 
     function renderTable() {
+        // --- 1. DESKTOP TABLE CREATION ---
         document.getElementById('tableHeader').innerHTML = `<tr><th class="p-4">Employee</th><th class="p-4">Status</th><th class="p-4">Contractor</th>${Array.from({length: 31}, (_, i) => `<th class="p-4 text-center">${i+1}</th>`).join('')}</tr>`;
         
         const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
@@ -480,8 +568,9 @@
         
         pageData.forEach((row, i) => {
             const tr = document.createElement('tr');
-            tr.className = "hover:bg-f0fdfa transition-colors";
-            let html = `<td class="p-4 font-semibold whitespace-nowrap"><a href="#" class="hover:text-teal-600 transition" onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i}); return false;">${row.name}</a><span class="block text-xs text-slate-500 font-normal">${row.code}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}</td>`;
+            tr.className = "hover:bg-f0fdfa transition-colors cursor-pointer";
+            tr.onclick = () => openEmployeeModal((currentPage - 1) * rowsPerPage + i);
+            let html = `<td class="p-4 font-semibold whitespace-nowrap"><span class="hover:text-teal-600 transition">${row.name}</span><span class="block text-xs text-slate-500 font-normal">${row.code}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}</td>`;
             row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
             tr.innerHTML = html;
             fragment.appendChild(tr);
@@ -489,19 +578,58 @@
         
         document.getElementById('tableBody').innerHTML = '';
         document.getElementById('tableBody').appendChild(fragment);
+
+        // --- 2. MOBILE CARDS CREATION ---
+        const mobileContainer = document.getElementById('mobileCardsContainer');
+        mobileContainer.innerHTML = '';
+        
+        pageData.forEach((row, i) => {
+            const isLeft = (row.status !== 'Active');
+            const bgClass = isLeft ? 'bg-red-50 border-red-200 hover:border-red-400' : 'bg-white border-slate-200 hover:border-teal-300';
+            const statusBadgeClass = isLeft ? 'bg-red-200 text-red-800' : 'bg-emerald-100 text-emerald-800';
+
+            mobileContainer.innerHTML += `
+                <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" class="${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-lg">${row.name}</h3>
+                            <p class="text-xs text-slate-500 font-mono mt-0.5">${row.code}</p>
+                        </div>
+                        <span class="text-xs font-bold px-2 py-1 rounded-full ${statusBadgeClass}">${row.status}</span>
+                    </div>
+                    <div class="mt-3 inline-block bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50">
+                        <i class="fa-solid fa-briefcase text-slate-400 mr-1"></i> ${row.contractor}
+                    </div>
+                </div>
+            `;
+        });
+
         renderPagination();
     }
     
+    function changePage(dir) {
+        currentPage += dir;
+        renderTable();
+        // Scroll to top of table section on pagination
+        document.getElementById('table-section-header').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     function renderPagination() {
         const totalPages = Math.ceil(filteredData.length / rowsPerPage);
         const container = document.getElementById('pagination-controls');
-        if (filteredData.length === 0) { container.innerHTML = '<span class="text-slate-500">No records found.</span>'; return; }
+        
+        if (filteredData.length === 0) { 
+            container.innerHTML = '<span class="text-slate-500 font-medium">No records found.</span>'; 
+            return; 
+        }
+        
+        const endRecord = Math.min(currentPage * rowsPerPage, filteredData.length);
         
         container.innerHTML = `
-            <span class="text-slate-600 font-medium">Showing ${((currentPage-1)*rowsPerPage)+1}-${Math.min(currentPage*rowsPerPage, filteredData.length)} of ${filteredData.length}</span>
+            <span class="text-slate-600 font-medium">Showing ${((currentPage-1)*rowsPerPage)+1}-${endRecord} of ${filteredData.length}</span>
             <div class="flex gap-2">
-                <button onclick="currentPage--; renderTable();" ${currentPage === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium">Previous</button>
-                <button onclick="currentPage++; renderTable();" ${currentPage === totalPages ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium">Next</button>
+                <button onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700">Previous</button>
+                <button onclick="changePage(1)" ${currentPage === totalPages || totalPages === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700">Next</button>
             </div>`;
     }
 
@@ -523,14 +651,87 @@
     function openEmployeeModal(index) {
         const employee = filteredData[index];
         
-        // Modal UI Info Panel (includes Share Button & Collapsible Mobile Legend)
+        let date = new Date(currentMonthStr);
+        let firstDay = 0;
+        let totalDays = 31;
+        let displayMonthStr = currentMonthStr;
+        
+        if (!isNaN(date.getTime())) {
+            firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+            const woIndex = employee.dates.findIndex(d => d === 'WO');
+            if (woIndex !== -1) {
+                const expectedFirstDay = (7 - (woIndex % 7)) % 7;
+                if (firstDay !== expectedFirstDay) {
+                    const prevDate = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+                    if (prevDate.getDay() === expectedFirstDay) {
+                        date = prevDate;
+                        firstDay = expectedFirstDay;
+                        displayMonthStr = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+                    }
+                }
+            }
+            totalDays = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+        }
+
+        // --- Calculate Attendance Stats ---
+        let p = 0, a = 0, mp = 0, fd = 0, validDays = 0;
+        
+        for (let i = 0; i < totalDays; i++) {
+            const rawStatus = employee.dates[i] ? employee.dates[i].trim().toUpperCase() : '';
+            
+            // Only count valid non-empty days that are not hyphens or L
+            if (rawStatus && rawStatus !== '-' && rawStatus !== '--' && rawStatus !== 'L') {
+                validDays++;
+                
+                // If the text matches the absence list exactly, it reduces the percentage
+                if (absenceList.includes(rawStatus)) {
+                    if (rawStatus === 'A' || rawStatus === 'ABSENT') a++;
+                    else if (rawStatus === 'MP' || rawStatus === 'MISS PUNCH') mp++;
+                    else if (rawStatus === 'FD' || rawStatus === 'FULL DAY') fd++;
+                } else {
+                    // Everything else (P, WO, HO, ROTA, unknown new text) defaults to Present
+                    p++;
+                }
+            }
+        }
+
+        // Attendance formula: (Present Equivalent / Total Valid Logged Days) * 100
+        let attendancePercentage = validDays > 0 ? Math.round((p / validDays) * 100) : 0;
+
+        // Modal UI Info Panel with correctly aligned stats and new blue color for Full Day
         document.getElementById('modal-info-panel').innerHTML = `
             <div class="mb-4">
                 <h2 class="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">${employee.name}</h2>
                 <p class="text-slate-500 mt-1 font-medium">${employee.code} &bull; ${employee.contractor} &bull; ${employee.status}</p>
-                <div class="mt-4 p-4 bg-slate-50 rounded-xl text-sm text-slate-700 space-y-2 border border-slate-200">
-                    <p class="flex items-center gap-2"><i class="fa-solid fa-user-tie text-teal-600"></i> <strong>Reporting Person:</strong> <span class="ml-auto text-right">${employee.tl || 'N/A'}</span></p>
-                    <p class="flex items-center gap-2 border-t border-slate-200 pt-2"><i class="fa-solid fa-file-signature text-teal-600"></i> <strong>Sanctioner:</strong> <span class="ml-auto text-right">${employee.sanctioner || 'N/A'}</span></p>
+                
+                <div class="mt-4 p-4 bg-slate-50 rounded-xl text-sm text-slate-700 space-y-2 border border-slate-200 shadow-sm">
+                    <p class="flex items-center gap-2"><i class="fa-solid fa-user-tie text-teal-600 w-4"></i> <strong>Team Leader:</strong> <span class="ml-auto text-right">${employee.tl || 'N/A'}</span></p>
+                    <p class="flex items-center gap-2 border-t border-slate-200 pt-2"><i class="fa-solid fa-file-signature text-teal-600 w-4"></i> <strong>Shift Supervisor:</strong> <span class="ml-auto text-right">${employee.sanctioner || 'N/A'}</span></p>
+                </div>
+
+                <!-- FIXED ALIGNMENT & COLOR: Attendance Summary Stats (Present, Absent, Full Day, MP) -->
+                <div class="mt-4 grid grid-cols-4 gap-2 text-sm h-16">
+                    <div class="bg-emerald-50 text-emerald-800 p-1.5 rounded-lg border border-emerald-100 flex flex-col items-center justify-between h-full">
+                        <span class="font-bold text-xl leading-none mt-1">${p}</span>
+                        <span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Present</span>
+                    </div>
+                    <div class="bg-red-50 text-red-800 p-1.5 rounded-lg border border-red-100 flex flex-col items-center justify-between h-full">
+                        <span class="font-bold text-xl leading-none mt-1">${a}</span>
+                        <span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Absent</span>
+                    </div>
+                    <div class="bg-blue-50 text-blue-800 p-1.5 rounded-lg border border-blue-200 flex flex-col items-center justify-between h-full">
+                        <span class="font-bold text-xl leading-none mt-1">${fd}</span>
+                        <span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Full Day</span>
+                    </div>
+                    <div class="bg-orange-50 text-orange-800 p-1.5 rounded-lg border border-orange-100 flex flex-col items-center justify-between h-full">
+                        <span class="font-bold text-xl leading-none mt-1">${mp}</span>
+                        <span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Miss Punch</span>
+                    </div>
+                </div>
+
+                <div class="mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-900 p-3 rounded-lg flex justify-between items-center border border-blue-100 shadow-sm">
+                    <span class="font-bold text-sm uppercase tracking-wide"><i class="fa-solid fa-chart-pie mr-1 text-blue-500"></i> Attendance Rate</span>
+                    <span class="font-bold text-2xl">${attendancePercentage}%</span>
                 </div>
                 
                 <button onclick="shareEmployeeURL('${employee.name.replace(/'/g, "\\'")}')" class="w-full mt-4 bg-teal-100 hover:bg-teal-200 text-teal-800 py-2.5 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 shadow-sm">
@@ -559,29 +760,6 @@
                 </div>
             </div>
         `;
-
-        let date = new Date(currentMonthStr);
-        let firstDay = 0;
-        let totalDays = 31;
-        let displayMonthStr = currentMonthStr;
-        
-        if (!isNaN(date.getTime())) {
-            firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-            
-            const woIndex = employee.dates.findIndex(d => d === 'WO');
-            if (woIndex !== -1) {
-                const expectedFirstDay = (7 - (woIndex % 7)) % 7;
-                if (firstDay !== expectedFirstDay) {
-                    const prevDate = new Date(date.getFullYear(), date.getMonth() - 1, 1);
-                    if (prevDate.getDay() === expectedFirstDay) {
-                        date = prevDate;
-                        firstDay = expectedFirstDay;
-                        displayMonthStr = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-                    }
-                }
-            }
-            totalDays = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-        }
 
         document.getElementById('modal-calendar-title').textContent = `Attendance for ${displayMonthStr}`;
 
