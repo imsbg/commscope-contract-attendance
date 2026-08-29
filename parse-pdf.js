@@ -3,7 +3,7 @@ const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
 
 // Your EXACT working Google Apps Script URL
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzBMx-fZAifindtXbsXVueYEYQz4uBT1cA8CnlrZH3MTHEyR4RMv6uxaPhdKwskiP4T/exec";
-
+ 
 async function fetchAndParsePDF() {
     console.log("🌐 Fetching PDF from Google Apps Script...");
     
