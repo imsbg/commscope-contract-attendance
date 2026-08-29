@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -10,19 +9,16 @@
     <link rel="canonical" href="https://imsbg.github.io/commscope-contract-attendance/" />
     <link rel="icon" type="image/png" href="https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0">
     <meta name="description" content="Check your CommScope contractor attendance online. Track daily logs and attendance records for ADECCO, ANANYA, Dibya, ESJAY, Om Sai Krupa, and YASHASWI.">
-    <meta name="keywords" content="CommScope contractor attendance, CommScope attendance portal, CommScope worker login, ADECCO CommScope attendance, ANANYA contractor attendance, Dibya Industrial Service attendance, ESJAY CommScope attendance, MATHEW contractor attendance, Om Sai Krupa Enterprise attendance, SHAM contractor attendance, VASUDEVA CommScope attendance, YASHASWI contractor attendance, contractor attendance tracking, vendor employee attendance login, Sandeep Biswal, Sandeep Biswal G" />
-    <meta name="author" content="Sandeep Biswal G">
-    <meta property="og:title" content="CommScope Contractor Attendance Portal - Sandeep Biswal G">
-    <meta property="og:description" content="Check your CommScope contractor attendance online. Track daily logs and attendance records for ADECCO, ANANYA, Dibya, ESJAY, Om Sai Krupa, and YASHASWI.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://imsbg.github.io/commscope-contract-attendance/">
-    <meta property="og:image" content="https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0">
-
+    
+    <!-- Updated Google Sans Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
+    
     <!-- External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400..700&display=swap" rel="stylesheet">
     
     <style>
         :root { --primary: #0d9488; --background: #f1f5f9; --card-bg: #ffffff; }
@@ -66,7 +62,7 @@
 </head>
 <body class="antialiased">
 
-    <!-- Splash Screen -->
+    <!-- SPLASH SCREEN -->
     <div id="splash-screen" class="fixed inset-0 flex justify-center items-center">
         <div class="text-center w-80">
             <div class="flex items-center justify-center gap-3 mb-4">
@@ -80,14 +76,40 @@
         </div>
     </div>
 
+    <!-- MAINTENANCE OVERLAY -->
+    <div id="maintenance-screen" class="fixed inset-0 bg-slate-900 z-[200] hidden flex-col items-center justify-center p-6 text-center">
+        <!-- Language Toggle -->
+        <div class="absolute top-6 right-6 md:top-8 md:right-8 bg-slate-800 border border-slate-700 rounded-lg p-1.5 flex gap-1 shadow-lg">
+            <button onclick="setLang('en')" id="btn-en" class="px-3 py-1.5 text-sm font-bold rounded-md bg-teal-500 text-white transition-all shadow-sm">EN</button>
+            <button onclick="setLang('or')" id="btn-or" class="px-3 py-1.5 text-sm font-bold rounded-md text-slate-400 hover:text-white hover:bg-slate-700 transition-all">OD</button>
+            <button onclick="setLang('hi')" id="btn-hi" class="px-3 py-1.5 text-sm font-bold rounded-md text-slate-400 hover:text-white hover:bg-slate-700 transition-all">HI</button>
+        </div>
+        
+        <div class="bg-slate-800/50 p-6 md:p-10 rounded-3xl border border-slate-700/50 backdrop-blur-md max-w-2xl w-full shadow-2xl flex flex-col items-center">
+            <i class="fa-solid fa-triangle-exclamation text-6xl text-amber-400 mb-6 drop-shadow-[0_0_15px_rgba(251,191,36,0.4)] animate-bounce"></i>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500 mb-6" id="maint-title">Under Maintenance</h1>
+            
+            <p class="text-slate-300 text-base md:text-lg mb-10 leading-relaxed font-medium" id="maint-desc">
+                We are currently experiencing technical issues with the PDF file structure. For accurate attendance data, please view the original PDF directly from Google Drive. I am working hard to fix this issue and the portal will be back to normal next month. Until then, please adjust with the PDF. I understand your frustration and feel your pain!
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                <a href="https://drive.google.com/drive/folders/1H5tR99F-DsbT9wQnlLqXST0aLsa0B1sO?usp=drive_link" target="_blank" class="px-6 py-3.5 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-xl font-bold hover:scale-105 transition-all shadow-[0_0_20px_rgba(20,184,166,0.4)] flex items-center justify-center gap-3 text-sm md:text-base">
+                    <i class="fa-solid fa-file-pdf text-xl"></i> <span id="maint-btn-pdf">View Original PDF</span>
+                </a>
+                <a href="https://imsbg.github.io/commscope/" class="px-6 py-3.5 bg-slate-700 text-white hover:bg-slate-600 rounded-xl font-bold transition-all flex items-center justify-center gap-3 text-sm md:text-base border border-slate-600 shadow-md">
+                    <i class="fa-solid fa-house text-lg"></i> <span id="maint-btn-home">Go to Home</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- NEW UI Announcement Modal -->
     <div id="new-ui-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[110] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none modal-blur">
         <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300 relative text-center" id="new-ui-content">
-            <!-- Decorative Icon -->
             <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gradient-to-tr from-indigo-500 to-purple-600 text-white p-4 rounded-full shadow-lg h-20 w-20 flex items-center justify-center border-4 border-white">
                 <i class="fa-solid fa-rocket text-3xl"></i>
             </div>
-            
             <div class="mt-8">
                 <h3 class="text-2xl font-bold text-slate-800 mb-2">Experience the New UI!</h3>
                 <p class="text-slate-600 mb-8 text-sm leading-relaxed">
@@ -134,12 +156,6 @@
                 <p id="current-month-header" class="text-slate-500 mt-1">Loading Data...</p>
             </div>
             <div class="flex flex-wrap items-center gap-2 md:gap-3 w-full xl:w-auto">
-                <!-- NEW UI BUTTON (Hidden per request) -->
-                <button onclick="openNewUiModal()" class="hidden bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 md:px-5 py-2 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all items-center justify-center text-sm font-bold flex-1 xl:flex-none">
-                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Try New UI
-                    <span class="bg-amber-400 text-amber-900 text-[10px] px-1.5 py-0.5 rounded-sm ml-2 uppercase tracking-wider font-extrabold">Beta</span>
-                </button>
-                
                 <button onclick="toggleGraphs()" class="bg-white text-slate-700 border border-slate-300 px-3 md:px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
                     <i class="fa-solid fa-chart-line"></i> <span id="toggle-graphs-text">Show Graphs</span>
                 </button>
@@ -149,6 +165,10 @@
                 <button onclick="openPdfModal()" class="bg-[var(--primary)] text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-teal-700 transition flex items-center justify-center gap-2 text-sm font-medium w-full md:w-auto cursor-pointer">
                     <i class="fa-solid fa-folder-open"></i> Original PDF
                 </button>
+                <!-- NEW HOME BUTTON -->
+                <a href="https://imsbg.github.io/commscope/" class="bg-slate-800 text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-slate-700 transition flex items-center justify-center gap-2 text-sm font-medium w-full md:w-auto cursor-pointer">
+                    <i class="fa-solid fa-house"></i> Home
+                </a>
             </div>
         </header>
 
@@ -157,7 +177,7 @@
                <p class="text-sm font-medium text-teal-200">Total Employees</p>
                <p class="text-4xl font-bold" id="metric-total-val">0</p>
            </div>
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transform transition hover:-translate-y-1">
+           <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transform transition hover:-translate-y-1">
                <p class="text-sm font-medium text-slate-500">Total Presents</p>
                <p class="text-3xl font-bold text-emerald-600" id="metric-present-val">0</p>
            </div>
@@ -166,12 +186,12 @@
                <p class="text-3xl font-bold text-red-600" id="metric-absent-val">0</p>
            </div>
         </div>
-        <!-- GRAPHS SECTION (Hidden by default, toggled via button) -->
+        
+        <!-- GRAPHS SECTION -->
         <section id="graphs-section" class="hidden grid grid-cols-1 lg:grid-cols-5 gap-6 transition-all duration-300 opacity-0 mb-6">
             <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                     <h2 class="text-xl font-bold text-slate-800">Daily Attendance Trends</h2>
-                    <!-- GRAPH CUSTOMIZATION SELECTOR -->
                     <select id="chartTypeSelector" onchange="changeChartType(this.value)" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition">
                         <option value="bar">Bar Graph</option>
                         <option value="line">Line Graph</option>
@@ -199,27 +219,24 @@
                 </div>
             </div>
             
-            <!-- DESKTOP TABLE VIEW (Hidden on Mobile) -->
+            <!-- DESKTOP TABLE VIEW -->
             <div class="hidden md:block table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg">
                 <table class="w-full text-left min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
             </div>
 
-            <!-- MOBILE CARD VIEW (Hidden on Desktop) -->
-            <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3">
-                <!-- Populated via JS -->
-            </div>
+            <!-- MOBILE CARD VIEW -->
+            <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3"></div>
 
             <div id="pagination-controls" class="pt-4 flex flex-col md:flex-row justify-between items-center text-sm gap-4"></div>
         </div>
         
        <footer class="text-center text-xs text-slate-500 pt-4 pb-8">
-            <!-- Visitor Counter Display -->
             <div class="flex justify-center gap-4 mb-4">
                 <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Yesterday</p>
                     <p class="text-lg font-bold text-slate-700" id="vis-yday">--</p>
                 </div>
-                        <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
+                <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Today</p>
                     <p class="text-lg font-bold text-indigo-600" id="vis-today">--</p>
                 </div>
@@ -234,15 +251,11 @@
         </footer>
     </main>
     
-    <!-- Employee Details Modal -->
+    <!-- MODALS HERE (Skipped for brevity but included in output) -->
     <div id="employee-modal" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
         <div id="modal-content" class="bg-slate-50 rounded-2xl w-full h-full flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto lg:overflow-hidden max-w-7xl mx-auto relative shadow-2xl custom-scrollbar">
              <button onclick="closeEmployeeModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
-             
-             <!-- Left Panel: Info & Stats -->
              <div id="modal-info-panel" class="w-full lg:w-80 p-5 md:p-6 bg-white lg:border-r border-slate-200 flex flex-col flex-shrink-0"></div>
-             
-             <!-- Right Panel: Calendar -->
              <div class="p-4 md:p-6 flex-1 flex flex-col overflow-y-auto custom-scrollbar bg-slate-50">
                 <h3 id="modal-calendar-title" class="text-lg md:text-xl font-semibold mb-4 text-slate-700"></h3>
                 <div class="grid grid-cols-7 gap-1 md:gap-1.5 mb-2 text-[10px] md:text-xs font-bold text-center text-slate-500">
@@ -257,44 +270,24 @@
     <div id="shift-modal" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
         <div id="shift-modal-content" class="bg-slate-50 rounded-2xl w-full max-h-[95vh] h-auto flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto max-w-6xl mx-auto relative shadow-2xl custom-scrollbar">
              <button onclick="closeShiftModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
-             
-             <!-- Left: Calendar Area -->
              <div class="p-4 md:p-6 flex-1 flex flex-col bg-slate-50">
                 <div class="flex justify-between items-center mb-6">
                     <button onclick="changeShiftMonth(-1)" class="w-10 h-10 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold transition shadow-sm">&lt;</button>
                     <h3 id="sc-month-title" class="text-xl md:text-2xl font-bold text-indigo-900">Month Year</h3>
                     <button onclick="changeShiftMonth(1)" class="w-10 h-10 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold transition shadow-sm">&gt;</button>
                 </div>
-                
                 <div class="grid grid-cols-7 gap-1 md:gap-2 text-center font-bold text-xs md:text-sm text-slate-500 mb-2">
                     <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                 </div>
                 <div id="sc-days" class="grid grid-cols-7 gap-1 md:gap-2 flex-1"></div>
              </div>
-
-             <!-- Right: Settings & Holidays -->
              <div class="w-full lg:w-80 p-5 md:p-6 bg-white lg:border-l border-slate-200 flex flex-col flex-shrink-0">
                 <h4 class="font-bold text-slate-800 mb-3 text-lg flex items-center gap-2"><i class="fa-solid fa-gear text-indigo-500"></i> Shift Settings</h4>
                 <div class="space-y-4 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Shift Pattern</label>
-                        <select id="sc-setup-pattern" onchange="onPatternChange()" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all">
-                            <option value="ACB">3 Shifts (A - C - B)</option>
-                            <option value="BC">2 Shifts (Only B & C)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Current/Base Shift</label>
-                        <select id="sc-setup-shift" onchange="saveShiftSettings()" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all">
-                            <!-- Populated dynamically -->
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Start Date</label>
-                        <input type="date" id="sc-setup-date" onchange="saveShiftSettings()" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all">
-                    </div>
+                    <div><label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Shift Pattern</label><select id="sc-setup-pattern" onchange="onPatternChange()" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all"><option value="ACB">3 Shifts (A - C - B)</option><option value="BC">2 Shifts (Only B & C)</option></select></div>
+                    <div><label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Current/Base Shift</label><select id="sc-setup-shift" onchange="saveShiftSettings()" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all"></select></div>
+                    <div><label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Start Date</label><input type="date" id="sc-setup-date" onchange="saveShiftSettings()" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all"></div>
                 </div>
-
                 <h4 class="font-bold text-slate-800 mb-3 text-lg flex items-center gap-2"><i class="fa-solid fa-gift text-rose-500"></i> Holidays 2026</h4>
                 <div id="sc-holiday-list" class="space-y-2 flex-1 pr-2"></div>
              </div>
@@ -302,47 +295,87 @@
     </div>
 
 <script>
-    let globalData = [], filteredData = [], currentPage = 1, currentMonthStr = "";
-    const rowsPerPage = 15; // Locked strictly to 15 to prevent rendering lag
+    // ============================================
+    // MAINTENANCE MODE TOGGLE
+    // Change to 'false' to bring the portal back online
+    // ============================================
+    const IS_MAINTENANCE_MODE = true; 
 
-    // --- Chart Global Variables ---
+    // Language Content for Maintenance Mode
+    const maintLangs = {
+        'en': {
+            title: "Under Maintenance",
+            desc: "We are currently experiencing technical issues with the PDF file structure. For accurate attendance data, please view the original PDF directly from Google Drive. I am working hard to fix this issue and the portal will be back to normal next month. Until then, please adjust with the PDF. I understand your frustration and feel your pain!",
+            btnPdf: "View Original PDF",
+            btnHome: "Go to Home"
+        },
+        'hi': {
+            title: "रखरखाव जारी है",
+            desc: "हमें वर्तमान में PDF फ़ाइल को प्रोसेस करने में तकनीकी समस्या आ रही है। सटीक जानकारी के लिए कृपया सीधे Google Drive से मूल PDF देखें। मैं इसे ठीक करने पर काम कर रहा हूँ और हम अगले महीने तक वापस आ जाएंगे। तब तक, कृपया PDF के साथ सहयोग करें। मैं आपकी परेशानी को समझता हूँ और खेद व्यक्त करता हूँ!",
+            btnPdf: "मूल PDF देखें",
+            btnHome: "होम पर जाएं"
+        },
+        'or': {
+            title: "ରକ୍ଷଣାବେକ୍ଷଣ ଚାଲିଛି",
+            desc: "ବର୍ତ୍ତମାନ PDF ଫାଇଲ୍ ପଢିବାରେ ବୈଷୟିକ ସମସ୍ୟା ଦେଖାଦେଇଛି। ସଠିକ୍ ତଥ୍ୟ ପାଇଁ ଦୟାକରି ମୂଳ PDF କୁ ସିଧାସଳଖ ଦେଖନ୍ତୁ। ମୁଁ ଏହାକୁ ସମାଧାନ କରିବା ପାଇଁ କଠିନ ପରିଶ୍ରମ କରୁଛି ଏବଂ ଆମେ ଆସନ୍ତା ମାସ ସୁଦ୍ଧା ଫେରିବୁ। ସେପର୍ଯ୍ୟନ୍ତ ଦୟାକରି ମୂଳ PDF ବ୍ୟବହାର କରନ୍ତୁ। ମୁଁ ଆପଣଙ୍କ ଅସୁବିଧାକୁ ସମ୍ପୂର୍ଣ୍ଣ ଭାବେ ବୁଝିପାରୁଛି!",
+            btnPdf: "ମୂଳ PDF ଦେଖନ୍ତୁ",
+            btnHome: "ହୋମ୍ କୁ ଯାଆନ୍ତୁ"
+        }
+    };
+
+    function setLang(lang) {
+        document.getElementById('maint-title').innerText = maintLangs[lang].title;
+        document.getElementById('maint-desc').innerText = maintLangs[lang].desc;
+        document.getElementById('maint-btn-pdf').innerText = maintLangs[lang].btnPdf;
+        document.getElementById('maint-btn-home').innerText = maintLangs[lang].btnHome;
+        
+        ['en', 'hi', 'or'].forEach(l => {
+            const btn = document.getElementById(`btn-${l}`);
+            if(l === lang) {
+                btn.classList.add('bg-teal-500', 'text-white', 'shadow-sm');
+                btn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-700', 'bg-transparent');
+            } else {
+                btn.classList.remove('bg-teal-500', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-700', 'bg-transparent');
+            }
+        });
+    }
+
+    let globalData = [], filteredData = [], currentPage = 1, currentMonthStr = "";
+    const rowsPerPage = 15; 
     let trendChartInstance = null;
     let trendChartData = null;
-
-    // List of exact codes that count as Absence/Decrease Percentage
-    // Note: WO/Week Off is NOT here, meaning it counts as present/positive.
     const absenceList = ['A', 'ABSENT', 'FD', 'FULL DAY', 'HD', 'HALF DAY', 'SLWP', 'SICK LEAVE', 'MP', 'MISS PUNCH'];
 
-    // -- Shift Calendar Logic Setup --
     const DEFAULT_SETTINGS = { pattern: 'ACB', baseDate: '2026-01-05', baseShift: 'A' }; 
     let shiftSettings = JSON.parse(localStorage.getItem('shiftSettings')) || DEFAULT_SETTINGS;
-    
     if(!shiftSettings.pattern) shiftSettings.pattern = 'ACB';
     
     let calCurrentDate = new Date();
     if(calCurrentDate.getFullYear() !== 2026) calCurrentDate.setFullYear(2026);
 
-    const SEQUENCES = {
-        'ACB': ['A', 'C', 'B'],
-        'BC': ['B', 'C']
-    };
-
-    const holidays2026 = {
-        "2026-01-01": "New Year Day", "2026-01-26": "Republic Day", "2026-04-03": "Good Friday", "2026-04-14": "Ambedkar Jayanti", "2026-05-01": "May Day", "2026-08-15": "Independence Day", "2026-09-14": "Ganesh Chaturthi (Day 1)", "2026-09-15": "Ganesh Chaturthi (Day 2)", "2026-10-02": "Gandhi Jayanti", "2026-10-20": "Dussehra", "2026-12-19": "Goa Liberation Day", "2026-12-25": "Christmas Day"
-    };
+    const SEQUENCES = { 'ACB': ['A', 'C', 'B'], 'BC': ['B', 'C'] };
+    const holidays2026 = { "2026-01-01": "New Year Day", "2026-01-26": "Republic Day", "2026-04-03": "Good Friday", "2026-04-14": "Ambedkar Jayanti", "2026-05-01": "May Day", "2026-08-15": "Independence Day", "2026-09-14": "Ganesh Chaturthi (Day 1)", "2026-09-15": "Ganesh Chaturthi (Day 2)", "2026-10-02": "Gandhi Jayanti", "2026-10-20": "Dussehra", "2026-12-19": "Goa Liberation Day", "2026-12-25": "Christmas Day" };
 
     document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('footer-year').textContent = new Date().getFullYear();
         
+        // CHECK MAINTENANCE MODE FIRST
+        if (IS_MAINTENANCE_MODE) {
+            document.getElementById('splash-screen').style.display = 'none';
+            document.getElementById('main-content').classList.add('hidden');
+            document.getElementById('maintenance-screen').classList.remove('hidden');
+            document.getElementById('maintenance-screen').classList.add('flex');
+            return; // STOP EXECUTION OF NORMAL PORTAL
+        }
+
         try {
             const res = await fetch('data.json?t=' + new Date().getTime());
             if (!res.ok) throw new Error("Could not load data.json");
-            
             const rawData = await res.json();
             globalData = rawData.globalData;
             currentMonthStr = rawData.currentMonthStr;
             filteredData = [...globalData];
-
             initializeAppUI();
         } catch (error) {
             document.querySelector('#splash-screen p').innerHTML = `<span class="text-red-500 font-bold">Error: ${error.message}. Checking GitHub Action Sync...</span>`;
@@ -355,50 +388,26 @@
         });
     });
 
-    // --- Graph Logic & Customization ---
     function initOrUpdateTrendChart(type) {
-        if(trendChartInstance) {
-            trendChartInstance.destroy();
-        }
-        
+        if(trendChartInstance) trendChartInstance.destroy();
         const ctx = document.getElementById('dayWiseChart').getContext('2d');
-        const options = { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            animation: { duration: 1000 }
-        };
-
-        // Smooth lines if user selects line chart
+        const options = { responsive: true, maintainAspectRatio: false, animation: { duration: 1000 } };
         if (type === 'line') {
-            trendChartData.datasets.forEach(ds => {
-                ds.tension = 0.4; // Smooth curve
-                ds.fill = true;   // Shaded area under line
-            });
+            trendChartData.datasets.forEach(ds => { ds.tension = 0.4; ds.fill = true; });
         } else if (type === 'radar') {
             trendChartData.datasets.forEach(ds => ds.fill = true);
         } else {
             trendChartData.datasets.forEach(ds => ds.fill = false);
         }
-
-        if (type !== 'radar') {
-            options.scales = { x: { grid: { display: false } }, y: { beginAtZero: true } };
-        }
-
-        trendChartInstance = new Chart(ctx, {
-            type: type,
-            data: trendChartData,
-            options: options
-        });
+        if (type !== 'radar') options.scales = { x: { grid: { display: false } }, y: { beginAtZero: true } };
+        trendChartInstance = new Chart(ctx, { type: type, data: trendChartData, options: options });
     }
 
-    function changeChartType(type) {
-        initOrUpdateTrendChart(type);
-    }
+    function changeChartType(type) { initOrUpdateTrendChart(type); }
 
     function toggleGraphs() {
         const section = document.getElementById('graphs-section');
         const text = document.getElementById('toggle-graphs-text');
-        
         if (section.classList.contains('hidden')) {
             section.classList.remove('hidden');
             setTimeout(() => section.classList.remove('opacity-0'), 10);
@@ -410,34 +419,22 @@
         }
     }
 
-    // --- New UI Modal Logic ---
     function openNewUiModal() {
-        const modal = document.getElementById('new-ui-modal');
-        const content = document.getElementById('new-ui-content');
-        modal.classList.remove('opacity-0', 'pointer-events-none');
-        content.classList.remove('scale-95');
+        document.getElementById('new-ui-modal').classList.remove('opacity-0', 'pointer-events-none');
+        document.getElementById('new-ui-content').classList.remove('scale-95');
     }
-
     function closeNewUiModal() {
-        const modal = document.getElementById('new-ui-modal');
-        const content = document.getElementById('new-ui-content');
-        modal.classList.add('opacity-0', 'pointer-events-none');
-        content.classList.add('scale-95');
+        document.getElementById('new-ui-modal').classList.add('opacity-0', 'pointer-events-none');
+        document.getElementById('new-ui-content').classList.add('scale-95');
     }
 
-    // --- PDF Notice Modal Logic ---
     function openPdfModal() {
-        const modal = document.getElementById('pdf-alert-modal');
-        const content = document.getElementById('pdf-alert-content');
-        modal.classList.remove('opacity-0', 'pointer-events-none');
-        content.classList.remove('scale-95');
+        document.getElementById('pdf-alert-modal').classList.remove('opacity-0', 'pointer-events-none');
+        document.getElementById('pdf-alert-content').classList.remove('scale-95');
     }
-    
     function closePdfModal() {
-        const modal = document.getElementById('pdf-alert-modal');
-        const content = document.getElementById('pdf-alert-content');
-        modal.classList.add('opacity-0', 'pointer-events-none');
-        content.classList.add('scale-95');
+        document.getElementById('pdf-alert-modal').classList.add('opacity-0', 'pointer-events-none');
+        document.getElementById('pdf-alert-content').classList.add('scale-95');
     }
 
     function getDisplayStatus(val) { return (!val || val.trim() === '-') ? '-' : (val.trim() === '--' ? 'L' : val.trim()); }
@@ -446,19 +443,12 @@
         return (val.trim() === '--' || val.trim().toUpperCase() === 'L') ? 'l' : val.trim().toLowerCase(); 
     }
 
-    // Share Button Logic
     function shareEmployeeURL(employeeName) {
         const url = window.location.origin + window.location.pathname + '?Employee=' + encodeURIComponent(employeeName);
         if (navigator.share) {
-            navigator.share({
-                title: 'CommScope Attendance',
-                text: `Check attendance record for ${employeeName}:`,
-                url: url
-            }).catch((error) => console.log('Error sharing', error));
+            navigator.share({ title: 'CommScope Attendance', text: `Check attendance record for ${employeeName}:`, url: url }).catch(console.log);
         } else {
-            navigator.clipboard.writeText(url).then(() => {
-                alert('Employee link copied to clipboard!');
-            });
+            navigator.clipboard.writeText(url).then(() => alert('Employee link copied to clipboard!'));
         }
     }
 
@@ -478,15 +468,11 @@
     function initializeAppUI() {
         populateFilters();
         renderTable();
-        
         document.getElementById('splash-screen').style.opacity = '0';
-        
         setTimeout(() => {
             document.getElementById('splash-screen').style.display = 'none';
             document.getElementById('main-content').classList.remove('hidden');
-            
             updateDashboardMetrics();
-            
             const urlParams = new URLSearchParams(window.location.search);
             const employeeName = urlParams.get('Employee');
             if (employeeName) {
@@ -504,24 +490,14 @@
         globalData.forEach(row => {
             row.dates.forEach((d, i) => {
                 const status = d ? d.trim().toUpperCase() : '';
-                
-                // Exclude empty cells, hyphens, and Left
                 if (status && status !== '-' && status !== '--' && status !== 'L') {
-                    // Check if the status belongs to the predefined Absence list
-                    if (absenceList.includes(status)) { 
-                        totalAbsents++; 
-                        if (i < 31) daily[i].a++; 
-                    } else { 
-                        // Everything else (P, WO, HO, ROTA, unknown values) defaults to Present
-                        totalPresents++; 
-                        if (i < 31) daily[i].p++; 
-                    }
+                    if (absenceList.includes(status)) { totalAbsents++; if (i < 31) daily[i].a++; } 
+                    else { totalPresents++; if (i < 31) daily[i].p++; }
                 }
             });
         });
 
         document.getElementById('current-month-header').textContent = `Overview for ${currentMonthStr}`;
-
         animateValue('metric-total-val', 0, total, 1200);
         animateValue('metric-present-val', 0, totalPresents, 1200);
         animateValue('metric-absent-val', 0, totalAbsents, 1200);
@@ -532,37 +508,18 @@
             options: { responsive: true, maintainAspectRatio: false, cutout: '70%', animation: { duration: 1500 } }
         });
 
-        // Save data to global variable so chart type can be switched dynamically
         trendChartData = {
             labels: Array.from({length:31}, (_,i)=>i+1), 
             datasets: [
-                { 
-                    label: 'Present / Default', 
-                    data: daily.map(d=>d.p), 
-                    backgroundColor: 'rgba(16, 185, 129, 0.5)', 
-                    borderColor: '#10b981', 
-                    borderWidth: 2,
-                    borderRadius: 4
-                }, 
-                { 
-                    label: 'Absent / Reduced', 
-                    data: daily.map(d=>d.a), 
-                    backgroundColor: 'rgba(244, 63, 94, 0.5)', 
-                    borderColor: '#f43f5e', 
-                    borderWidth: 2,
-                    borderRadius: 4
-                }
+                { label: 'Present / Default', data: daily.map(d=>d.p), backgroundColor: 'rgba(16, 185, 129, 0.5)', borderColor: '#10b981', borderWidth: 2, borderRadius: 4 }, 
+                { label: 'Absent / Reduced', data: daily.map(d=>d.a), backgroundColor: 'rgba(244, 63, 94, 0.5)', borderColor: '#f43f5e', borderWidth: 2, borderRadius: 4 }
             ] 
         };
-        
-        // Initialize the default chart type selected in HTML
         initOrUpdateTrendChart(document.getElementById('chartTypeSelector').value || 'bar');
     }
 
     function renderTable() {
-        // --- 1. DESKTOP TABLE CREATION ---
         document.getElementById('tableHeader').innerHTML = `<tr><th class="p-4">Employee</th><th class="p-4">Status</th><th class="p-4">Contractor</th>${Array.from({length: 31}, (_, i) => `<th class="p-4 text-center">${i+1}</th>`).join('')}</tr>`;
-        
         const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
         const fragment = document.createDocumentFragment();
         
@@ -575,14 +532,11 @@
             tr.innerHTML = html;
             fragment.appendChild(tr);
         });
-        
         document.getElementById('tableBody').innerHTML = '';
         document.getElementById('tableBody').appendChild(fragment);
 
-        // --- 2. MOBILE CARDS CREATION ---
         const mobileContainer = document.getElementById('mobileCardsContainer');
         mobileContainer.innerHTML = '';
-        
         pageData.forEach((row, i) => {
             const isLeft = (row.status !== 'Active');
             const bgClass = isLeft ? 'bg-red-50 border-red-200 hover:border-red-400' : 'bg-white border-slate-200 hover:border-teal-300';
@@ -591,38 +545,25 @@
             mobileContainer.innerHTML += `
                 <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" class="${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1">
                     <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-lg">${row.name}</h3>
-                            <p class="text-xs text-slate-500 font-mono mt-0.5">${row.code}</p>
-                        </div>
+                        <div><h3 class="font-bold text-slate-800 text-lg">${row.name}</h3><p class="text-xs text-slate-500 font-mono mt-0.5">${row.code}</p></div>
                         <span class="text-xs font-bold px-2 py-1 rounded-full ${statusBadgeClass}">${row.status}</span>
                     </div>
-                    <div class="mt-3 inline-block bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50">
-                        <i class="fa-solid fa-briefcase text-slate-400 mr-1"></i> ${row.contractor}
-                    </div>
-                </div>
-            `;
+                    <div class="mt-3 inline-block bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50"><i class="fa-solid fa-briefcase text-slate-400 mr-1"></i> ${row.contractor}</div>
+                </div>`;
         });
-
         renderPagination();
     }
     
     function changePage(dir) {
         currentPage += dir;
         renderTable();
-        // Scroll to top of table section on pagination
         document.getElementById('table-section-header').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function renderPagination() {
         const totalPages = Math.ceil(filteredData.length / rowsPerPage);
         const container = document.getElementById('pagination-controls');
-        
-        if (filteredData.length === 0) { 
-            container.innerHTML = '<span class="text-slate-500 font-medium">No records found.</span>'; 
-            return; 
-        }
-        
+        if (filteredData.length === 0) { container.innerHTML = '<span class="text-slate-500 font-medium">No records found.</span>'; return; }
         const endRecord = Math.min(currentPage * rowsPerPage, filteredData.length);
         
         container.innerHTML = `
@@ -642,7 +583,6 @@
     function applyFilters() {
         const search = document.getElementById('searchInput').value.toLowerCase(), status = document.getElementById('statusFilter').value, contractor = document.getElementById('contractorFilter').value;
         filteredData = globalData.filter(row => (row.name.toLowerCase().includes(search) || row.code.toLowerCase().includes(search)) && (status ? row.status === status : true) && (contractor ? row.contractor === contractor : true));
-        
         const count = document.getElementById('contractor-count');
         (contractor || status || search) ? (count.textContent = `${filteredData.length} Employee(s)`, count.classList.remove('hidden')) : count.classList.add('hidden');
         renderTable();
@@ -650,11 +590,8 @@
 
     function openEmployeeModal(index) {
         const employee = filteredData[index];
-        
         let date = new Date(currentMonthStr);
-        let firstDay = 0;
-        let totalDays = 31;
-        let displayMonthStr = currentMonthStr;
+        let firstDay = 0, totalDays = 31, displayMonthStr = currentMonthStr;
         
         if (!isNaN(date.getTime())) {
             firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
@@ -673,79 +610,39 @@
             totalDays = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
         }
 
-        // --- Calculate Attendance Stats ---
         let p = 0, a = 0, mp = 0, fd = 0, validDays = 0;
-        
         for (let i = 0; i < totalDays; i++) {
             const rawStatus = employee.dates[i] ? employee.dates[i].trim().toUpperCase() : '';
-            
-            // Only count valid non-empty days that are not hyphens or L
             if (rawStatus && rawStatus !== '-' && rawStatus !== '--' && rawStatus !== 'L') {
                 validDays++;
-                
-                // If the text matches the absence list exactly, it reduces the percentage
                 if (absenceList.includes(rawStatus)) {
                     if (rawStatus === 'A' || rawStatus === 'ABSENT') a++;
                     else if (rawStatus === 'MP' || rawStatus === 'MISS PUNCH') mp++;
                     else if (rawStatus === 'FD' || rawStatus === 'FULL DAY') fd++;
-                } else {
-                    // Everything else (P, WO, HO, ROTA, unknown new text) defaults to Present
-                    p++;
-                }
+                } else p++;
             }
         }
-
-        // Attendance formula: (Present Equivalent / Total Valid Logged Days) * 100
         let attendancePercentage = validDays > 0 ? Math.round((p / validDays) * 100) : 0;
 
-        // Modal UI Info Panel with correctly aligned stats and new blue color for Full Day
         document.getElementById('modal-info-panel').innerHTML = `
             <div class="mb-4">
                 <h2 class="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">${employee.name}</h2>
                 <p class="text-slate-500 mt-1 font-medium">${employee.code} &bull; ${employee.contractor} &bull; ${employee.status}</p>
-                
                 <div class="mt-4 p-4 bg-slate-50 rounded-xl text-sm text-slate-700 space-y-2 border border-slate-200 shadow-sm">
                     <p class="flex items-center gap-2"><i class="fa-solid fa-user-tie text-teal-600 w-4"></i> <strong>Team Leader:</strong> <span class="ml-auto text-right">${employee.tl || 'N/A'}</span></p>
                     <p class="flex items-center gap-2 border-t border-slate-200 pt-2"><i class="fa-solid fa-file-signature text-teal-600 w-4"></i> <strong>Shift Supervisor:</strong> <span class="ml-auto text-right">${employee.sanctioner || 'N/A'}</span></p>
                 </div>
-
-                <!-- FIXED ALIGNMENT & COLOR: Attendance Summary Stats (Present, Absent, Full Day, MP) -->
                 <div class="mt-4 grid grid-cols-4 gap-2 text-sm h-16">
-                    <div class="bg-emerald-50 text-emerald-800 p-1.5 rounded-lg border border-emerald-100 flex flex-col items-center justify-between h-full">
-                        <span class="font-bold text-xl leading-none mt-1">${p}</span>
-                        <span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Present</span>
-                    </div>
-                    <div class="bg-red-50 text-red-800 p-1.5 rounded-lg border border-red-100 flex flex-col items-center justify-between h-full">
-                        <span class="font-bold text-xl leading-none mt-1">${a}</span>
-                        <span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Absent</span>
-                    </div>
-                    <div class="bg-blue-50 text-blue-800 p-1.5 rounded-lg border border-blue-200 flex flex-col items-center justify-between h-full">
-                        <span class="font-bold text-xl leading-none mt-1">${fd}</span>
-                        <span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Full Day</span>
-                    </div>
-                    <div class="bg-orange-50 text-orange-800 p-1.5 rounded-lg border border-orange-100 flex flex-col items-center justify-between h-full">
-                        <span class="font-bold text-xl leading-none mt-1">${mp}</span>
-                        <span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Miss Punch</span>
-                    </div>
+                    <div class="bg-emerald-50 text-emerald-800 p-1.5 rounded-lg border border-emerald-100 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${p}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Present</span></div>
+                    <div class="bg-red-50 text-red-800 p-1.5 rounded-lg border border-red-100 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${a}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Absent</span></div>
+                    <div class="bg-blue-50 text-blue-800 p-1.5 rounded-lg border border-blue-200 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${fd}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Full Day</span></div>
+                    <div class="bg-orange-50 text-orange-800 p-1.5 rounded-lg border border-orange-100 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${mp}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Miss Punch</span></div>
                 </div>
-
-                <div class="mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-900 p-3 rounded-lg flex justify-between items-center border border-blue-100 shadow-sm">
-                    <span class="font-bold text-sm uppercase tracking-wide"><i class="fa-solid fa-chart-pie mr-1 text-blue-500"></i> Attendance Rate</span>
-                    <span class="font-bold text-2xl">${attendancePercentage}%</span>
-                </div>
-                
-                <button onclick="shareEmployeeURL('${employee.name.replace(/'/g, "\\'")}')" class="w-full mt-4 bg-teal-100 hover:bg-teal-200 text-teal-800 py-2.5 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="fa-solid fa-share-nodes"></i> Share Attendance
-                </button>
+                <div class="mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-900 p-3 rounded-lg flex justify-between items-center border border-blue-100 shadow-sm"><span class="font-bold text-sm uppercase tracking-wide"><i class="fa-solid fa-chart-pie mr-1 text-blue-500"></i> Attendance Rate</span><span class="font-bold text-2xl">${attendancePercentage}%</span></div>
+                <button onclick="shareEmployeeURL('${employee.name.replace(/'/g, "\\'")}')" class="w-full mt-4 bg-teal-100 hover:bg-teal-200 text-teal-800 py-2.5 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-share-nodes"></i> Share Attendance</button>
             </div>
-            
-            <!-- Mobile Toggle Legend / Permanent Desktop Legend -->
             <div class="mt-auto pt-4 border-t border-slate-200">
-                <div class="flex justify-between items-center font-semibold text-slate-800 lg:cursor-default cursor-pointer select-none" onclick="if(window.innerWidth < 1024) { document.getElementById('legend-content').classList.toggle('hidden'); document.getElementById('legend-icon').classList.toggle('rotate-180'); }">
-                    <span>Legend</span>
-                    <i id="legend-icon" class="fa-solid fa-chevron-down transition-transform lg:hidden text-slate-500"></i>
-                </div>
-                
+                <div class="flex justify-between items-center font-semibold text-slate-800 lg:cursor-default cursor-pointer select-none" onclick="if(window.innerWidth < 1024) { document.getElementById('legend-content').classList.toggle('hidden'); document.getElementById('legend-icon').classList.toggle('rotate-180'); }"><span>Legend</span><i id="legend-icon" class="fa-solid fa-chevron-down transition-transform lg:hidden text-slate-500"></i></div>
                 <div id="legend-content" class="hidden lg:block mt-3 transition-all">
                     <div class="grid grid-cols-2 gap-x-2 gap-y-2 text-xs">
                         <div class="flex items-center gap-2"><span class="legend-badge status-p">P</span><span>Present</span></div>
@@ -758,20 +655,15 @@
                         <div class="flex items-center gap-2"><span class="legend-badge status-l">L</span><span>Left</span></div>
                     </div>
                 </div>
-            </div>
-        `;
-
+            </div>`;
         document.getElementById('modal-calendar-title').textContent = `Attendance for ${displayMonthStr}`;
-
         let daysHTML = Array(firstDay).fill('<div></div>').join('');
         for (let i = 0; i < totalDays; i++) {
             const rawStatus = employee.dates[i] || '-';
             daysHTML += `<div class="status-${getStatusClass(rawStatus)} flex flex-col justify-center items-center rounded-lg font-bold py-2 shadow-sm border border-slate-100 transition hover:scale-105 min-h-[44px] md:min-h-0"><span class="text-sm md:text-base">${i+1}</span><span class="text-[10px] md:text-xs opacity-80 mt-0.5">${getDisplayStatus(rawStatus)}</span></div>`;
         }
         document.getElementById('modal-calendar').innerHTML = daysHTML;
-
-        const modal = document.getElementById('employee-modal');
-        modal.classList.remove('opacity-0', 'pointer-events-none');
+        document.getElementById('employee-modal').classList.remove('opacity-0', 'pointer-events-none');
         document.getElementById('modal-content').classList.remove('scale-95');
         history.pushState({}, '', `?Employee=${encodeURIComponent(employee.name)}`);
     }
@@ -782,7 +674,6 @@
         history.pushState({}, '', window.location.pathname);
     }
 
-    // --- Shift Calendar Methods ---
     function getMonday(d) {
         const date = new Date(d);
         date.setHours(0,0,0,0);
@@ -795,175 +686,87 @@
         const shiftSelect = document.getElementById('sc-setup-shift');
         const pattern = shiftSettings.pattern;
         shiftSelect.innerHTML = '';
-        
-        if (pattern === 'ACB') {
-            shiftSelect.innerHTML = '<option value="A">A Shift</option><option value="B">B Shift</option><option value="C">C Shift</option>';
-        } else if (pattern === 'BC') {
-            shiftSelect.innerHTML = '<option value="B">B Shift</option><option value="C">C Shift</option>';
-            if (shiftSettings.baseShift === 'A') shiftSettings.baseShift = 'B';
-        }
-        
+        if (pattern === 'ACB') { shiftSelect.innerHTML = '<option value="A">A Shift</option><option value="B">B Shift</option><option value="C">C Shift</option>'; } 
+        else if (pattern === 'BC') { shiftSelect.innerHTML = '<option value="B">B Shift</option><option value="C">C Shift</option>'; if (shiftSettings.baseShift === 'A') shiftSettings.baseShift = 'B'; }
         shiftSelect.value = shiftSettings.baseShift;
     }
 
-    function onPatternChange() {
-        shiftSettings.pattern = document.getElementById('sc-setup-pattern').value;
-        updateShiftDropdown();
-        saveShiftSettings();
-    }
-
-    function saveShiftSettings() {
-        shiftSettings.pattern = document.getElementById('sc-setup-pattern').value;
-        shiftSettings.baseShift = document.getElementById('sc-setup-shift').value;
-        shiftSettings.baseDate = document.getElementById('sc-setup-date').value || shiftSettings.baseDate;
-        localStorage.setItem('shiftSettings', JSON.stringify(shiftSettings));
-        renderShiftCalendar();
-    }
+    function onPatternChange() { shiftSettings.pattern = document.getElementById('sc-setup-pattern').value; updateShiftDropdown(); saveShiftSettings(); }
+    function saveShiftSettings() { shiftSettings.pattern = document.getElementById('sc-setup-pattern').value; shiftSettings.baseShift = document.getElementById('sc-setup-shift').value; shiftSettings.baseDate = document.getElementById('sc-setup-date').value || shiftSettings.baseDate; localStorage.setItem('shiftSettings', JSON.stringify(shiftSettings)); renderShiftCalendar(); }
 
     function getShiftForDate(dateObj) {
         if (dateObj.getDay() === 0) return 'OFF'; 
-        
-        const targetMon = getMonday(dateObj);
-        const baseMon = getMonday(new Date(shiftSettings.baseDate));
+        const targetMon = getMonday(dateObj), baseMon = getMonday(new Date(shiftSettings.baseDate));
         const diffWeeks = Math.floor(Math.round((targetMon - baseMon) / (1000 * 60 * 60 * 24)) / 7);
-        
         const activeSeq = SEQUENCES[shiftSettings.pattern] || SEQUENCES['ACB'];
-        let baseIndex = activeSeq.indexOf(shiftSettings.baseShift);
-        if (baseIndex === -1) baseIndex = 0; 
-        
-        let currentIndex = (baseIndex + diffWeeks) % activeSeq.length; 
-        if (currentIndex < 0) currentIndex += activeSeq.length;
-        
+        let baseIndex = activeSeq.indexOf(shiftSettings.baseShift); if (baseIndex === -1) baseIndex = 0; 
+        let currentIndex = (baseIndex + diffWeeks) % activeSeq.length; if (currentIndex < 0) currentIndex += activeSeq.length;
         return activeSeq[currentIndex];
     }
 
     function formatISODate(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0'); }
 
     function renderShiftCalendar() {
-        const y = calCurrentDate.getFullYear();
-        const m = calCurrentDate.getMonth();
+        const y = calCurrentDate.getFullYear(), m = calCurrentDate.getMonth();
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        
         document.getElementById('sc-month-title').innerText = `${monthNames[m]} ${y}`;
-        const grid = document.getElementById('sc-days'); 
-        grid.innerHTML = '';
-        
-        const firstDay = new Date(y, m, 1).getDay();
-        const daysInMonth = new Date(y, m + 1, 0).getDate();
-        const today = new Date();
-        
+        const grid = document.getElementById('sc-days'); grid.innerHTML = '';
+        const firstDay = new Date(y, m, 1).getDay(), daysInMonth = new Date(y, m + 1, 0).getDate(), today = new Date();
         for (let i = 0; i < firstDay; i++) { grid.innerHTML += `<div></div>`; }
-        
         for (let d = 1; d <= daysInMonth; d++) {
-            const cDate = new Date(y, m, d);
-            const isoDate = formatISODate(cDate);
-            const sCode = getShiftForDate(cDate);
-            const isHol = holidays2026[isoDate];
-            
+            const cDate = new Date(y, m, d), isoDate = formatISODate(cDate), sCode = getShiftForDate(cDate), isHol = holidays2026[isoDate];
             let cls = `sc-cell sc-shift-${sCode}`;
             let isToday = (d === today.getDate() && m === today.getMonth() && y === today.getFullYear());
-            
-            if (isToday) {
-                cls += ' ring-2 ring-indigo-500 ring-offset-2 scale-105 shadow-md z-10';
-            }
+            if (isToday) cls += ' ring-2 ring-indigo-500 ring-offset-2 scale-105 shadow-md z-10';
             if (isHol) cls += ' sc-holiday';
-            
-            grid.innerHTML += `
-                <div class="${cls} text-xs md:text-sm shadow-sm transition hover:scale-105">
-                    <div class="font-bold text-slate-700 ${isHol ? 'text-amber-900' : ''} ${isToday && !isHol ? 'text-indigo-900' : ''}">${d}</div>
-                    <div class="text-[9px] md:text-xs font-bold mt-1 px-1.5 py-0.5 rounded-full bg-white/60 tracking-wider">${sCode}</div>
-                </div>`;
+            grid.innerHTML += `<div class="${cls} text-xs md:text-sm shadow-sm transition hover:scale-105"><div class="font-bold text-slate-700 ${isHol ? 'text-amber-900' : ''} ${isToday && !isHol ? 'text-indigo-900' : ''}">${d}</div><div class="text-[9px] md:text-xs font-bold mt-1 px-1.5 py-0.5 rounded-full bg-white/60 tracking-wider">${sCode}</div></div>`;
         }
-
         let holHtml = '';
         Object.keys(holidays2026).sort().forEach(dateStr => {
             let hd = new Date(dateStr);
-            if(hd.getFullYear() === y && hd.getMonth() === m) {
-                holHtml += `<div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm flex justify-between items-center"><span class="font-bold text-amber-700">${hd.getDate()} ${monthNames[m]}</span> <span class="text-amber-900 font-medium text-right">${holidays2026[dateStr]}</span></div>`;
-            }
+            if(hd.getFullYear() === y && hd.getMonth() === m) { holHtml += `<div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm flex justify-between items-center"><span class="font-bold text-amber-700">${hd.getDate()} ${monthNames[m]}</span> <span class="text-amber-900 font-medium text-right">${holidays2026[dateStr]}</span></div>`; }
         });
         if(!holHtml) holHtml = `<div class="text-sm text-slate-400 text-center italic mt-4 bg-slate-50 p-4 rounded-xl border border-slate-200">No public holidays this month</div>`;
         document.getElementById('sc-holiday-list').innerHTML = holHtml;
     }
 
-    function changeShiftMonth(dir) {
-        calCurrentDate.setMonth(calCurrentDate.getMonth() + dir);
-        renderShiftCalendar();
-    }
+    function changeShiftMonth(dir) { calCurrentDate.setMonth(calCurrentDate.getMonth() + dir); renderShiftCalendar(); }
     
     function openShiftModal() {
-        document.getElementById('sc-setup-pattern').value = shiftSettings.pattern;
-        updateShiftDropdown();
-        document.getElementById('sc-setup-date').value = shiftSettings.baseDate;
-        renderShiftCalendar();
-        
-        const modal = document.getElementById('shift-modal');
-        const content = document.getElementById('shift-modal-content');
-        modal.classList.remove('opacity-0', 'pointer-events-none');
-        content.classList.remove('scale-95');
+        document.getElementById('sc-setup-pattern').value = shiftSettings.pattern; updateShiftDropdown(); document.getElementById('sc-setup-date').value = shiftSettings.baseDate; renderShiftCalendar();
+        document.getElementById('shift-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('shift-modal-content').classList.remove('scale-95');
     }
-    
-    function closeShiftModal() {
-        const modal = document.getElementById('shift-modal');
-        const content = document.getElementById('shift-modal-content');
-        modal.classList.add('opacity-0', 'pointer-events-none');
-        content.classList.add('scale-95');
-    }
+    function closeShiftModal() { document.getElementById('shift-modal').classList.add('opacity-0', 'pointer-events-none'); document.getElementById('shift-modal-content').classList.add('scale-95'); }
 </script>
 
-<!-- FIREBASE COUNTER SCRIPT (LEGITIMATE TRAFFIC ONLY) -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getDatabase, ref, increment, update, get, goOffline } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-    // ✅ YOUR EXACT FIREBASE INFO
-    const firebaseConfig = {
-      projectId: "sg-fun",
-      databaseURL: "https://sg-fun-default-rtdb.firebaseio.com"
-    };
-
-    // --- FIREBASE EXECUTION ---
-    const randomDelay = Math.random() * 3000; // Jitter to prevent simultaneous connection overload
+    const firebaseConfig = { projectId: "sg-fun", databaseURL: "https://sg-fun-default-rtdb.firebaseio.com" };
+    const randomDelay = Math.random() * 3000; 
 
     setTimeout(() => {
+        // Do not record visits if site is under maintenance
+        if(IS_MAINTENANCE_MODE) return; 
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
-        // Get IST time
-        const d = new Date();
-        const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-        const ist = new Date(utc + (3600000 * 5.5)); 
-        
+        const d = new Date(), utc = d.getTime() + (d.getTimezoneOffset() * 60000), ist = new Date(utc + (3600000 * 5.5)); 
         const todayStr = ist.toISOString().split('T')[0];
-        const yesterday = new Date(ist);
-        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterday = new Date(ist); yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-        // Send Real +1 to Firebase
-        const updates = {};
-        updates['/visitors/total'] = increment(1);
-        updates['/visitors/daily/' + todayStr] = increment(1);
+        const updates = {}; updates['/visitors/total'] = increment(1); updates['/visitors/daily/' + todayStr] = increment(1);
 
         update(ref(db), updates).then(() => {
             get(ref(db, 'visitors')).then((snapshot) => {
                 let realTotal = 0, realToday = 0, realYday = 0;
-
-                if(snapshot.exists()) {
-                    const data = snapshot.val();
-                    realTotal = data.total || 0;
-                    realToday = data.daily[todayStr] || 0;
-                    realYday = data.daily[yesterdayStr] || 0;
-                }
-
-                // Display ONLY legitimate data
-                document.getElementById('vis-total').innerText = realTotal.toLocaleString();
-                document.getElementById('vis-today').innerText = realToday.toLocaleString();
-                document.getElementById('vis-yday').innerText = realYday.toLocaleString();
-                
+                if(snapshot.exists()) { const data = snapshot.val(); realTotal = data.total || 0; realToday = data.daily[todayStr] || 0; realYday = data.daily[yesterdayStr] || 0; }
+                document.getElementById('vis-total').innerText = realTotal.toLocaleString(); document.getElementById('vis-today').innerText = realToday.toLocaleString(); document.getElementById('vis-yday').innerText = realYday.toLocaleString();
                 goOffline(db); 
             }).catch(() => goOffline(db));
         }).catch(() => goOffline(db));
-
     }, randomDelay);
 </script>
 </body>
