@@ -22,8 +22,8 @@ async function fetchAndParsePDF() {
     let globalData = [];
     let currentMonthStr = "Unknown Month";
     
-    // We will update this map for every page so it perfectly aligns with the PDF
-    let dayXCoords = new Array(31).fill(null);
+    // Memory Grid for physical X-coordinates of Days 1-31
+    let globalDayXCoords = new Array(31).fill(null);
 
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
@@ -33,72 +33,77 @@ async function fetchAndParsePDF() {
             .map(item => ({ text: item.str.trim(), x: item.transform[4], y: item.transform[5] }))
             .filter(item => item.text !== '');
 
-        // 1. EXTRACT MONTH
-        let fullPageText = items.map(item => item.text).join(' ');
-        const monthMatch = fullPageText.match(/Attendance for the Month of\s*([A-Za-z]+\s*\d{4})/i);
-        if (monthMatch && currentMonthStr === "Unknown Month") {
-            currentMonthStr = monthMatch[1];
+        // 1. EXTRACT MONTH (Runs on first page)
+        if (currentMonthStr === "Unknown Month") {
+            let fullPageText = items.map(item => item.text).join(' ');
+            const monthMatch = fullPageText.match(/Attendance for the Month of\s*([A-Za-z]+\s*\d{4})/i);
+            if (monthMatch) currentMonthStr = monthMatch[1];
         }
 
-        // 2. FIND THE DYNAMIC HEADER GRID FOR THIS SPECIFIC PAGE
-        let yGroups = {};
-        for(let item of items) {
-            let yKey = Math.round(item.y / 2) * 2; // Group items on the same horizontal line
-            if(!yGroups[yKey]) yGroups[yKey] = [];
-            yGroups[yKey].push(item);
-        }
-
-        let headerRow = null;
-        for (let y in yGroups) {
-            let rowTexts = yGroups[y].map(u => u.text);
-            // If the row contains 1, 15, and 28, it is 100% the calendar header row
-            if (rowTexts.includes('1') && rowTexts.includes('15') && rowTexts.includes('28')) {
-                headerRow = yGroups[y];
-                break;
-            }
-        }
-
-        // Map the exact X coordinates of the days
-        if (headerRow) {
-            headerRow.sort((a,b) => a.x - b.x);
-            for (let d = 1; d <= 31; d++) {
-                let matches = headerRow.filter(item => item.text === d.toString());
-                if (matches.length > 0) {
-                    dayXCoords[d-1] = matches[matches.length - 1].x; // Record physical location
-                }
-            }
-        }
-
-        // If we don't have grid coordinates yet, skip the page (safety check)
-        if (!dayXCoords[0]) continue; 
-
-        // 3. ANCHOR GROUPING (Split rows exactly on Employee Code)
+        // 2. STABLE 2D SORT (Top to Bottom, Left to Right)
         items.sort((a, b) => {
-            if (Math.abs(b.y - a.y) > 3) return b.y - a.y; 
+            if (Math.abs(b.y - a.y) > 4) return b.y - a.y; 
             return a.x - b.x; 
         });
 
+        // 3. BUILD THE SPATIAL GRID (Only runs once, remembers for all pages)
+        if (!globalDayXCoords[0]) {
+            // Find the word "Contractor" in the header to anchor our vertical height
+            let headerAnchor = items.find(u => u.text.toLowerCase() === 'contractor');
+            if (headerAnchor) {
+                // Grab everything within a generous 15-pixel horizontal band
+                let headerRow = items.filter(u => Math.abs(u.y - headerAnchor.y) < 15);
+                
+                for (let d = 1; d <= 31; d++) {
+                    let match = headerRow.find(u => u.text === d.toString());
+                    if (match) globalDayXCoords[d-1] = match.x;
+                }
+                
+                // Auto-fill tiny gaps if a number was blurry
+                for (let d = 1; d < 30; d++) {
+                    if (!globalDayXCoords[d] && globalDayXCoords[d-1] && globalDayXCoords[d+1]) {
+                        globalDayXCoords[d] = (globalDayXCoords[d-1] + globalDayXCoords[d+1]) / 2;
+                    }
+                }
+            }
+            
+            // Fallback just in case the PDF completely breaks (prevents 0 data)
+            if (!globalDayXCoords[0]) {
+                for(let d=0; d<31; d++) globalDayXCoords[d] = 215 + (d * 14.5); 
+            }
+        }
+
+        // 4. ANCHOR GROUPING (Splits rows exactly on Employee Code)
         let lines = [];
         let currentRow = [];
 
         for (let item of items) {
             let t = item.text.toLowerCase();
-            if (t === 'page' || t === 'of' || /^\d+$/.test(item.text) && parseInt(item.text) > 31) continue; // Destroy footers/page numbers
             
+            // Destroy all header/footer words so they don't enter our data
+            if (t === 'employee code' || t === 'employee name' || t === 'status' || t === 'contractor' || t === 'reporting person' || t === 'sanctioner') continue;
+            if (t === 'page' || t === 'of') continue; 
+            
+            // Skip stray page numbers
+            if (/^\d+$/.test(item.text) && parseInt(item.text) > 31) continue; 
+            
+            // Detect the start of a new employee row
             const isEmployeeCode = /^[A-Z0-9]{2,6}-\d{3,8}$/i.test(item.text) && item.x < 150;
 
             if (isEmployeeCode) {
                 if (currentRow.length > 0) lines.push(currentRow);
                 currentRow = [item];
             } else if (currentRow.length > 0) {
+                // By only pushing when currentRow has data, we automatically ignore 
+                // the "1 2 3... 31" header numbers on Pages 2-38!
                 currentRow.push(item);
             }
         }
         if (currentRow.length > 0) lines.push(currentRow);
 
-        // 4. PROCESS ROWS INTO 3 STRICT ZONES
-        let gridStartX = dayXCoords[0] - 12;
-        let gridEndX = dayXCoords[30] ? dayXCoords[30] + 15 : dayXCoords[29] + 30; // Safety boundary
+        // 5. PROCESS ROWS INTO ZONES
+        let gridStartX = (globalDayXCoords[0] || 215) - 12;
+        let gridEndX = (globalDayXCoords[30] || 650) + 15; 
 
         for (let row of lines) {
             row.sort((a, b) => a.x - b.x);
@@ -115,14 +120,14 @@ async function fetchAndParsePDF() {
                 if (!isDuplicate && t !== '') cleanRow.push({ text: t, x: row[j].x });
             }
 
-            // ZONE SPLITTING (Left = Info, Middle = Attendance, Right = Leaders)
+            // Split into 3 physical zones
             let leftItems = cleanRow.filter(i => i.x < gridStartX).map(i => i.text);
             let gridItems = cleanRow.filter(i => i.x >= gridStartX && i.x <= gridEndX);
             let rightItems = cleanRow.filter(i => i.x > gridEndX).map(i => i.text);
 
             let statusIdx = leftItems.findIndex(str => str.toLowerCase() === 'active' || str.toLowerCase() === 'left');
             
-            if (statusIdx >= 1) {
+            if (statusIdx >= 1 && leftItems.length >= 3) {
                 let code = leftItems[0];
                 let name = leftItems.slice(1, statusIdx).join(' ');
                 let status = leftItems[statusIdx];
@@ -143,26 +148,25 @@ async function fetchAndParsePDF() {
                 else if (cLower.includes('yashaswi')) contractor = 'YASHASWI';
                 else contractor = contractor.replace(/left|active/ig, '').trim();
 
-                // ATTENDANCE GRID PLACEMENT
+                // ATTENDANCE GRID SNAPPER
                 let datesArray = new Array(31).fill('-');
                 const attCodes = new Set(['p', 'a', 'wo', 'hd', 'fd', 'slwp', 'lwp', 'pl', 'hp', 'mp', 'l', '-', '--', 'ho', 'rota', 'ho (rota)']);
                 
                 for (let item of gridItems) {
                     if (attCodes.has(item.text.toLowerCase())) {
                         let bestDay = -1;
-                        let minDiff = 20; // Allow it to snap to the closest column line
+                        let minDiff = 12; // Snap tolerance
                         
                         for (let d = 0; d < 31; d++) {
-                            if (dayXCoords[d] !== null) {
-                                let diff = Math.abs(item.x - dayXCoords[d]);
+                            if (globalDayXCoords[d] !== null) {
+                                let diff = Math.abs(item.x - globalDayXCoords[d]);
                                 if (diff < minDiff) {
                                     minDiff = diff;
                                     bestDay = d;
                                 }
                             }
                         }
-                        // Snap the code to the exact matching day!
-                        if (bestDay !== -1) datesArray[bestDay] = item.text;
+                        if (bestDay !== -1) datesArray[bestDay] = item.text.toUpperCase();
                     }
                 }
 
