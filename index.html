@@ -64,6 +64,15 @@
         .sc-shift-C { background-color: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff;}
         .sc-shift-OFF { background-color: #ffe4e6; color: #be123c; border: 1px solid #fecdd3;}
         .sc-holiday { background-color: #fef3c7 !important; color: #92400e !important; border: 1px dashed #d97706; }
+
+        /* Minimal Mode Hide Rule */
+        body.minimal-mode .hide-on-minimal { display: none !important; }
+
+        /* Smooth Entry Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -82,48 +91,21 @@
         </div>
     </div>
 
-    <!-- MAINTENANCE OVERLAY -->
-    <div id="maintenance-screen" class="fixed inset-0 bg-slate-50 z-[200] hidden flex-col items-center justify-center p-6 text-center">
-        <div class="absolute top-6 right-6 md:top-8 md:right-8 bg-white border border-slate-200 rounded-xl p-1 flex gap-1 shadow-sm">
-            <button onclick="setLang('en')" id="btn-en" class="px-3 py-1.5 text-sm font-bold rounded-lg bg-teal-600 text-white transition-all shadow-sm">EN</button>
-            <button onclick="setLang('or')" id="btn-or" class="px-3 py-1.5 text-sm font-bold rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all">ଓଡ଼ିଆ</button>
-            <button onclick="setLang('hi')" id="btn-hi" class="px-3 py-1.5 text-sm font-bold rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all">हिन्दी</button>
-        </div>
-        
-        <div class="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 max-w-2xl w-full shadow-2xl flex flex-col items-center">
-            <div class="bg-amber-100 h-24 w-24 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                <i class="fa-solid fa-triangle-exclamation text-5xl text-amber-500 animate-bounce"></i>
-            </div>
-            <h1 class="text-3xl md:text-5xl font-extrabold text-slate-800 mb-6 tracking-tight" id="maint-title">Under Maintenance</h1>
-            <p class="text-slate-600 text-base md:text-lg mb-10 leading-relaxed font-medium" id="maint-desc">
-                We are currently experiencing technical issues with the PDF file structure. For accurate attendance data, please view the original PDF directly from Google Drive.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                <a href="https://drive.google.com/drive/folders/1H5tR99F-DsbT9wQnlLqXST0aLsa0B1sO?usp=drive_link" target="_blank" class="px-6 py-3.5 bg-teal-600 text-white rounded-xl font-bold hover:scale-105 hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/30 flex items-center justify-center gap-3">
-                    <i class="fa-solid fa-file-pdf text-xl"></i> <span id="maint-btn-pdf">View Original PDF</span>
-                </a>
-                <a href="https://imsbg.github.io/commscope/" class="px-6 py-3.5 bg-white text-slate-700 hover:bg-slate-50 rounded-xl font-bold transition-all flex items-center justify-center gap-3 border border-slate-200 shadow-sm hover:shadow">
-                    <i class="fa-solid fa-house text-lg text-slate-400"></i> <span id="maint-btn-home">Go to Home</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
     <!-- Main Content -->
     <main id="main-content" class="hidden p-4 md:p-6 lg:p-8 max-w-screen-2xl mx-auto space-y-6">
-        <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
-            <div>
+        <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 transition-all duration-300">
+            <div class="hide-on-minimal transition-all duration-300">
                 <h1 class="text-2xl md:text-3xl font-bold text-slate-900">CommScope Contractor Attendance Portal</h1>
                 <p id="current-month-header" class="text-slate-500 mt-1">Loading Data...</p>
             </div>
             <div class="flex flex-wrap items-center gap-2 md:gap-3 w-full xl:w-auto">
-                <button onclick="toggleGraphs()" class="bg-white text-slate-700 border border-slate-300 px-3 md:px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
+                <button onclick="toggleGraphs()" class="hide-on-minimal bg-white text-slate-700 border border-slate-300 px-3 md:px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
                     <i class="fa-solid fa-chart-line"></i> <span id="toggle-graphs-text">Show Graphs</span>
                 </button>
                 <button onclick="openShiftModal()" class="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
-                    <i class="fa-solid fa-calendar-days"></i> Shift Calendar
+                    <i class="fa-solid fa-calendar-days"></i> <span class="hidden sm:inline">Shift</span> Calendar
                 </button>
-                <button onclick="openPdfModal()" class="bg-[var(--primary)] text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-teal-700 transition flex items-center justify-center gap-2 text-sm font-medium w-full md:w-auto cursor-pointer">
+                <button onclick="openPdfModal()" class="bg-[var(--primary)] text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-teal-700 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 md:w-auto cursor-pointer">
                     <i class="fa-solid fa-folder-open"></i> Original PDF
                 </button>
                 <a href="https://imsbg.github.io/commscope/" class="bg-slate-800 text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-slate-700 transition flex items-center justify-center gap-2 text-sm font-medium w-full md:w-auto cursor-pointer">
@@ -132,7 +114,7 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 hide-on-minimal transition-all duration-300">
            <div class="bg-[var(--primary)] text-white p-6 rounded-2xl shadow-lg transform transition hover:-translate-y-1">
                <p class="text-sm font-medium text-teal-200">Total Employees</p>
                <p class="text-4xl font-bold" id="metric-total-val">0</p>
@@ -148,7 +130,7 @@
         </div>
         
         <!-- GRAPHS SECTION -->
-        <section id="graphs-section" class="hidden grid grid-cols-1 lg:grid-cols-5 gap-6 transition-all duration-300 opacity-0 mb-6">
+        <section id="graphs-section" class="hidden grid grid-cols-1 lg:grid-cols-5 gap-6 transition-all duration-300 opacity-0 mb-6 hide-on-minimal">
             <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                     <h2 class="text-xl font-bold text-slate-800">Daily Attendance Trends</h2>
@@ -168,21 +150,24 @@
 
         <!-- FILTERS AND TABLE SECTION -->
         <div id="table-section-header" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200">
-            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-4">
-                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 whitespace-nowrap">
-                    Employee Records 
-                    <span id="contractor-count" class="hidden bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full"></span>
+            <div class="flex justify-between items-center w-full mb-4">
+                <h2 class="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2 whitespace-nowrap">
+                    Records <span id="contractor-count" class="hidden bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full"></span>
                 </h2>
-                <!-- Adjusted grid layout (hidden TL/Sup fields) -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 w-full" id="filter-container">
-                    <input type="text" id="searchInput" placeholder="Search Employee..." class="px-4 py-2 border rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition shadow-sm">
-                    <select id="statusFilter" class="px-4 py-2 border rounded-lg bg-white w-full shadow-sm"></select>
-                    <select id="contractorFilter" class="px-4 py-2 border rounded-lg bg-white w-full shadow-sm"></select>
-                    
-                    <!-- Hidden TL and Sup Filters per request -->
-                    <select id="tlFilter" class="hidden px-4 py-2 border rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500"></select>
-                    <select id="supFilter" class="hidden px-4 py-2 border rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500"></select>
-                </div>
+                <!-- Minimal / Standard View Toggle -->
+                <button onclick="toggleViewMode()" id="viewToggleBtn" class="ml-auto text-xs md:text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-100 transition-colors flex items-center gap-1.5">
+                    <i class="fa-solid fa-mobile-screen"></i> <span class="hidden sm:inline">Minimal View</span>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 w-full mb-4" id="filter-container">
+                <input type="text" id="searchInput" placeholder="Search Employee..." class="px-4 py-2 border rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition shadow-sm">
+                <select id="statusFilter" class="px-4 py-2 border rounded-lg bg-white w-full shadow-sm"></select>
+                <select id="contractorFilter" class="px-4 py-2 border rounded-lg bg-white w-full shadow-sm"></select>
+                
+                <!-- Hidden TL and Sup Filters -->
+                <select id="tlFilter" class="hidden px-4 py-2 border rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500"></select>
+                <select id="supFilter" class="hidden px-4 py-2 border rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500"></select>
             </div>
             
             <div class="hidden md:block table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg">
@@ -215,10 +200,9 @@
         </footer>
     </main>
 
-    <!-- INSTAGRAM POPUP (NEW) -->
-    <div id="ig-popup" class="fixed bottom-4 right-4 left-4 md:left-auto md:w-[340px] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-slate-200 p-4 z-[90] transform transition-all duration-500 translate-y-0 flex gap-4 items-center">
+    <!-- FULLY CLICKABLE INSTAGRAM POPUP -->
+    <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" id="ig-popup" class="fixed bottom-4 right-4 left-4 md:left-auto md:w-[340px] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-slate-200 p-4 z-[90] transform transition-all duration-500 translate-y-48 opacity-0 flex gap-4 items-center hover:scale-[1.02] cursor-pointer group">
         <div class="flex-shrink-0 w-11 h-11 flex items-center justify-center">
-            <!-- Provided SVG -->
             <svg class="w-full h-full" viewBox="0 0 2500 2500" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <radialGradient id="0" cx="332.14" cy="2511.81" r="3263.54" gradientUnits="userSpaceOnUse"><stop offset=".09" stop-color="#fa8f21"/><stop offset=".78" stop-color="#d82d7e"/></radialGradient>
@@ -228,14 +212,15 @@
                 <path d="M833.4,1250c0-230.11,186.49-416.7,416.6-416.7s416.7,186.59,416.7,416.7-186.59,416.7-416.7,416.7S833.4,1480.11,833.4,1250m-225.26,0c0,354.5,287.36,641.86,641.86,641.86S1891.86,1604.5,1891.86,1250,1604.5,608.14,1250,608.14,608.14,895.5,608.14,1250M1767.27,582.69a150,150,0,1,0,150.06-149.94h-0.06a150.07,150.07,0,0,0-150,149.94M745,2267.47c-121.87-5.55-188.11-25.85-232.13-43-58.36-22.72-100-49.78-143.78-93.5s-70.88-85.32-93.5-143.68c-17.16-44-37.46-110.26-43-232.13-6.06-131.76-7.27-171.34-7.27-505.15s1.31-373.28,7.27-505.15c5.55-121.87,26-188,43-232.13,22.72-58.36,49.78-100,93.5-143.78s85.32-70.88,143.78-93.5c44-17.16,110.26-37.46,232.13-43,131.76-6.06,171.34-7.27,505-7.27s373.28,1.31,505.15,7.27c121.87,5.55,188,26,232.13,43,58.36,22.62,100,49.78,143.78,93.5s70.78,85.42,93.5,143.78c17.16,44,37.46,110.26,43,232.13,6.06,131.87,7.27,171.34,7.27,505.15s-1.21,373.28-7.27,505.15c-5.55,121.87-25.95,188.11-43,232.13-22.72,58.36-49.78,100-93.5,143.68s-85.42,70.78-143.78,93.5c-44,17.16-110.26,37.46-232.13,43-131.76,6.06-171.34,7.27-505.15,7.27s-373.28-1.21-505-7.27M734.65,7.57c-133.07,6.06-224,27.16-303.41,58.06C349,97.54,279.38,140.35,209.81,209.81S97.54,349,65.63,431.24c-30.9,79.46-52,170.34-58.06,303.41C1.41,867.93,0,910.54,0,1250s1.41,382.07,7.57,515.35c6.06,133.08,27.16,223.95,58.06,303.41,31.91,82.19,74.62,152,144.18,221.43S349,2402.37,431.24,2434.37c79.56,30.9,170.34,52,303.41,58.06C868,2498.49,910.54,2500,1250,2500s382.07-1.41,515.35-7.57c133.08-6.06,223.95-27.16,303.41-58.06,82.19-32,151.86-74.72,221.43-144.18s112.18-139.24,144.18-221.43c30.9-79.46,52.1-170.34,58.06-303.41,6.06-133.38,7.47-175.89,7.47-515.35s-1.41-382.07-7.47-515.35c-6.06-133.08-27.16-224-58.06-303.41-32-82.19-74.72-151.86-144.18-221.43S2150.95,97.54,2068.86,65.63c-79.56-30.9-170.44-52.1-303.41-58.06C1632.17,1.51,1589.56,0,1250.1,0S868,1.41,734.65,7.57" fill="url(#1)"/>
             </svg>
         </div>
-        <div class="flex-1">
-            <h4 class="font-bold text-slate-800 text-sm">Support My Work!</h4>
-            <p class="text-[12px] text-slate-500 mt-0.5 leading-snug">If you liked this project, follow me on Instagram <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" class="text-pink-600 font-bold hover:underline">@sandeepbiswalg</a></p>
+        <div class="flex-1 text-left">
+            <h4 class="font-bold text-slate-800 text-sm group-hover:text-pink-600 transition-colors">Support My Work!</h4>
+            <p class="text-[12px] text-slate-500 mt-0.5 leading-snug">If you liked this project, follow me on Instagram <span class="text-pink-600 font-bold group-hover:underline">@sandeepbiswalg</span></p>
         </div>
-        <button onclick="document.getElementById('ig-popup').classList.add('translate-y-48', 'opacity-0', 'pointer-events-none')" class="text-slate-400 hover:text-rose-500 flex-shrink-0 transition-colors p-1">
+        <!-- Clicking close stops the link from opening -->
+        <button onclick="event.preventDefault(); event.stopPropagation(); closeIgPopup();" class="text-slate-400 hover:text-rose-500 flex-shrink-0 transition-colors p-2 -mr-2 rounded-full hover:bg-slate-50 z-10 relative">
             <i class="fa-solid fa-xmark text-lg"></i>
         </button>
-    </div>
+    </a>
 
     <!-- PDF Notice Alert Modal (Clicking outside closes it) -->
     <div id="pdf-alert-modal" onclick="if(event.target === this) closePdfModal()" class="fixed inset-0 bg-black bg-opacity-60 z-[100] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none modal-blur">
@@ -326,6 +311,9 @@
     document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('footer-year').textContent = new Date().getFullYear();
         
+        // Load user's view mode preference
+        initViewMode();
+
         if (IS_MAINTENANCE_MODE) {
             document.getElementById('splash-screen').style.display = 'none';
             document.getElementById('main-content').classList.add('hidden');
@@ -346,12 +334,55 @@
             document.querySelector('#splash-screen p').innerHTML = `<span class="text-red-500 font-bold">Error: ${error.message}. Checking GitHub Action Sync...</span>`;
         }
         
-        ['searchInput', 'statusFilter', 'contractorFilter', 'tlFilter', 'supFilter'].forEach(id => {
+        ['searchInput', 'statusFilter', 'contractorFilter'].forEach(id => {
             document.getElementById(id).addEventListener(id === 'searchInput' ? 'keyup' : 'change', () => {
                 currentPage = 1; applyFilters();
             });
         });
+
+        // Show IG popup slightly delayed if not closed previously
+        setTimeout(() => {
+            if(!sessionStorage.getItem('igClosed')) {
+                const igPop = document.getElementById('ig-popup');
+                igPop.classList.remove('translate-y-48', 'opacity-0');
+            }
+        }, 1500);
     });
+
+    // View Mode Logic (Minimal vs Standard)
+    function initViewMode() {
+        const savedMode = localStorage.getItem('attendanceViewMode');
+        // Default to minimal on small screens, standard on desktop if not set
+        if (savedMode) {
+            applyViewMode(savedMode);
+        } else {
+            applyViewMode(window.innerWidth < 768 ? 'minimal' : 'standard');
+        }
+    }
+
+    function toggleViewMode() {
+        const isMinimal = document.body.classList.contains('minimal-mode');
+        applyViewMode(isMinimal ? 'standard' : 'minimal');
+    }
+
+    function applyViewMode(mode) {
+        const btn = document.getElementById('viewToggleBtn');
+        if (mode === 'minimal') {
+            document.body.classList.add('minimal-mode');
+            btn.innerHTML = '<i class="fa-solid fa-desktop"></i> <span class="hidden sm:inline">Standard View</span>';
+            localStorage.setItem('attendanceViewMode', 'minimal');
+        } else {
+            document.body.classList.remove('minimal-mode');
+            btn.innerHTML = '<i class="fa-solid fa-mobile-screen"></i> <span class="hidden sm:inline">Minimal View</span>';
+            localStorage.setItem('attendanceViewMode', 'standard');
+        }
+    }
+
+    // IG Popup Close
+    function closeIgPopup() {
+        document.getElementById('ig-popup').classList.add('translate-y-48', 'opacity-0', 'pointer-events-none');
+        sessionStorage.setItem('igClosed', 'true');
+    }
 
     // Graphs enhancement
     function initOrUpdateTrendChart(type) {
@@ -366,7 +397,6 @@
             }
         };
         
-        // Creating stylish gradients
         let gradP = ctx.createLinearGradient(0, 0, 0, 400);
         gradP.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
         gradP.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
@@ -503,6 +533,10 @@
         pageData.forEach((row, i) => {
             const tr = document.createElement('tr');
             tr.className = "hover:bg-teal-50/50 transition-colors cursor-pointer";
+            // Applying staggered fade in animation to desktop rows
+            tr.style.animation = `fadeInUp 0.4s ease-out ${i * 0.03}s forwards`;
+            tr.style.opacity = "0";
+            
             tr.onclick = () => openEmployeeModal((currentPage - 1) * rowsPerPage + i);
             let html = `<td class="p-4 font-semibold whitespace-nowrap"><span class="hover:text-teal-600 transition">${row.name}</span><span class="block text-xs text-slate-500 font-normal mt-0.5"><i class="fa-solid fa-id-badge text-slate-300 mr-1"></i>${row.code}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}</td>`;
             row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
@@ -519,8 +553,11 @@
             const bgClass = isLeft ? 'bg-rose-50/50 border-rose-200' : 'bg-white border-slate-200';
             const statusBadgeClass = isLeft ? 'bg-rose-200 text-rose-800' : 'bg-emerald-100 text-emerald-800';
 
+            // Applying staggered fade in animation to mobile cards
             mobileContainer.innerHTML += `
-                <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" class="${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1">
+                <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" 
+                     style="animation: fadeInUp 0.4s ease-out ${i * 0.05}s forwards; opacity: 0;"
+                     class="${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1">
                     <div class="flex justify-between items-start mb-2">
                         <div><h3 class="font-bold text-slate-800 text-lg">${row.name}</h3><p class="text-xs text-slate-500 font-mono mt-0.5">${row.code}</p></div>
                         <span class="text-xs font-bold px-2 py-1 rounded-full ${statusBadgeClass}">${row.status}</span>
@@ -534,6 +571,7 @@
     function changePage(dir) {
         currentPage += dir;
         renderTable();
+        // Smooth scroll strictly to the search filter area so user isn't lost
         document.getElementById('table-section-header').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -557,7 +595,7 @@
         document.getElementById('statusFilter').innerHTML = `<option value="">All Statuses</option><option value="Active">Active</option><option value="Left">Left</option>`;
         document.getElementById('contractorFilter').innerHTML = `<option value="">All Contractors</option>${contractors.map(c => `<option value="${c}">${c}</option>`).join('')}`;
         
-        // Disabling Team Leader and Supervisor filters for now as requested
+        // Disabled visually as requested
         document.getElementById('tlFilter').disabled = true;
         document.getElementById('supFilter').disabled = true;
     }
