@@ -173,13 +173,15 @@
                     Employee Records 
                     <span id="contractor-count" class="hidden bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full"></span>
                 </h2>
-                <!-- New 5-column filter layout -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 w-full">
+                <!-- Adjusted grid layout (hidden TL/Sup fields) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 w-full" id="filter-container">
                     <input type="text" id="searchInput" placeholder="Search Employee..." class="px-4 py-2 border rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition shadow-sm">
                     <select id="statusFilter" class="px-4 py-2 border rounded-lg bg-white w-full shadow-sm"></select>
                     <select id="contractorFilter" class="px-4 py-2 border rounded-lg bg-white w-full shadow-sm"></select>
-                    <select id="tlFilter" class="px-4 py-2 border rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500"></select>
-                    <select id="supFilter" class="px-4 py-2 border rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500"></select>
+                    
+                    <!-- Hidden TL and Sup Filters per request -->
+                    <select id="tlFilter" class="hidden px-4 py-2 border rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500"></select>
+                    <select id="supFilter" class="hidden px-4 py-2 border rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500"></select>
                 </div>
             </div>
             
@@ -192,7 +194,7 @@
             <div id="pagination-controls" class="pt-4 flex flex-col md:flex-row justify-between items-center text-sm gap-4"></div>
         </div>
         
-       <footer class="text-center text-xs text-slate-500 pt-4 pb-8">
+       <footer class="text-center text-xs text-slate-500 pt-4 pb-8 relative">
             <div class="flex justify-center gap-4 mb-4">
                 <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Yesterday</p>
@@ -213,23 +215,31 @@
         </footer>
     </main>
 
-    <!-- FOOTER POPUP (NEW) -->
-    <div id="footer-popup" class="fixed bottom-4 right-4 left-4 md:left-auto md:w-96 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-slate-200 p-4 z-[90] transform transition-all duration-500 translate-y-0 flex gap-3 items-start">
-        <div class="text-teal-600 bg-teal-50 p-2.5 rounded-full h-11 w-11 flex items-center justify-center flex-shrink-0 border border-teal-100">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
+    <!-- INSTAGRAM POPUP (NEW) -->
+    <div id="ig-popup" class="fixed bottom-4 right-4 left-4 md:left-auto md:w-[340px] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-slate-200 p-4 z-[90] transform transition-all duration-500 translate-y-0 flex gap-4 items-center">
+        <div class="flex-shrink-0 w-11 h-11 flex items-center justify-center">
+            <!-- Provided SVG -->
+            <svg class="w-full h-full" viewBox="0 0 2500 2500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="0" cx="332.14" cy="2511.81" r="3263.54" gradientUnits="userSpaceOnUse"><stop offset=".09" stop-color="#fa8f21"/><stop offset=".78" stop-color="#d82d7e"/></radialGradient>
+                    <radialGradient id="1" cx="1516.14" cy="2623.81" r="2572.12" gradientUnits="userSpaceOnUse"><stop offset=".64" stop-color="#8c3aaa" stop-opacity="0"/><stop offset="1" stop-color="#8c3aaa"/></radialGradient>
+                </defs>
+                <path d="M833.4,1250c0-230.11,186.49-416.7,416.6-416.7s416.7,186.59,416.7,416.7-186.59,416.7-416.7,416.7S833.4,1480.11,833.4,1250m-225.26,0c0,354.5,287.36,641.86,641.86,641.86S1891.86,1604.5,1891.86,1250,1604.5,608.14,1250,608.14,608.14,895.5,608.14,1250M1767.27,582.69a150,150,0,1,0,150.06-149.94h-0.06a150.07,150.07,0,0,0-150,149.94M745,2267.47c-121.87-5.55-188.11-25.85-232.13-43-58.36-22.72-100-49.78-143.78-93.5s-70.88-85.32-93.5-143.68c-17.16-44-37.46-110.26-43-232.13-6.06-131.76-7.27-171.34-7.27-505.15s1.31-373.28,7.27-505.15c5.55-121.87,26-188,43-232.13,22.72-58.36,49.78-100,93.5-143.78s85.32-70.88,143.78-93.5c44-17.16,110.26-37.46,232.13-43,131.76-6.06,171.34-7.27,505-7.27s373.28,1.31,505.15,7.27c121.87,5.55,188,26,232.13,43,58.36,22.62,100,49.78,143.78,93.5s70.78,85.42,93.5,143.78c17.16,44,37.46,110.26,43,232.13,6.06,131.87,7.27,171.34,7.27,505.15s-1.21,373.28-7.27,505.15c-5.55,121.87-25.95,188.11-43,232.13-22.72,58.36-49.78,100-93.5,143.68s-85.42,70.78-143.78,93.5c-44,17.16-110.26,37.46-232.13,43-131.76,6.06-171.34,7.27-505.15,7.27s-373.28-1.21-505-7.27M734.65,7.57c-133.07,6.06-224,27.16-303.41,58.06C349,97.54,279.38,140.35,209.81,209.81S97.54,349,65.63,431.24c-30.9,79.46-52,170.34-58.06,303.41C1.41,867.93,0,910.54,0,1250s1.41,382.07,7.57,515.35c6.06,133.08,27.16,223.95,58.06,303.41,31.91,82.19,74.62,152,144.18,221.43S349,2402.37,431.24,2434.37c79.56,30.9,170.34,52,303.41,58.06C868,2498.49,910.54,2500,1250,2500s382.07-1.41,515.35-7.57c133.08-6.06,223.95-27.16,303.41-58.06,82.19-32,151.86-74.72,221.43-144.18s112.18-139.24,144.18-221.43c30.9-79.46,52.1-170.34,58.06-303.41,6.06-133.38,7.47-175.89,7.47-515.35s-1.41-382.07-7.47-515.35c-6.06-133.08-27.16-224-58.06-303.41-32-82.19-74.72-151.86-144.18-221.43S2150.95,97.54,2068.86,65.63c-79.56-30.9-170.44-52.1-303.41-58.06C1632.17,1.51,1589.56,0,1250.1,0S868,1.41,734.65,7.57" fill="url(#0)"/>
+                <path d="M833.4,1250c0-230.11,186.49-416.7,416.6-416.7s416.7,186.59,416.7,416.7-186.59,416.7-416.7,416.7S833.4,1480.11,833.4,1250m-225.26,0c0,354.5,287.36,641.86,641.86,641.86S1891.86,1604.5,1891.86,1250,1604.5,608.14,1250,608.14,608.14,895.5,608.14,1250M1767.27,582.69a150,150,0,1,0,150.06-149.94h-0.06a150.07,150.07,0,0,0-150,149.94M745,2267.47c-121.87-5.55-188.11-25.85-232.13-43-58.36-22.72-100-49.78-143.78-93.5s-70.88-85.32-93.5-143.68c-17.16-44-37.46-110.26-43-232.13-6.06-131.76-7.27-171.34-7.27-505.15s1.31-373.28,7.27-505.15c5.55-121.87,26-188,43-232.13,22.72-58.36,49.78-100,93.5-143.78s85.32-70.88,143.78-93.5c44-17.16,110.26-37.46,232.13-43,131.76-6.06,171.34-7.27,505-7.27s373.28,1.31,505.15,7.27c121.87,5.55,188,26,232.13,43,58.36,22.62,100,49.78,143.78,93.5s70.78,85.42,93.5,143.78c17.16,44,37.46,110.26,43,232.13,6.06,131.87,7.27,171.34,7.27,505.15s-1.21,373.28-7.27,505.15c-5.55,121.87-25.95,188.11-43,232.13-22.72,58.36-49.78,100-93.5,143.68s-85.42,70.78-143.78,93.5c-44,17.16-110.26,37.46-232.13,43-131.76,6.06-171.34,7.27-505.15,7.27s-373.28-1.21-505-7.27M734.65,7.57c-133.07,6.06-224,27.16-303.41,58.06C349,97.54,279.38,140.35,209.81,209.81S97.54,349,65.63,431.24c-30.9,79.46-52,170.34-58.06,303.41C1.41,867.93,0,910.54,0,1250s1.41,382.07,7.57,515.35c6.06,133.08,27.16,223.95,58.06,303.41,31.91,82.19,74.62,152,144.18,221.43S349,2402.37,431.24,2434.37c79.56,30.9,170.34,52,303.41,58.06C868,2498.49,910.54,2500,1250,2500s382.07-1.41,515.35-7.57c133.08-6.06,223.95-27.16,303.41-58.06,82.19-32,151.86-74.72,221.43-144.18s112.18-139.24,144.18-221.43c30.9-79.46,52.1-170.34,58.06-303.41,6.06-133.38,7.47-175.89,7.47-515.35s-1.41-382.07-7.47-515.35c-6.06-133.08-27.16-224-58.06-303.41-32-82.19-74.72-151.86-144.18-221.43S2150.95,97.54,2068.86,65.63c-79.56-30.9-170.44-52.1-303.41-58.06C1632.17,1.51,1589.56,0,1250.1,0S868,1.41,734.65,7.57" fill="url(#1)"/>
+            </svg>
         </div>
-        <div class="mt-0.5">
-            <h4 class="font-bold text-slate-800 text-sm">New Filters Added!</h4>
-            <p class="text-xs text-slate-500 mt-1 leading-relaxed">You can now filter attendance explicitly by <strong class="text-teal-700">Team Leader</strong> or <strong class="text-teal-700">Shift Supervisor</strong> at the top of the table.</p>
+        <div class="flex-1">
+            <h4 class="font-bold text-slate-800 text-sm">Support My Work!</h4>
+            <p class="text-[12px] text-slate-500 mt-0.5 leading-snug">If you liked this project, follow me on Instagram <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" class="text-pink-600 font-bold hover:underline">@sandeepbiswalg</a></p>
         </div>
-        <button onclick="document.getElementById('footer-popup').classList.add('translate-y-48', 'opacity-0', 'pointer-events-none')" class="text-slate-400 hover:text-rose-500 ml-auto flex-shrink-0 transition-colors p-1">
+        <button onclick="document.getElementById('ig-popup').classList.add('translate-y-48', 'opacity-0', 'pointer-events-none')" class="text-slate-400 hover:text-rose-500 flex-shrink-0 transition-colors p-1">
             <i class="fa-solid fa-xmark text-lg"></i>
         </button>
     </div>
 
-    <!-- PDF Notice Alert Modal -->
-    <div id="pdf-alert-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none modal-blur">
-        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300" id="pdf-alert-content">
+    <!-- PDF Notice Alert Modal (Clicking outside closes it) -->
+    <div id="pdf-alert-modal" onclick="if(event.target === this) closePdfModal()" class="fixed inset-0 bg-black bg-opacity-60 z-[100] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none modal-blur">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300 cursor-default" id="pdf-alert-content">
             <div class="flex items-center gap-3 mb-3">
                 <div class="bg-amber-100 text-amber-600 p-2 rounded-full h-10 w-10 flex items-center justify-center">
                     <i class="fa-solid fa-triangle-exclamation text-lg"></i>
@@ -248,9 +258,9 @@
         </div>
     </div>
     
-    <!-- Employee Details Modal -->
-    <div id="employee-modal" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
-        <div id="modal-content" class="bg-slate-50 rounded-2xl w-full h-full flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto lg:overflow-hidden max-w-7xl mx-auto relative shadow-2xl custom-scrollbar">
+    <!-- Employee Details Modal (Clicking outside closes it) -->
+    <div id="employee-modal" onclick="if(event.target === this) closeEmployeeModal()" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
+        <div id="modal-content" class="bg-slate-50 rounded-2xl w-full h-full flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto lg:overflow-hidden max-w-7xl mx-auto relative shadow-2xl custom-scrollbar cursor-default">
              <button onclick="closeEmployeeModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
              <div id="modal-info-panel" class="w-full lg:w-80 p-5 md:p-6 bg-white lg:border-r border-slate-200 flex flex-col flex-shrink-0"></div>
              <div class="p-4 md:p-6 flex-1 flex flex-col overflow-y-auto custom-scrollbar bg-slate-50">
@@ -263,9 +273,9 @@
         </div>
     </div>
 
-    <!-- Shift Calendar Modal -->
-    <div id="shift-modal" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
-        <div id="shift-modal-content" class="bg-slate-50 rounded-2xl w-full max-h-[95vh] h-auto flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto max-w-6xl mx-auto relative shadow-2xl custom-scrollbar">
+    <!-- Shift Calendar Modal (Clicking outside closes it) -->
+    <div id="shift-modal" onclick="if(event.target === this) closeShiftModal()" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
+        <div id="shift-modal-content" class="bg-slate-50 rounded-2xl w-full max-h-[95vh] h-auto flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto max-w-6xl mx-auto relative shadow-2xl custom-scrollbar cursor-default">
              <button onclick="closeShiftModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
              <div class="p-4 md:p-6 flex-1 flex flex-col bg-slate-50">
                 <div class="flex justify-between items-center mb-6">
@@ -543,13 +553,13 @@
 
     function populateFilters() {
         const contractors = [...new Set(globalData.map(d => d.contractor).filter(Boolean))].sort();
-        const teamLeaders = [...new Set(globalData.map(d => d.tl).filter(v => v && v !== 'N/A'))].sort();
-        const supervisors = [...new Set(globalData.map(d => d.sanctioner).filter(v => v && v !== 'N/A'))].sort();
-
+        
         document.getElementById('statusFilter').innerHTML = `<option value="">All Statuses</option><option value="Active">Active</option><option value="Left">Left</option>`;
         document.getElementById('contractorFilter').innerHTML = `<option value="">All Contractors</option>${contractors.map(c => `<option value="${c}">${c}</option>`).join('')}`;
-        document.getElementById('tlFilter').innerHTML = `<option value="">All Team Leaders</option>${teamLeaders.map(c => `<option value="${c}">${c}</option>`).join('')}`;
-        document.getElementById('supFilter').innerHTML = `<option value="">All Supervisors</option>${supervisors.map(c => `<option value="${c}">${c}</option>`).join('')}`;
+        
+        // Disabling Team Leader and Supervisor filters for now as requested
+        document.getElementById('tlFilter').disabled = true;
+        document.getElementById('supFilter').disabled = true;
     }
     
     function applyFilters() {
