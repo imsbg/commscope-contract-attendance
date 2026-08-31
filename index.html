@@ -31,7 +31,6 @@
     <style>
         :root { --primary: #0d9488; --background: #f1f5f9; --card-bg: #ffffff; }
         html { scroll-behavior: smooth; height: 100%; }
-        /* Flex body to push footer to the absolute bottom */
         body { font-family: 'Google Sans', 'Noto Sans Oriya', sans-serif; background-color: var(--background); color: #0f172a; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
         
         #splash-screen { background-color: var(--card-bg); z-index: 100; transition: opacity 0.4s ease-out; }
@@ -77,7 +76,7 @@
         #filter-wrapper { display: grid; gap: 0.75rem; width: 100%; transition: all 0.5s ease; }
         @media (min-width: 768px) { #filter-wrapper { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
-        /* --- GLOWING MINIMAL SEARCH BAR STYLES --- */
+        /* Glowing Minimal Search Bar */
         body.minimal-mode #table-section-header { background: transparent; border: none; box-shadow: none; padding: 1rem 0; }
         body.minimal-mode #table-header-title-container { justify-content: center; margin-bottom: 2rem; position: relative; }
         body.minimal-mode #viewToggleBtn { position: absolute; right: 0; }
@@ -113,7 +112,7 @@
         </div>
     </div>
 
-    <!-- Main Content (Flex-1 ensures footer is pushed down) -->
+    <!-- Main Content -->
     <main id="main-content" class="hidden p-4 md:p-6 lg:p-8 w-full max-w-screen-2xl mx-auto flex-1 flex flex-col">
         
         <div class="space-y-6 w-full flex-1">
@@ -187,7 +186,7 @@
                 </div>
                 
                 <div id="filter-wrapper">
-                    <!-- Glowing Search Box -->
+                    <!-- Glowing Search Box (Hidden feature: type /admin) -->
                     <div id="search-container" class="relative w-full rounded-lg bg-white">
                         <div id="search-inner" class="relative">
                             <i class="fa-solid fa-magnifying-glass text-slate-400 pointer-events-none absolute left-3 top-1/2 transform -translate-y-1/2" id="search-icon"></i>
@@ -204,17 +203,15 @@
                     </div>
                 </div>
                 
-                <!-- STANDARD VIEW WRAPPER (Safely holds Desktop Table & Mobile Cards) -->
+                <!-- STANDARD VIEW WRAPPER -->
                 <div id="standard-view-wrapper" class="hidden mt-4">
-                    <!-- Desktop View Full Table -->
                     <div class="hidden md:block table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg">
                         <table class="w-full text-left min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
                     </div>
-                    <!-- Mobile Standard Cards -->
-                    <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3 mt-4"></div>
+                    <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3"></div>
                 </div>
                 
-                <!-- Minimal View Summary Cards (Desktop & Mobile) -->
+                <!-- Minimal View Summary Cards -->
                 <div id="minimalCardsContainer" class="flex flex-col gap-3 mt-4 max-w-4xl mx-auto hidden"></div>
 
                 <!-- Pagination -->
@@ -245,9 +242,8 @@
             <p>Disclaimer: This site is not made by, endorsed by, or affiliated with Commscope.</p>
             <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
 
-            <!-- Clean Instagram Promo inside Footer -->
+            <!-- Instagram Promo -->
             <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" class="mt-8 flex items-center justify-center gap-4 bg-white border border-slate-200 px-6 py-4 rounded-2xl shadow-sm hover:shadow-md transition-all group w-full max-w-sm mx-auto cursor-pointer">
-                <!-- Clean FontAwesome Instagram Icon with proper gradient -->
                 <div class="w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white shadow-md transform transition group-hover:-rotate-6 group-hover:scale-110 duration-300">
                     <i class="fa-brands fa-instagram text-2xl"></i>
                 </div>
@@ -258,6 +254,36 @@
             </a>
         </footer>
     </main>
+
+    <!-- HIDDEN ADMIN CONSOLE MODAL -->
+    <div id="admin-modal" onclick="if(event.target === this) closeAdminModal()" class="fixed inset-0 bg-black/70 z-[200] p-4 flex justify-center items-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-sm">
+        <div id="admin-content" class="bg-white rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-2xl">
+                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-server text-indigo-600"></i> Admin Console</h3>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-rose-500 text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto custom-scrollbar">
+                <div class="mb-5 bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-xs font-medium">
+                    <i class="fa-solid fa-circle-info"></i> Enter your GitHub Personal Access Token to force the parser script to run manually.
+                </div>
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">GitHub Secret Token</label>
+                    <input type="password" id="admin-token" placeholder="ghp_xxxxxxxxxxxx" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm shadow-sm transition">
+                    <p class="text-[10px] text-slate-400 mt-1.5"><i class="fa-solid fa-lock text-slate-300"></i> Stored securely in your browser's local storage.</p>
+                </div>
+                <button onclick="triggerSync()" id="sync-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition shadow-md flex justify-center items-center gap-2 hover:shadow-lg hover:-translate-y-0.5">
+                    <i class="fa-solid fa-rotate"></i> Force Update Data
+                </button>
+
+                <div class="mt-8 border-t border-slate-100 pt-6">
+                    <h4 class="font-bold text-slate-700 mb-3 text-sm flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Recent Sync Logs</h4>
+                    <div id="sync-logs" class="space-y-2.5">
+                        <div class="text-center text-slate-400 text-xs py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">Enter token to load server logs...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Daily Visitor Logs Modal -->
     <div id="visitor-modal" onclick="if(event.target === this) closeVisitorModal()" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
@@ -378,12 +404,120 @@
             document.querySelector('#splash-screen p').innerHTML = `<span class="text-red-500 font-bold">Error: ${error.message}. Checking GitHub Action Sync...</span>`;
         }
         
-        ['searchInput', 'statusFilter', 'contractorFilter'].forEach(id => {
-            document.getElementById(id).addEventListener(id === 'searchInput' ? 'keyup' : 'change', () => {
+        // Search Listener with /admin interceptor
+        document.getElementById('searchInput').addEventListener('keyup', (e) => {
+            if(e.target.value.trim() === '/admin') {
+                e.target.value = '';
+                openAdminModal();
+                return;
+            }
+            currentPage = 1; 
+            applyFilters();
+        });
+
+        ['statusFilter', 'contractorFilter'].forEach(id => {
+            document.getElementById(id).addEventListener('change', () => {
                 currentPage = 1; applyFilters();
             });
         });
+
+        // Listen for token input changes in admin to load logs automatically
+        document.getElementById('admin-token').addEventListener('input', (e) => {
+            if(e.target.value.trim().length > 10) {
+                fetchGitHubLogs(e.target.value.trim());
+            }
+        });
     });
+
+    // -------- ADMIN CONSOLE LOGIC --------
+    function openAdminModal() {
+        document.getElementById('admin-modal').classList.remove('opacity-0', 'pointer-events-none');
+        document.getElementById('admin-content').classList.remove('scale-95');
+        const savedToken = localStorage.getItem('gh_admin_token');
+        if(savedToken) {
+            document.getElementById('admin-token').value = savedToken;
+            fetchGitHubLogs(savedToken);
+        }
+    }
+
+    function closeAdminModal() {
+        document.getElementById('admin-modal').classList.add('opacity-0', 'pointer-events-none');
+        document.getElementById('admin-content').classList.add('scale-95');
+    }
+
+    async function fetchGitHubLogs(token) {
+        const logContainer = document.getElementById('sync-logs');
+        logContainer.innerHTML = '<div class="text-center text-slate-500 text-xs py-6 flex flex-col items-center gap-2"><i class="fa-solid fa-spinner fa-spin text-xl text-indigo-500"></i> Fetching server logs...</div>';
+        try {
+            const res = await fetch('https://api.github.com/repos/imsbg/commscope-contract-attendance/actions/runs?per_page=5', {
+                headers: { 'Authorization': `token ${token}` }
+            });
+            if(!res.ok) throw new Error('Invalid Token or Repository access denied.');
+            const data = await res.json();
+            logContainer.innerHTML = '';
+            if(data.workflow_runs.length === 0) {
+                logContainer.innerHTML = '<div class="text-center text-slate-400 text-xs py-4">No actions found.</div>';
+                return;
+            }
+            data.workflow_runs.forEach(run => {
+                let statusColor = run.status === 'completed' ? (run.conclusion === 'success' ? 'text-emerald-500' : 'text-rose-500') : 'text-amber-500';
+                let icon = run.status === 'completed' ? (run.conclusion === 'success' ? 'fa-circle-check' : 'fa-circle-xmark') : 'fa-circle-notch fa-spin';
+                let time = new Date(run.created_at).toLocaleString();
+                logContainer.innerHTML += `
+                <div class="bg-white border border-slate-200 p-3.5 rounded-xl flex justify-between items-center shadow-sm">
+                    <div class="flex items-center gap-3.5">
+                        <i class="fa-solid ${icon} ${statusColor} text-xl drop-shadow-sm"></i>
+                        <div><p class="text-xs font-bold text-slate-800">${run.name}</p><p class="text-[10px] font-medium text-slate-500 mt-0.5">${time}</p></div>
+                    </div>
+                    <span class="text-[9px] font-bold uppercase tracking-wider ${statusColor} bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">${run.status === 'completed' ? run.conclusion : run.status}</span>
+                </div>`;
+            });
+        } catch(e) {
+            logContainer.innerHTML = `<div class="text-center text-rose-500 text-xs py-4 font-bold bg-rose-50 rounded-xl border border-rose-100"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ${e.message}</div>`;
+        }
+    }
+
+    async function triggerSync() {
+        const token = document.getElementById('admin-token').value.trim();
+        if(!token) return alert('Please enter your GitHub token first.');
+        localStorage.setItem('gh_admin_token', token);
+        const btn = document.getElementById('sync-btn');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending Request...';
+        btn.classList.add('opacity-80', 'pointer-events-none');
+
+        try {
+            // NOTE: Modify 'main.yml' to your exact workflow filename if needed (e.g. 'sync.yml' or 'parser.yml')
+            const res = await fetch('https://api.github.com/repos/imsbg/commscope-contract-attendance/actions/workflows/main.yml/dispatches', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify({ ref: 'main' })
+            });
+
+            if(res.ok || res.status === 204) {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Triggered Successfully!';
+                btn.classList.replace('bg-indigo-600', 'bg-emerald-600');
+                btn.classList.remove('hover:bg-indigo-700');
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Force Update Data';
+                    btn.classList.replace('bg-emerald-600', 'bg-indigo-600');
+                    btn.classList.add('hover:bg-indigo-700');
+                    btn.classList.remove('opacity-80', 'pointer-events-none');
+                    fetchGitHubLogs(token);
+                }, 3000);
+            } else {
+                const errData = await res.json().catch(()=>({}));
+                throw new Error(errData.message || 'Failed to trigger. Check token or workflow filename.');
+            }
+        } catch(e) {
+            alert("Error: " + e.message + "\n\nMake sure the token is correct and your workflow file is named 'main.yml'.");
+            btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Force Update Data';
+            btn.classList.remove('opacity-80', 'pointer-events-none');
+        }
+    }
+    // -------------------------------------
 
     function initViewMode() {
         const savedMode = localStorage.getItem('attendanceViewMode');
@@ -566,10 +700,10 @@
             standardWrapper.classList.add('hidden'); 
             minimalCards.classList.remove('hidden');
             
-            if (searchVal === '') {
+            if (searchVal === '' && !searchVal.startsWith('/')) {
                 minimalCards.innerHTML = `<div class="text-center py-16 fade-in-up"><i class="fa-solid fa-id-card text-6xl text-slate-200 mb-4 drop-shadow-sm"></i><h3 class="text-xl font-bold text-slate-700">Search to View Attendance</h3><p class="text-sm text-slate-500 mt-1">Enter your Name or Employee ID in the glowing search box above to instantly fetch your records.</p></div>`;
                 pagination.innerHTML = ''; return;
-            } else {
+            } else if (searchVal !== '/admin') {
                 renderMinimalCards(); renderPagination();
             }
         } else {
@@ -587,7 +721,7 @@
         if(pageData.length === 0) { minimalContainer.innerHTML = `<div class="text-center py-10 fade-in-up text-slate-500 font-medium">No records found for your search.</div>`; return; }
 
         pageData.forEach((row, i) => {
-            // Unify logic matching modal 100% calculation
+            // Exact same rule as modal calculation
             let p=0, a=0, mp=0, fd=0, hd=0, validDays=0;
             row.dates.slice(0,31).forEach(d => {
                 let val = d ? d.trim().toUpperCase() : '';
@@ -599,7 +733,7 @@
                         else if (val === 'FD' || val === 'FULL DAY') fd++; 
                         else if (val === 'HD' || val === 'HALF DAY') hd++;
                     } else {
-                        // Counts everything not an absence (P, WO, HO) into Present box matching Modal rate rule
+                        // All non-absence marks (P, WO, HO) count as Present
                         p++;
                     }
                 }
@@ -682,6 +816,8 @@
     
     function applyFilters() {
         const search = document.getElementById('searchInput').value.toLowerCase(); const status = document.getElementById('statusFilter').value; const contractor = document.getElementById('contractorFilter').value;
+        if(search === '/admin') return; // Ignore admin command in main filter logic
+        
         filteredData = globalData.filter(row => (row.name.toLowerCase().includes(search) || row.code.toLowerCase().includes(search)) && (status ? row.status === status : true) && (contractor ? row.contractor === contractor : true) );
         const count = document.getElementById('contractor-count'); (contractor || status || search) ? (count.textContent = `${filteredData.length} Employee(s)`, count.classList.remove('hidden')) : count.classList.add('hidden');
         renderTable();
