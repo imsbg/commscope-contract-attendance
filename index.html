@@ -31,7 +31,7 @@
     <style>
         :root { --primary: #0d9488; --background: #f1f5f9; --card-bg: #ffffff; }
         html { scroll-behavior: smooth; height: 100%; }
-        /* Adjusted body to push footer to bottom */
+        /* Flex body to push footer to the absolute bottom */
         body { font-family: 'Google Sans', 'Noto Sans Oriya', sans-serif; background-color: var(--background); color: #0f172a; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
         
         #splash-screen { background-color: var(--card-bg); z-index: 100; transition: opacity 0.4s ease-out; }
@@ -68,6 +68,7 @@
 
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
 
         /* Minimal Mode Global Rules */
         body.minimal-mode .hide-always-minimal { display: none !important; }
@@ -203,22 +204,25 @@
                     </div>
                 </div>
                 
-                <!-- Standard View Full Table -->
-                <div id="standard-view-table" class="hidden md:block table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg mt-4 hide-always-minimal">
-                    <table class="w-full text-left min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
+                <!-- STANDARD VIEW WRAPPER (Safely holds Desktop Table & Mobile Cards) -->
+                <div id="standard-view-wrapper" class="hidden mt-4">
+                    <!-- Desktop View Full Table -->
+                    <div class="hidden md:block table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg">
+                        <table class="w-full text-left min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
+                    </div>
+                    <!-- Mobile Standard Cards -->
+                    <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3"></div>
                 </div>
-
-                <!-- Mobile Standard Cards -->
-                <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3 mt-4 hide-always-minimal"></div>
                 
                 <!-- Minimal View Summary Cards (Desktop & Mobile) -->
-                <div id="minimalCardsContainer" class="flex flex-col gap-3 mt-2 max-w-4xl mx-auto hidden"></div>
+                <div id="minimalCardsContainer" class="flex flex-col gap-3 mt-4 max-w-4xl mx-auto hidden"></div>
 
                 <!-- Pagination -->
                 <div id="pagination-controls" class="pt-4 flex flex-col md:flex-row justify-between items-center text-sm gap-4"></div>
             </div>
         </div>
         
+       <!-- Footer pinned to bottom -->
        <footer class="text-center text-xs text-slate-500 pt-8 pb-12 relative flex flex-col items-center mt-auto w-full">
             
             <!-- Visiter Stats (Visible in both Minimal and Standard) - Clickable -->
@@ -241,20 +245,19 @@
             <p>Disclaimer: This site is not made by, endorsed by, or affiliated with Commscope.</p>
             <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
 
-            <!-- Permanent Instagram Promo embedded in footer -->
-            <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" class="mt-8 flex flex-col items-center bg-white border border-slate-200 px-6 py-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow group max-w-xs cursor-pointer w-full mx-auto">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="w-7 h-7 transform transition group-hover:-rotate-6 group-hover:scale-110 duration-300">
-                        <svg class="w-full h-full drop-shadow-sm" viewBox="0 0 2500 2500" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="0" cx="332.14" cy="2511.81" r="3263.54" gradientUnits="userSpaceOnUse"><stop offset=".09" stop-color="#fa8f21"/><stop offset=".78" stop-color="#d82d7e"/></radialGradient><radialGradient id="1" cx="1516.14" cy="2623.81" r="2572.12" gradientUnits="userSpaceOnUse"><stop offset=".64" stop-color="#8c3aaa" stop-opacity="0"/><stop offset="1" stop-color="#8c3aaa"/></radialGradient></defs><path d="M833.4,1250c0-230.11,186.49-416.7,416.6-416.7s416.7,186.59,416.7,416.7-186.59,416.7-416.7,416.7S833.4,1480.11,833.4,1250m-225.26,0c0,354.5,287.36,641.86,641.86,641.86S1891.86,1604.5,1891.86,1250,1604.5,608.14,1250,608.14,608.14,895.5,608.14,1250M1767.27,582.69a150,150,0,1,0,150.06-149.94h-0.06a150.07,150.07,0,0,0-150,149.94M745,2267.47c-121.87-5.55-188.11-25.85-232.13-43-58.36-22.72-100-49.78-143.78-93.5s-70.88-85.32-93.5-143.68c-17.16-44-37.46-110.26-43-232.13-6.06-131.76-7.27-171.34-7.27-505.15s1.31-373.28,7.27-505.15c5.55-121.87,26-188,43-232.13,22.72-58.36,49.78-100,93.5-143.78s85.32-70.88,143.78-93.5c44-17.16,110.26-37.46,232.13-43,131.76-6.06,171.34-7.27,505-7.27s373.28,1.31,505.15,7.27c121.87,5.55,188,26,232.13,43,58.36,22.62,100,49.78,143.78,93.5s70.78,85.42,93.5,143.78c17.16,44,37.46,110.26,43,232.13,6.06,131.87,7.27,171.34,7.27,505.15s-1.21,373.28-7.27,505.15c-5.55,121.87-25.95,188.11-43,232.13-22.72,58.36-49.78,100-93.5,143.68s-85.42,70.78-143.78,93.5c-44,17.16-110.26,37.46-232.13,43-131.76,6.06-171.34,7.27-505.15,7.27s-373.28-1.21-505-7.27M734.65,7.57c-133.07,6.06-224,27.16-303.41,58.06C349,97.54,279.38,140.35,209.81,209.81S97.54,349,65.63,431.24c-30.9,79.46-52,170.34-58.06,303.41C1.41,867.93,0,910.54,0,1250s1.41,382.07,7.57,515.35c6.06,133.08,27.16,223.95,58.06,303.41,31.91,82.19,74.62,152,144.18,221.43S349,2402.37,431.24,2434.37c79.56,30.9,170.34,52,303.41,58.06C868,2498.49,910.54,2500,1250,2500s382.07-1.41,515.35-7.57c133.08-6.06,223.95-27.16,303.41-58.06,82.19-32,151.86-74.72,221.43-144.18s112.18-139.24,144.18-221.43c30.9-79.46,52.1-170.34,58.06-303.41,6.06-133.38,7.47-175.89,7.47-515.35s-1.41-382.07-7.47-515.35c-6.06-133.08-27.16-224-58.06-303.41-32-82.19-74.72-151.86-144.18-221.43S2150.95,97.54,2068.86,65.63c-79.56-30.9-170.44-52.1-303.41-58.06C1632.17,1.51,1589.56,0,1250.1,0S868,1.41,734.65,7.57" fill="url(#1)"/></svg>
-                    </div>
-                    <span class="font-bold text-slate-800 text-sm group-hover:text-[#d82d7e] transition-colors">Support My Work</span>
+            <!-- Clean Instagram Promo inside Footer -->
+            <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" class="mt-8 flex items-center justify-center gap-4 bg-white border border-slate-200 px-6 py-4 rounded-2xl shadow-sm hover:shadow-md transition-all group w-full max-w-sm mx-auto cursor-pointer">
+                <!-- Clean FontAwesome Instagram Icon with proper gradient -->
+                <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white shadow-md transform transition group-hover:-rotate-6 group-hover:scale-110 duration-300">
+                    <i class="fa-brands fa-instagram text-2xl"></i>
                 </div>
-                <p class="text-[11px] text-slate-500 font-medium">Liked this project? Follow me on Instagram <span class="text-[#fa8f21] font-bold group-hover:underline">@sandeepbiswalg</span></p>
+                <div class="text-left flex flex-col justify-center">
+                    <span class="font-bold text-slate-800 text-sm group-hover:text-[#d82d7e] transition-colors leading-tight">Support My Work</span>
+                    <span class="text-[11px] text-slate-500 font-medium leading-tight mt-0.5">Follow <span class="text-[#fa8f21] font-bold group-hover:underline">@sandeepbiswalg</span></span>
+                </div>
             </a>
         </footer>
     </main>
-
-    <style>@keyframes shimmer { 100% { transform: translateX(100%); } }</style>
 
     <!-- Daily Visitor Logs Modal -->
     <div id="visitor-modal" onclick="if(event.target === this) closeVisitorModal()" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
@@ -341,7 +344,7 @@
     let trendChartInstance = null;
     let trendChartData = null;
     const absenceList = ['A', 'ABSENT', 'FD', 'FULL DAY', 'HD', 'HALF DAY', 'SLWP', 'SICK LEAVE', 'MP', 'MISS PUNCH'];
-    window.globalVisitorData = {}; // Global variable to store firebase data for the modal
+    window.globalVisitorData = {}; 
 
     const DEFAULT_SETTINGS = { pattern: 'ACB', baseDate: '2026-01-05', baseShift: 'A' }; 
     let shiftSettings = JSON.parse(localStorage.getItem('shiftSettings')) || DEFAULT_SETTINGS;
@@ -384,7 +387,7 @@
 
     function initViewMode() {
         const savedMode = localStorage.getItem('attendanceViewMode');
-        applyViewMode(savedMode ? savedMode : 'minimal'); // Default to Minimal
+        applyViewMode(savedMode ? savedMode : 'minimal'); 
     }
 
     function toggleViewMode() {
@@ -461,7 +464,7 @@
         
         const today = new Date();
         const utc = today.getTime() + (today.getTimezoneOffset() * 60000); 
-        const ist = new Date(utc + (3600000 * 5.5)); // IST time
+        const ist = new Date(utc + (3600000 * 5.5)); 
         
         const y = ist.getFullYear();
         const m = ist.getMonth();
@@ -555,13 +558,14 @@
         const isMinimal = document.body.classList.contains('minimal-mode');
         const searchVal = document.getElementById('searchInput').value.trim();
         
-        const standardTable = document.getElementById('standard-view-table');
-        const standardMobile = document.getElementById('mobileCardsContainer');
+        const standardWrapper = document.getElementById('standard-view-wrapper');
         const minimalCards = document.getElementById('minimalCardsContainer');
         const pagination = document.getElementById('pagination-controls');
 
         if (isMinimal) {
-            standardTable.classList.add('hidden'); standardMobile.classList.add('hidden'); minimalCards.classList.remove('hidden');
+            standardWrapper.classList.add('hidden'); 
+            minimalCards.classList.remove('hidden');
+            
             if (searchVal === '') {
                 minimalCards.innerHTML = `<div class="text-center py-16 fade-in-up"><i class="fa-solid fa-id-card text-6xl text-slate-200 mb-4 drop-shadow-sm"></i><h3 class="text-xl font-bold text-slate-700">Search to View Attendance</h3><p class="text-sm text-slate-500 mt-1">Enter your Name or Employee ID in the glowing search box above to instantly fetch your records.</p></div>`;
                 pagination.innerHTML = ''; return;
@@ -569,8 +573,8 @@
                 renderMinimalCards(); renderPagination();
             }
         } else {
-            minimalCards.classList.add('hidden'); standardTable.classList.remove('hidden');
-            standardMobile.className = "md:hidden flex flex-col gap-3 mt-4 hide-always-minimal"; 
+            minimalCards.classList.add('hidden'); 
+            standardWrapper.classList.remove('hidden');
             renderStandardRows(); renderPagination();
         }
     }
@@ -597,24 +601,24 @@
             const statusBg = isLeft ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700';
 
             minimalContainer.innerHTML += `
-                <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.04}s forwards; opacity: 0;" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md cursor-pointer transition transform hover:-translate-y-1">
+                <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.04}s forwards; opacity: 0;" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md cursor-pointer transition transform hover:-translate-y-1 w-full">
                     <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-4">
                         <div><h3 class="font-bold text-slate-800 text-lg leading-tight">${row.name}</h3><p class="text-xs text-slate-500 font-mono mt-1"><i class="fa-solid fa-id-badge text-slate-300 mr-1.5"></i>${row.code}</p></div>
                         <span class="text-[10px] font-bold px-2.5 py-1 rounded-full ${statusBg} uppercase tracking-wider">${row.status}</span>
                     </div>
-                    <div class="flex justify-between items-end">
-                        <div class="flex flex-col gap-2 sm:gap-3">
-                            <div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Team Leader</p><p class="text-sm font-bold text-slate-700">${row.tl || 'N/A'}</p></div>
-                            <div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Supervisor</p><p class="text-sm font-bold text-slate-700">${row.sanctioner || 'N/A'}</p></div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 sm:gap-0">
+                        <div class="flex sm:flex-col gap-4 sm:gap-3 w-full sm:w-auto">
+                            <div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Team Leader</p><p class="text-sm font-bold text-slate-700">${row.tl || 'N/A'}</p></div>
+                            <div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Supervisor</p><p class="text-sm font-bold text-slate-700">${row.sanctioner || 'N/A'}</p></div>
                         </div>
-                        <div class="flex flex-col items-end gap-3">
-                            <div class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg font-bold text-xs sm:text-sm border border-indigo-100 shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-chart-pie opacity-70"></i> ${attRate}% Rate</div>
-                            <div class="flex gap-1 sm:gap-2">
-                                <div class="bg-emerald-100 text-emerald-700 h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm border border-emerald-200" title="Present">${p}</div>
-                                <div class="bg-rose-100 text-rose-700 h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm border border-rose-200" title="Absent">${a}</div>
-                                <div class="bg-blue-100 text-blue-700 h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm border border-blue-200" title="Full Day">${fd}</div>
-                                <div class="bg-yellow-100 text-yellow-700 h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm border border-yellow-200" title="Half Day">${hd}</div>
-                                <div class="bg-orange-100 text-orange-700 h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm border border-orange-200" title="Miss Punch">${mp}</div>
+                        <div class="flex flex-col items-start sm:items-end gap-3 w-full sm:w-auto">
+                            <div class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg font-bold text-xs sm:text-sm border border-indigo-100 shadow-sm flex items-center gap-1.5 ml-auto sm:ml-0"><i class="fa-solid fa-chart-pie opacity-70"></i> ${attRate}% Rate</div>
+                            <div class="flex gap-1.5 sm:gap-2 w-full sm:w-auto justify-between sm:justify-start">
+                                <div class="bg-emerald-100 text-emerald-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-emerald-200" title="Present">${p}</div>
+                                <div class="bg-rose-100 text-rose-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-rose-200" title="Absent">${a}</div>
+                                <div class="bg-blue-100 text-blue-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-blue-200" title="Full Day">${fd}</div>
+                                <div class="bg-yellow-100 text-yellow-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-yellow-200" title="Half Day">${hd}</div>
+                                <div class="bg-orange-100 text-orange-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-orange-200" title="Miss Punch">${mp}</div>
                             </div>
                         </div>
                     </div>
@@ -625,8 +629,12 @@
     function renderStandardRows() {
         const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
         const fragment = document.createDocumentFragment();
+        
         pageData.forEach((row, i) => {
-            const tr = document.createElement('tr'); tr.className = "hover:bg-teal-50/50 transition-colors cursor-pointer"; tr.style.animation = `fadeInUp 0.4s ease-out ${i * 0.03}s forwards`; tr.style.opacity = "0";
+            const tr = document.createElement('tr'); 
+            tr.className = "hover:bg-teal-50/50 transition-colors cursor-pointer"; 
+            tr.style.animation = `fadeInUp 0.4s ease-out ${i * 0.03}s forwards`; 
+            tr.style.opacity = "0";
             tr.onclick = () => openEmployeeModal((currentPage - 1) * rowsPerPage + i);
             let html = `<td class="p-4 font-semibold whitespace-nowrap"><span class="hover:text-teal-600 transition">${row.name}</span><span class="block text-xs text-slate-500 font-normal mt-0.5"><i class="fa-solid fa-id-badge text-slate-300 mr-1"></i>${row.code}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}</td>`;
             row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
@@ -778,7 +786,7 @@
                 let realTotal = 0, realToday = 0, realYday = 0;
                 if(snapshot.exists()) { 
                     const data = snapshot.val(); 
-                    window.globalVisitorData = data; // Save globally for the calendar modal
+                    window.globalVisitorData = data; 
                     realTotal = data.total || 0; 
                     realToday = data.daily[todayStr] || 0; 
                     realYday = data.daily[yesterdayStr] || 0; 
