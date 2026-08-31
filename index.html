@@ -191,7 +191,7 @@
                     <div id="search-container" class="relative w-full rounded-lg bg-white">
                         <div id="search-inner" class="relative">
                             <i class="fa-solid fa-magnifying-glass text-slate-400 pointer-events-none absolute left-3 top-1/2 transform -translate-y-1/2" id="search-icon"></i>
-                            <input type="text" id="searchInput" placeholder="Search Employee, TL, or Supervisor..." class="pl-9 pr-10 py-2 border border-slate-300 rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition-all shadow-sm bg-transparent">
+                            <input type="text" id="searchInput" placeholder="Search Employee, TL, or Shift Supervisor..." class="pl-9 pr-10 py-2 border border-slate-300 rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition-all shadow-sm bg-transparent">
                             <!-- Clear / Cross Icon -->
                             <button id="clear-search-btn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden transition-colors z-10 w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100" onclick="clearSearch()" title="Clear Search">
                                 <i class="fa-solid fa-xmark text-lg"></i>
@@ -202,20 +202,20 @@
                     <!-- Search Scope Toggles -->
                     <div id="search-toggles" class="flex flex-wrap justify-center gap-2 w-full transition-all duration-300">
                         <label class="cursor-pointer">
-                            <input type="radio" name="searchScope" value="all" class="peer hidden" checked onchange="currentPage=1; applyFilters()">
+                            <input type="radio" name="searchScope" value="all" class="peer hidden" onclick="handleScopeClick(this)">
                             <div class="text-[11px] sm:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm peer-checked:bg-slate-700 peer-checked:text-white peer-checked:border-slate-700 transition-all">🔍 All</div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="searchScope" value="emp" class="peer hidden" onchange="currentPage=1; applyFilters()">
+                            <input type="radio" name="searchScope" value="emp" class="peer hidden" checked onclick="handleScopeClick(this)">
                             <div class="text-[11px] sm:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm peer-checked:bg-teal-600 peer-checked:text-white peer-checked:border-teal-600 transition-all">👤 Employee</div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="searchScope" value="tl" class="peer hidden" onchange="currentPage=1; applyFilters()">
+                            <input type="radio" name="searchScope" value="tl" class="peer hidden" onclick="handleScopeClick(this)">
                             <div class="text-[11px] sm:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-600 transition-all">👔 Team Leader</div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="searchScope" value="sup" class="peer hidden" onchange="currentPage=1; applyFilters()">
-                            <div class="text-[11px] sm:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm peer-checked:bg-rose-600 peer-checked:text-white peer-checked:border-rose-600 transition-all">📋 Supervisor</div>
+                            <input type="radio" name="searchScope" value="sup" class="peer hidden" onclick="handleScopeClick(this)">
+                            <div class="text-[11px] sm:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm peer-checked:bg-rose-600 peer-checked:text-white peer-checked:border-rose-600 transition-all">📋 Shift Supervisor</div>
                         </label>
                     </div>
 
@@ -398,6 +398,9 @@
     const absenceList = ['A', 'ABSENT', 'FD', 'FULL DAY', 'HD', 'HALF DAY', 'SLWP', 'SICK LEAVE', 'MP', 'MISS PUNCH'];
     window.globalVisitorData = {}; 
 
+    // Current Search Toggle State Tracker
+    let currentSearchScope = 'emp'; // Default Scope
+
     const DEFAULT_SETTINGS = { pattern: 'ACB', baseDate: '2026-01-05', baseShift: 'A' }; 
     let shiftSettings = JSON.parse(localStorage.getItem('shiftSettings')) || DEFAULT_SETTINGS;
     if(!shiftSettings.pattern) shiftSettings.pattern = 'ACB';
@@ -462,6 +465,19 @@
             }
         });
     });
+
+    // -------- TOGGLE CLICK LOGIC --------
+    function handleScopeClick(radioBtn) {
+        // If clicking the currently active one and it's NOT the default (employee)
+        if (currentSearchScope === radioBtn.value && radioBtn.value !== 'emp') {
+            document.querySelector('input[name="searchScope"][value="emp"]').checked = true;
+            currentSearchScope = 'emp';
+        } else {
+            currentSearchScope = radioBtn.value;
+        }
+        currentPage = 1;
+        applyFilters();
+    }
 
     // -------- CLEAR SEARCH FUNCTION --------
     function clearSearch() {
@@ -777,7 +793,7 @@
         if(pageData.length === 0) { minimalContainer.innerHTML = `<div class="text-center py-10 fade-in-up text-slate-500 font-medium">No records found for your search.</div>`; return; }
 
         const searchVal = document.getElementById('searchInput').value.trim();
-        const scope = document.querySelector('input[name="searchScope"]:checked').value;
+        const scope = currentSearchScope;
         const hlAll = scope === 'all';
 
         pageData.forEach((row, i) => {
@@ -819,7 +835,7 @@
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 sm:gap-0">
                         <div class="flex sm:flex-col gap-4 sm:gap-3 w-full sm:w-auto">
                             <div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Team Leader</p><p class="text-sm font-bold text-slate-700">${tlDisplay}</p></div>
-                            <div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Supervisor</p><p class="text-sm font-bold text-slate-700">${supDisplay}</p></div>
+                            <div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Shift Supervisor</p><p class="text-sm font-bold text-slate-700">${supDisplay}</p></div>
                         </div>
                         <div class="flex flex-col items-start sm:items-end gap-3 w-full sm:w-auto">
                             <div class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg font-bold text-xs sm:text-sm border border-indigo-100 shadow-sm flex items-center gap-1.5 ml-auto sm:ml-0"><i class="fa-solid fa-chart-pie opacity-70"></i> ${attRate}% Rate</div>
@@ -840,7 +856,7 @@
         const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
         
         const searchVal = document.getElementById('searchInput').value.trim();
-        const scope = document.querySelector('input[name="searchScope"]:checked').value;
+        const scope = currentSearchScope;
         const hlAll = scope === 'all';
 
         // Desktop Rows
@@ -856,7 +872,7 @@
             tr.style.animation = `fadeInUp 0.4s ease-out ${i * 0.03}s forwards`; 
             tr.style.opacity = "0";
             tr.onclick = () => openEmployeeModal((currentPage - 1) * rowsPerPage + i);
-            let html = `<td class="p-4 font-semibold whitespace-nowrap"><span class="hover:text-teal-600 transition">${nameDisplay}</span><span class="block text-xs text-slate-500 font-normal mt-0.5"><i class="fa-solid fa-id-badge text-slate-300 mr-1"></i>${codeDisplay}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}<div class="text-[10px] text-slate-400 mt-1 font-medium">TL: ${tlDisplay} | Sup: ${supDisplay}</div></td>`;
+            let html = `<td class="p-4 font-semibold whitespace-nowrap"><span class="hover:text-teal-600 transition">${nameDisplay}</span><span class="block text-xs text-slate-500 font-normal mt-0.5"><i class="fa-solid fa-id-badge text-slate-300 mr-1"></i>${codeDisplay}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}<div class="text-[10px] text-slate-400 mt-1 font-medium">TL: ${tlDisplay} | Shift Sup: ${supDisplay}</div></td>`;
             row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
             tr.innerHTML = html; fragment.appendChild(tr);
         });
@@ -903,7 +919,7 @@
         const search = document.getElementById('searchInput').value.toLowerCase().trim(); 
         const status = document.getElementById('statusFilter').value; 
         const contractor = document.getElementById('contractorFilter').value;
-        const scope = document.querySelector('input[name="searchScope"]:checked').value;
+        const scope = currentSearchScope;
 
         if(search === '/admin') return; // Ignore admin command in main filter logic
         
@@ -936,7 +952,7 @@
             
             if (search !== '') {
                 if (scope === 'tl' && filteredData.length > 0) badgeText = `Team: ${filteredData.length} Employee(s)`;
-                if (scope === 'sup' && filteredData.length > 0) badgeText = `Under Sup: ${filteredData.length} Employee(s)`;
+                if (scope === 'sup' && filteredData.length > 0) badgeText = `Under Shift Sup: ${filteredData.length} Employee(s)`;
             }
             
             count.textContent = badgeText; 
