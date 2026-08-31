@@ -70,100 +70,70 @@
             from { opacity: 0; transform: translateY(15px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
+        .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
 
         /* Minimal Mode Global Rules */
         body.minimal-mode .hide-always-minimal { display: none !important; }
-        @media (max-width: 767px) {
-            body.minimal-mode .hide-mobile-minimal { display: none !important; }
-        }
 
-        /* Default Filter Layout */
-        #filter-wrapper {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
+        /* Layout Structure */
+        #filter-wrapper { display: grid; gap: 0.75rem; width: 100%; transition: all 0.5s ease; }
+        @media (min-width: 768px) { #filter-wrapper { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+        /* --- GLOWING MINIMAL SEARCH BAR STYLES --- */
+        body.minimal-mode #table-section-header {
+            background: transparent; border: none; box-shadow: none; padding: 1rem 0;
+        }
+        body.minimal-mode #table-header-title-container {
+            justify-content: center; margin-bottom: 2rem; position: relative;
+        }
+        body.minimal-mode #viewToggleBtn { position: absolute; right: 0; }
+        
+        body.minimal-mode #filter-wrapper {
+            display: flex; flex-direction: column; max-width: 650px; margin: 0 auto 2.5rem auto; align-items: center;
+        }
+        
+        /* The Gradient Border */
+        body.minimal-mode #search-container {
             width: 100%;
-            transition: all 0.5s ease;
+            background: linear-gradient(135deg, #0d9488, #4f46e5, #ec4899);
+            padding: 4px; /* Thickness of gradient border */
+            border-radius: 9999px;
+            box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.35);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @media (min-width: 768px) {
-            #filter-wrapper { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        body.minimal-mode #search-container:focus-within {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 20px 45px -5px rgba(236, 72, 153, 0.4);
+        }
+        
+        /* The White Input Area */
+        body.minimal-mode #search-inner {
+            background-color: #ffffff;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            position: relative;
+        }
+        body.minimal-mode #searchInput {
+            width: 100%;
+            font-size: 1.1rem;
+            padding: 1.1rem 1.5rem 1.1rem 3.5rem;
+            border-radius: 9999px;
+            border: none;
+            background: transparent;
+            color: #1e293b;
+        }
+        body.minimal-mode #searchInput:focus { outline: none; box-shadow: none; }
+        
+        body.minimal-mode #search-icon {
+            position: absolute;
+            left: 1.25rem;
+            font-size: 1.25rem;
+            color: #4f46e5;
         }
 
-        /* Desktop Minimal Mode - Gorgeous Centered Glowing Search */
-        @media (min-width: 768px) {
-            body.minimal-mode #table-section-header {
-                background: transparent;
-                border: none;
-                box-shadow: none;
-                padding: 1.5rem 0 0 0;
-            }
-            body.minimal-mode #table-header-title-container {
-                justify-content: center;
-                margin-bottom: 2.5rem;
-            }
-            body.minimal-mode #viewToggleBtn {
-                position: absolute;
-                right: 0;
-            }
-            
-            body.minimal-mode #filter-wrapper {
-                display: flex;
-                flex-direction: column;
-                max-width: 720px;
-                margin: 0 auto 3rem auto;
-                align-items: center;
-            }
-            
-            body.minimal-mode #search-container {
-                width: 100%;
-                background: linear-gradient(135deg, #0d9488, #4f46e5, #ec4899);
-                padding: 3px;
-                border-radius: 9999px;
-                box-shadow: 0 10px 30px -5px rgba(13, 148, 136, 0.35);
-                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            body.minimal-mode #search-container:focus-within {
-                transform: translateY(-3px) scale(1.02);
-                box-shadow: 0 20px 45px -5px rgba(79, 70, 229, 0.5);
-            }
-            
-            body.minimal-mode #searchInput {
-                font-size: 1.15rem;
-                padding: 1.1rem 1.5rem 1.1rem 3.5rem;
-                border-radius: 9999px;
-                border: none;
-                height: auto;
-            }
-            body.minimal-mode #search-icon {
-                left: 1.5rem;
-                font-size: 1.25rem;
-                color: #4f46e5;
-                z-index: 10;
-            }
-
-            body.minimal-mode #dropdown-container {
-                display: flex;
-                width: 100%;
-                justify-content: center;
-                gap: 1rem;
-                margin-top: 1rem;
-            }
-            body.minimal-mode #dropdown-container select {
-                border-radius: 9999px;
-                padding: 0.65rem 1.5rem;
-                background-color: #ffffff;
-                border: 1px solid #e2e8f0;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-                font-weight: 600;
-                color: #475569;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            body.minimal-mode #dropdown-container select:hover {
-                border-color: #cbd5e1;
-                background-color: #f8fafc;
-            }
-        }
+        body.minimal-mode #dropdown-container { display: none !important; }
     </style>
 </head>
 <body class="antialiased minimal-mode">
@@ -185,11 +155,11 @@
     <!-- Main Content -->
     <main id="main-content" class="hidden p-4 md:p-6 lg:p-8 max-w-screen-2xl mx-auto space-y-6">
         
-        <!-- Header (Hidden on Mobile Minimal, Visible on Desktop Minimal) -->
-        <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 transition-all duration-500 hide-mobile-minimal">
+        <!-- Header -->
+        <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 transition-all duration-500">
             <div>
                 <h1 class="text-2xl md:text-3xl font-bold text-slate-900">CommScope Contractor Attendance Portal</h1>
-                <p id="current-month-header" class="text-slate-500 mt-1">Loading Data...</p>
+                <p id="current-month-header" class="text-slate-500 mt-1 hide-always-minimal">Loading Data...</p>
             </div>
             <div class="flex flex-wrap items-center gap-2 md:gap-3 w-full xl:w-auto">
                 <button onclick="toggleGraphs()" class="hide-always-minimal bg-white text-slate-700 border border-slate-300 px-3 md:px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
@@ -201,13 +171,13 @@
                 <button onclick="openPdfModal()" class="bg-[var(--primary)] text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-teal-700 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 md:w-auto cursor-pointer">
                     <i class="fa-solid fa-folder-open"></i> Original PDF
                 </button>
-                <a href="https://imsbg.github.io/commscope/" class="bg-slate-800 text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-slate-700 transition flex items-center justify-center gap-2 text-sm font-medium w-full md:w-auto cursor-pointer">
+                <a href="https://imsbg.github.io/commscope/" class="hide-always-minimal bg-slate-800 text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-slate-700 transition flex items-center justify-center gap-2 text-sm font-medium w-full md:w-auto cursor-pointer">
                     <i class="fa-solid fa-house"></i> Home
                 </a>
             </div>
         </header>
 
-        <!-- Metric Cards (Always hidden in Minimal Mode) -->
+        <!-- Metric Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 hide-always-minimal">
            <div class="bg-[var(--primary)] text-white p-6 rounded-2xl shadow-lg transform transition hover:-translate-y-1">
                <p class="text-sm font-medium text-teal-200">Total Employees</p>
@@ -223,7 +193,7 @@
            </div>
         </div>
         
-        <!-- Graphs (Always hidden in Minimal Mode) -->
+        <!-- Graphs -->
         <section id="graphs-section" class="hidden grid grid-cols-1 lg:grid-cols-5 gap-6 transition-all duration-300 opacity-0 mb-6 hide-always-minimal">
             <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
@@ -242,11 +212,11 @@
             </div>
         </section>
 
-        <!-- Main Table & Search Section -->
+        <!-- Main Search & Results Section -->
         <div id="table-section-header" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 relative transition-all duration-500">
             
             <div id="table-header-title-container" class="flex justify-between items-center w-full mb-4 relative transition-all duration-500">
-                <h2 class="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2 whitespace-nowrap">
+                <h2 class="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2 whitespace-nowrap hide-always-minimal">
                     Records <span id="contractor-count" class="hidden bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full transition-all"></span>
                 </h2>
                 <!-- Minimal / Standard View Toggle -->
@@ -256,32 +226,42 @@
             </div>
             
             <div id="filter-wrapper">
+                <!-- Glowing Search Box -->
                 <div id="search-container" class="relative w-full rounded-lg bg-white">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 transition-all duration-300 pointer-events-none" id="search-icon"></i>
-                    <input type="text" id="searchInput" placeholder="Search Employee (Name or ID)..." class="pl-9 pr-4 py-2 border border-slate-300 rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition-all shadow-sm bg-transparent relative z-0">
+                    <div id="search-inner" class="relative">
+                        <i class="fa-solid fa-magnifying-glass text-slate-400 pointer-events-none absolute left-3 top-1/2 transform -translate-y-1/2" id="search-icon"></i>
+                        <input type="text" id="searchInput" placeholder="Search Employee (Name or ID)..." class="pl-9 pr-4 py-2 border border-slate-300 rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition-all shadow-sm bg-transparent">
+                    </div>
                 </div>
                 
+                <!-- Standard Mode Filters (Hidden in Minimal) -->
                 <div id="dropdown-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
                     <select id="statusFilter" class="px-4 py-2 border border-slate-300 rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500 transition-all"></select>
                     <select id="contractorFilter" class="px-4 py-2 border border-slate-300 rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500 transition-all"></select>
-                    
-                    <!-- Hidden Dropdowns -->
                     <select id="tlFilter" class="hidden"></select>
                     <select id="supFilter" class="hidden"></select>
                 </div>
             </div>
             
-            <div class="hidden md:block table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg mt-4">
+            <!-- Standard View Full Table -->
+            <div id="standard-view-table" class="hidden md:block table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg mt-4 hide-always-minimal">
                 <table class="w-full text-left min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
             </div>
 
-            <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3 mt-4"></div>
+            <!-- Mobile Standard Cards -->
+            <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3 mt-4 hide-always-minimal"></div>
+            
+            <!-- Minimal View Summary Cards (Desktop & Mobile) -->
+            <div id="minimalCardsContainer" class="flex flex-col gap-3 mt-2 max-w-4xl mx-auto hidden"></div>
 
+            <!-- Pagination -->
             <div id="pagination-controls" class="pt-4 flex flex-col md:flex-row justify-between items-center text-sm gap-4"></div>
         </div>
         
-       <footer class="text-center text-xs text-slate-500 pt-4 pb-8 relative hide-always-minimal">
-            <div class="flex justify-center gap-4 mb-4">
+       <footer class="text-center text-xs text-slate-500 pt-8 pb-12 relative flex flex-col items-center">
+            
+            <!-- Stat Counter -->
+            <div class="flex justify-center gap-4 mb-6 hide-always-minimal">
                 <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Yesterday</p>
                     <p class="text-lg font-bold text-slate-700" id="vis-yday">--</p>
@@ -298,30 +278,19 @@
 
             <p>Disclaimer: This site is not made by, endorsed by, or affiliated with Commscope.</p>
             <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
+
+            <!-- Instagram Promo embedded in footer -->
+            <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" class="mt-8 flex flex-col items-center bg-white border border-slate-200 px-6 py-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow group max-w-xs cursor-pointer">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-7 h-7 transform transition group-hover:-rotate-6 group-hover:scale-110 duration-300">
+                        <svg class="w-full h-full drop-shadow-sm" viewBox="0 0 2500 2500" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="0" cx="332.14" cy="2511.81" r="3263.54" gradientUnits="userSpaceOnUse"><stop offset=".09" stop-color="#fa8f21"/><stop offset=".78" stop-color="#d82d7e"/></radialGradient><radialGradient id="1" cx="1516.14" cy="2623.81" r="2572.12" gradientUnits="userSpaceOnUse"><stop offset=".64" stop-color="#8c3aaa" stop-opacity="0"/><stop offset="1" stop-color="#8c3aaa"/></radialGradient></defs><path d="M833.4,1250c0-230.11,186.49-416.7,416.6-416.7s416.7,186.59,416.7,416.7-186.59,416.7-416.7,416.7S833.4,1480.11,833.4,1250m-225.26,0c0,354.5,287.36,641.86,641.86,641.86S1891.86,1604.5,1891.86,1250,1604.5,608.14,1250,608.14,608.14,895.5,608.14,1250M1767.27,582.69a150,150,0,1,0,150.06-149.94h-0.06a150.07,150.07,0,0,0-150,149.94M745,2267.47c-121.87-5.55-188.11-25.85-232.13-43-58.36-22.72-100-49.78-143.78-93.5s-70.88-85.32-93.5-143.68c-17.16-44-37.46-110.26-43-232.13-6.06-131.76-7.27-171.34-7.27-505.15s1.31-373.28,7.27-505.15c5.55-121.87,26-188,43-232.13,22.72-58.36,49.78-100,93.5-143.78s85.32-70.88,143.78-93.5c44-17.16,110.26-37.46,232.13-43,131.76-6.06,171.34-7.27,505-7.27s373.28,1.31,505.15,7.27c121.87,5.55,188,26,232.13,43,58.36,22.62,100,49.78,143.78,93.5s70.78,85.42,93.5,143.78c17.16,44,37.46,110.26,43,232.13,6.06,131.87,7.27,171.34,7.27,505.15s-1.21,373.28-7.27,505.15c-5.55,121.87-25.95,188.11-43,232.13-22.72,58.36-49.78,100-93.5,143.68s-85.42,70.78-143.78,93.5c-44,17.16-110.26,37.46-232.13,43-131.76,6.06-171.34,7.27-505.15,7.27s-373.28-1.21-505-7.27M734.65,7.57c-133.07,6.06-224,27.16-303.41,58.06C349,97.54,279.38,140.35,209.81,209.81S97.54,349,65.63,431.24c-30.9,79.46-52,170.34-58.06,303.41C1.41,867.93,0,910.54,0,1250s1.41,382.07,7.57,515.35c6.06,133.08,27.16,223.95,58.06,303.41,31.91,82.19,74.62,152,144.18,221.43S349,2402.37,431.24,2434.37c79.56,30.9,170.34,52,303.41,58.06C868,2498.49,910.54,2500,1250,2500s382.07-1.41,515.35-7.57c133.08-6.06,223.95-27.16,303.41-58.06,82.19-32,151.86-74.72,221.43-144.18s112.18-139.24,144.18-221.43c30.9-79.46,52.1-170.34,58.06-303.41,6.06-133.38,7.47-175.89,7.47-515.35s-1.41-382.07-7.47-515.35c-6.06-133.08-27.16-224-58.06-303.41-32-82.19-74.72-151.86-144.18-221.43S2150.95,97.54,2068.86,65.63c-79.56-30.9-170.44-52.1-303.41-58.06C1632.17,1.51,1589.56,0,1250.1,0S868,1.41,734.65,7.57" fill="url(#0)"/><path d="M833.4,1250c0-230.11,186.49-416.7,416.6-416.7s416.7,186.59,416.7,416.7-186.59,416.7-416.7,416.7S833.4,1480.11,833.4,1250m-225.26,0c0,354.5,287.36,641.86,641.86,641.86S1891.86,1604.5,1891.86,1250,1604.5,608.14,1250,608.14,608.14,895.5,608.14,1250M1767.27,582.69a150,150,0,1,0,150.06-149.94h-0.06a150.07,150.07,0,0,0-150,149.94M745,2267.47c-121.87-5.55-188.11-25.85-232.13-43-58.36-22.72-100-49.78-143.78-93.5s-70.88-85.32-93.5-143.68c-17.16-44-37.46-110.26-43-232.13-6.06-131.76-7.27-171.34-7.27-505.15s1.31-373.28,7.27-505.15c5.55-121.87,26-188,43-232.13,22.72-58.36,49.78-100,93.5-143.78s85.32-70.88,143.78-93.5c44-17.16,110.26-37.46,232.13-43,131.76-6.06,171.34-7.27,505-7.27s373.28,1.31,505.15,7.27c121.87,5.55,188,26,232.13,43,58.36,22.62,100,49.78,143.78,93.5s70.78,85.42,93.5,143.78c17.16,44,37.46,110.26,43,232.13,6.06,131.87,7.27,171.34,7.27,505.15s-1.21,373.28-7.27,505.15c-5.55,121.87-25.95,188.11-43,232.13-22.72,58.36-49.78,100-93.5,143.68s-85.42,70.78-143.78,93.5c-44,17.16-110.26,37.46-232.13,43-131.76,6.06-171.34,7.27-505.15,7.27s-373.28-1.21-505-7.27M734.65,7.57c-133.07,6.06-224,27.16-303.41,58.06C349,97.54,279.38,140.35,209.81,209.81S97.54,349,65.63,431.24c-30.9,79.46-52,170.34-58.06,303.41C1.41,867.93,0,910.54,0,1250s1.41,382.07,7.57,515.35c6.06,133.08,27.16,223.95,58.06,303.41,31.91,82.19,74.62,152,144.18,221.43S349,2402.37,431.24,2434.37c79.56,30.9,170.34,52,303.41,58.06C868,2498.49,910.54,2500,1250,2500s382.07-1.41,515.35-7.57c133.08-6.06,223.95-27.16,303.41-58.06,82.19-32,151.86-74.72,221.43-144.18s112.18-139.24,144.18-221.43c30.9-79.46,52.1-170.34,58.06-303.41,6.06-133.38,7.47-175.89,7.47-515.35s-1.41-382.07-7.47-515.35c-6.06-133.08-27.16-224-58.06-303.41-32-82.19-74.72-151.86-144.18-221.43S2150.95,97.54,2068.86,65.63c-79.56-30.9-170.44-52.1-303.41-58.06C1632.17,1.51,1589.56,0,1250.1,0S868,1.41,734.65,7.57" fill="url(#1)"/></svg>
+                    </div>
+                    <span class="font-bold text-slate-800 text-sm group-hover:text-[#d82d7e] transition-colors">Support My Work</span>
+                </div>
+                <p class="text-[11px] text-slate-500 font-medium">Liked this project? Follow me on Instagram <span class="text-[#fa8f21] font-bold group-hover:underline">@sandeepbiswalg</span></p>
+            </a>
         </footer>
     </main>
-
-    <!-- FULLY CLICKABLE INSTAGRAM POPUP -->
-    <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" id="ig-popup" class="fixed bottom-4 right-4 left-4 md:left-auto md:w-[350px] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-slate-200 p-4 z-[90] transform transition-all duration-500 translate-y-48 opacity-0 flex gap-4 items-center hover:scale-[1.03] cursor-pointer group hover:shadow-[0_15px_50px_-10px_rgba(216,45,126,0.3)]">
-        <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center transform transition group-hover:-rotate-6 group-hover:scale-110 duration-300">
-            <svg class="w-full h-full drop-shadow-md" viewBox="0 0 2500 2500" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <radialGradient id="0" cx="332.14" cy="2511.81" r="3263.54" gradientUnits="userSpaceOnUse"><stop offset=".09" stop-color="#fa8f21"/><stop offset=".78" stop-color="#d82d7e"/></radialGradient>
-                    <radialGradient id="1" cx="1516.14" cy="2623.81" r="2572.12" gradientUnits="userSpaceOnUse"><stop offset=".64" stop-color="#8c3aaa" stop-opacity="0"/><stop offset="1" stop-color="#8c3aaa"/></radialGradient>
-                </defs>
-                <path d="M833.4,1250c0-230.11,186.49-416.7,416.6-416.7s416.7,186.59,416.7,416.7-186.59,416.7-416.7,416.7S833.4,1480.11,833.4,1250m-225.26,0c0,354.5,287.36,641.86,641.86,641.86S1891.86,1604.5,1891.86,1250,1604.5,608.14,1250,608.14,608.14,895.5,608.14,1250M1767.27,582.69a150,150,0,1,0,150.06-149.94h-0.06a150.07,150.07,0,0,0-150,149.94M745,2267.47c-121.87-5.55-188.11-25.85-232.13-43-58.36-22.72-100-49.78-143.78-93.5s-70.88-85.32-93.5-143.68c-17.16-44-37.46-110.26-43-232.13-6.06-131.76-7.27-171.34-7.27-505.15s1.31-373.28,7.27-505.15c5.55-121.87,26-188,43-232.13,22.72-58.36,49.78-100,93.5-143.78s85.32-70.88,143.78-93.5c44-17.16,110.26-37.46,232.13-43,131.76-6.06,171.34-7.27,505-7.27s373.28,1.31,505.15,7.27c121.87,5.55,188,26,232.13,43,58.36,22.62,100,49.78,143.78,93.5s70.78,85.42,93.5,143.78c17.16,44,37.46,110.26,43,232.13,6.06,131.87,7.27,171.34,7.27,505.15s-1.21,373.28-7.27,505.15c-5.55,121.87-25.95,188.11-43,232.13-22.72,58.36-49.78,100-93.5,143.68s-85.42,70.78-143.78,93.5c-44,17.16-110.26,37.46-232.13,43-131.76,6.06-171.34,7.27-505.15,7.27s-373.28-1.21-505-7.27M734.65,7.57c-133.07,6.06-224,27.16-303.41,58.06C349,97.54,279.38,140.35,209.81,209.81S97.54,349,65.63,431.24c-30.9,79.46-52,170.34-58.06,303.41C1.41,867.93,0,910.54,0,1250s1.41,382.07,7.57,515.35c6.06,133.08,27.16,223.95,58.06,303.41,31.91,82.19,74.62,152,144.18,221.43S349,2402.37,431.24,2434.37c79.56,30.9,170.34,52,303.41,58.06C868,2498.49,910.54,2500,1250,2500s382.07-1.41,515.35-7.57c133.08-6.06,223.95-27.16,303.41-58.06,82.19-32,151.86-74.72,221.43-144.18s112.18-139.24,144.18-221.43c30.9-79.46,52.1-170.34,58.06-303.41,6.06-133.38,7.47-175.89,7.47-515.35s-1.41-382.07-7.47-515.35c-6.06-133.08-27.16-224-58.06-303.41-32-82.19-74.72-151.86-144.18-221.43S2150.95,97.54,2068.86,65.63c-79.56-30.9-170.44-52.1-303.41-58.06C1632.17,1.51,1589.56,0,1250.1,0S868,1.41,734.65,7.57" fill="url(#0)"/>
-                <path d="M833.4,1250c0-230.11,186.49-416.7,416.6-416.7s416.7,186.59,416.7,416.7-186.59,416.7-416.7,416.7S833.4,1480.11,833.4,1250m-225.26,0c0,354.5,287.36,641.86,641.86,641.86S1891.86,1604.5,1891.86,1250,1604.5,608.14,1250,608.14,608.14,895.5,608.14,1250M1767.27,582.69a150,150,0,1,0,150.06-149.94h-0.06a150.07,150.07,0,0,0-150,149.94M745,2267.47c-121.87-5.55-188.11-25.85-232.13-43-58.36-22.72-100-49.78-143.78-93.5s-70.88-85.32-93.5-143.68c-17.16-44-37.46-110.26-43-232.13-6.06-131.76-7.27-171.34-7.27-505.15s1.31-373.28,7.27-505.15c5.55-121.87,26-188,43-232.13,22.72-58.36,49.78-100,93.5-143.78s85.32-70.88,143.78-93.5c44-17.16,110.26-37.46,232.13-43,131.76-6.06,171.34-7.27,505-7.27s373.28,1.31,505.15,7.27c121.87,5.55,188,26,232.13,43,58.36,22.62,100,49.78,143.78,93.5s70.78,85.42,93.5,143.78c17.16,44,37.46,110.26,43,232.13,6.06,131.87,7.27,171.34,7.27,505.15s-1.21,373.28-7.27,505.15c-5.55,121.87-25.95,188.11-43,232.13-22.72,58.36-49.78,100-93.5,143.68s-85.42,70.78-143.78,93.5c-44,17.16-110.26,37.46-232.13,43-131.76,6.06-171.34,7.27-505.15,7.27s-373.28-1.21-505-7.27M734.65,7.57c-133.07,6.06-224,27.16-303.41,58.06C349,97.54,279.38,140.35,209.81,209.81S97.54,349,65.63,431.24c-30.9,79.46-52,170.34-58.06,303.41C1.41,867.93,0,910.54,0,1250s1.41,382.07,7.57,515.35c6.06,133.08,27.16,223.95,58.06,303.41,31.91,82.19,74.62,152,144.18,221.43S349,2402.37,431.24,2434.37c79.56,30.9,170.34,52,303.41,58.06C868,2498.49,910.54,2500,1250,2500s382.07-1.41,515.35-7.57c133.08-6.06,223.95-27.16,303.41-58.06,82.19-32,151.86-74.72,221.43-144.18s112.18-139.24,144.18-221.43c30.9-79.46,52.1-170.34,58.06-303.41,6.06-133.38,7.47-175.89,7.47-515.35s-1.41-382.07-7.47-515.35c-6.06-133.08-27.16-224-58.06-303.41-32-82.19-74.72-151.86-144.18-221.43S2150.95,97.54,2068.86,65.63c-79.56-30.9-170.44-52.1-303.41-58.06C1632.17,1.51,1589.56,0,1250.1,0S868,1.41,734.65,7.57" fill="url(#1)"/>
-            </svg>
-        </div>
-        <div class="flex-1 text-left ml-1">
-            <h4 class="font-bold text-slate-800 text-sm group-hover:text-[#d82d7e] transition-colors">Support My Work!</h4>
-            <p class="text-[12px] text-slate-500 mt-0.5 leading-snug font-medium">Liked this project? Follow me on Instagram <span class="text-[#fa8f21] font-bold group-hover:underline">@sandeepbiswalg</span></p>
-        </div>
-        <!-- Clicking close stops the link from opening -->
-        <button onclick="event.preventDefault(); event.stopPropagation(); closeIgPopup();" class="text-slate-400 hover:text-rose-500 flex-shrink-0 transition-colors p-2 -mr-1 rounded-full hover:bg-rose-50 z-10 relative shadow-sm hover:shadow">
-            <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-    </a>
 
     <!-- PDF Notice Alert Modal (Clicking outside closes it) -->
     <div id="pdf-alert-modal" onclick="if(event.target === this) closePdfModal()" class="fixed inset-0 bg-black bg-opacity-60 z-[100] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none modal-blur">
@@ -408,8 +377,6 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('footer-year').textContent = new Date().getFullYear();
-        
-        // Load user's view mode preference
         initViewMode();
 
         if (IS_MAINTENANCE_MODE) {
@@ -435,24 +402,12 @@
                 currentPage = 1; applyFilters();
             });
         });
-
-        // Show IG popup slightly delayed if not closed previously
-        setTimeout(() => {
-            if(!sessionStorage.getItem('igClosed')) {
-                const igPop = document.getElementById('ig-popup');
-                igPop.classList.remove('translate-y-48', 'opacity-0');
-            }
-        }, 1500);
     });
 
-    // View Mode Logic (Minimal vs Standard)
+    // View Mode Management
     function initViewMode() {
         const savedMode = localStorage.getItem('attendanceViewMode');
-        if (savedMode) {
-            applyViewMode(savedMode);
-        } else {
-            applyViewMode(window.innerWidth < 768 ? 'minimal' : 'minimal'); // Defaulting to minimal initially for clean look
-        }
+        applyViewMode(savedMode ? savedMode : 'minimal'); // Default to Minimal
     }
 
     function toggleViewMode() {
@@ -468,15 +423,11 @@
             localStorage.setItem('attendanceViewMode', 'minimal');
         } else {
             document.body.classList.remove('minimal-mode');
-            btn.innerHTML = '<i class="fa-solid fa-mobile-screen"></i> <span class="hidden sm:inline">Minimal View</span>';
+            btn.innerHTML = '<i class="fa-solid fa-bolt"></i> <span class="hidden sm:inline">Minimal View</span>';
             localStorage.setItem('attendanceViewMode', 'standard');
         }
-    }
-
-    // IG Popup Close
-    function closeIgPopup() {
-        document.getElementById('ig-popup').classList.add('translate-y-48', 'opacity-0', 'pointer-events-none');
-        sessionStorage.setItem('igClosed', 'true');
+        // Force re-render of table when switching modes
+        if (globalData.length > 0) renderTable();
     }
 
     // Graphs enhancement
@@ -484,30 +435,21 @@
         if(trendChartInstance) trendChartInstance.destroy();
         const ctx = document.getElementById('dayWiseChart').getContext('2d');
         const options = { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            animation: { duration: 1000 },
+            responsive: true, maintainAspectRatio: false, animation: { duration: 1000 },
             plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } } }
         };
-        
         let gradP = ctx.createLinearGradient(0, 0, 0, 400);
-        gradP.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
-        gradP.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
-
+        gradP.addColorStop(0, 'rgba(16, 185, 129, 0.4)'); gradP.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
         let gradA = ctx.createLinearGradient(0, 0, 0, 400);
-        gradA.addColorStop(0, 'rgba(244, 63, 94, 0.4)');
-        gradA.addColorStop(1, 'rgba(244, 63, 94, 0.05)');
+        gradA.addColorStop(0, 'rgba(244, 63, 94, 0.4)'); gradA.addColorStop(1, 'rgba(244, 63, 94, 0.05)');
 
         if (type === 'line' || type === 'radar') {
-            trendChartData.datasets[0].backgroundColor = gradP;
-            trendChartData.datasets[1].backgroundColor = gradA;
+            trendChartData.datasets[0].backgroundColor = gradP; trendChartData.datasets[1].backgroundColor = gradA;
             trendChartData.datasets.forEach(ds => { ds.tension = 0.4; ds.fill = true; });
         } else {
-            trendChartData.datasets[0].backgroundColor = 'rgba(16, 185, 129, 0.8)';
-            trendChartData.datasets[1].backgroundColor = 'rgba(244, 63, 94, 0.8)';
+            trendChartData.datasets[0].backgroundColor = 'rgba(16, 185, 129, 0.8)'; trendChartData.datasets[1].backgroundColor = 'rgba(244, 63, 94, 0.8)';
             trendChartData.datasets.forEach(ds => ds.fill = false);
         }
-        
         if (type !== 'radar') options.scales = { x: { grid: { display: false } }, y: { beginAtZero: true } };
         trendChartInstance = new Chart(ctx, { type: type, data: trendChartData, options: options });
     }
@@ -518,12 +460,10 @@
         const section = document.getElementById('graphs-section');
         const text = document.getElementById('toggle-graphs-text');
         if (section.classList.contains('hidden')) {
-            section.classList.remove('hidden');
-            setTimeout(() => section.classList.remove('opacity-0'), 10);
+            section.classList.remove('hidden'); setTimeout(() => section.classList.remove('opacity-0'), 10);
             text.textContent = 'Hide Graphs';
         } else {
-            section.classList.add('opacity-0');
-            setTimeout(() => section.classList.add('hidden'), 300);
+            section.classList.add('opacity-0'); setTimeout(() => section.classList.add('hidden'), 300);
             text.textContent = 'Show Graphs';
         }
     }
@@ -618,19 +558,111 @@
         initOrUpdateTrendChart(document.getElementById('chartTypeSelector').value || 'line');
     }
 
+    // Advanced Render Logic depending on Minimal/Standard mode
     function renderTable() {
-        document.getElementById('tableHeader').innerHTML = `<tr><th class="p-4">Employee</th><th class="p-4">Status</th><th class="p-4">Contractor</th>${Array.from({length: 31}, (_, i) => `<th class="p-4 text-center">${i+1}</th>`).join('')}</tr>`;
-        const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-        const fragment = document.createDocumentFragment();
+        const isMinimal = document.body.classList.contains('minimal-mode');
+        const searchVal = document.getElementById('searchInput').value.trim();
         
+        const standardTable = document.getElementById('standard-view-table');
+        const standardMobile = document.getElementById('mobileCardsContainer');
+        const minimalCards = document.getElementById('minimalCardsContainer');
+        const pagination = document.getElementById('pagination-controls');
+
+        if (isMinimal) {
+            standardTable.classList.add('hidden');
+            standardMobile.classList.add('hidden');
+            minimalCards.classList.remove('hidden');
+
+            if (searchVal === '') {
+                // Empty state for minimal mode
+                minimalCards.innerHTML = `
+                    <div class="text-center py-16 fade-in-up">
+                        <i class="fa-solid fa-id-card text-6xl text-slate-200 mb-4 drop-shadow-sm"></i>
+                        <h3 class="text-xl font-bold text-slate-700">Search to View Attendance</h3>
+                        <p class="text-sm text-slate-500 mt-1">Enter your Name or Employee ID in the glowing search box above to instantly fetch your records.</p>
+                    </div>`;
+                pagination.innerHTML = '';
+                return;
+            } else {
+                renderMinimalCards();
+                renderPagination();
+            }
+        } else {
+            minimalCards.classList.add('hidden');
+            standardTable.classList.remove('hidden');
+            // Remove hidden only on mobile size
+            standardMobile.className = "md:hidden flex flex-col gap-3 mt-4 hide-always-minimal"; 
+            
+            renderStandardRows();
+            renderPagination();
+        }
+    }
+
+    function renderMinimalCards() {
+        const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+        const minimalContainer = document.getElementById('minimalCardsContainer');
+        minimalContainer.innerHTML = '';
+
+        if(pageData.length === 0) {
+            minimalContainer.innerHTML = `<div class="text-center py-10 fade-in-up text-slate-500 font-medium">No records found for your search.</div>`;
+            return;
+        }
+
+        pageData.forEach((row, i) => {
+            // Calculate Totals dynamically
+            let p=0, a=0, mp=0, fd=0, hd=0;
+            row.dates.slice(0,31).forEach(d => {
+                let val = d ? d.trim().toUpperCase() : '';
+                if (val === 'P') p++;
+                else if (val === 'A' || val === 'ABSENT') a++;
+                else if (val === 'MP' || val === 'MISS PUNCH') mp++;
+                else if (val === 'FD' || val === 'FULL DAY') fd++;
+                else if (val === 'HD' || val === 'HALF DAY') hd++;
+            });
+
+            const isLeft = (row.status !== 'Active');
+            const statusBg = isLeft ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700';
+
+            minimalContainer.innerHTML += `
+                <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" 
+                     style="animation: fadeInUp 0.4s ease-out ${i * 0.04}s forwards; opacity: 0;"
+                     class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md cursor-pointer transition transform hover:-translate-y-1">
+                    
+                    <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-lg leading-tight">${row.name}</h3>
+                            <p class="text-xs text-slate-500 font-mono mt-1"><i class="fa-solid fa-id-badge text-slate-300 mr-1.5"></i>${row.code}</p>
+                        </div>
+                        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full ${statusBg} uppercase tracking-wider">${row.status}</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Team Leader</p>
+                            <p class="text-sm font-bold text-slate-700">${row.tl || 'N/A'}</p>
+                        </div>
+                        <div class="flex gap-1.5 sm:gap-2">
+                            <div class="bg-emerald-100 text-emerald-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-emerald-200" title="Present">${p}</div>
+                            <div class="bg-rose-100 text-rose-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-rose-200" title="Absent">${a}</div>
+                            <div class="bg-blue-100 text-blue-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-blue-200" title="Full Day">${fd}</div>
+                            <div class="bg-yellow-100 text-yellow-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-yellow-200" title="Half Day">${hd}</div>
+                            <div class="bg-orange-100 text-orange-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-orange-200" title="Miss Punch">${mp}</div>
+                        </div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function renderStandardRows() {
+        const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+        
+        // Desktop Table
+        const fragment = document.createDocumentFragment();
         pageData.forEach((row, i) => {
             const tr = document.createElement('tr');
             tr.className = "hover:bg-teal-50/50 transition-colors cursor-pointer";
-            
-            // Staggered fade animation
             tr.style.animation = `fadeInUp 0.4s ease-out ${i * 0.03}s forwards`;
             tr.style.opacity = "0";
-            
             tr.onclick = () => openEmployeeModal((currentPage - 1) * rowsPerPage + i);
             let html = `<td class="p-4 font-semibold whitespace-nowrap"><span class="hover:text-teal-600 transition">${row.name}</span><span class="block text-xs text-slate-500 font-normal mt-0.5"><i class="fa-solid fa-id-badge text-slate-300 mr-1"></i>${row.code}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}</td>`;
             row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
@@ -640,6 +672,7 @@
         document.getElementById('tableBody').innerHTML = '';
         document.getElementById('tableBody').appendChild(fragment);
 
+        // Mobile Cards
         const mobileContainer = document.getElementById('mobileCardsContainer');
         mobileContainer.innerHTML = '';
         pageData.forEach((row, i) => {
@@ -658,7 +691,6 @@
                     <div class="mt-3 inline-flex items-center bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50"><i class="fa-solid fa-briefcase text-slate-400 mr-1.5"></i> ${row.contractor}</div>
                 </div>`;
         });
-        renderPagination();
     }
     
     function changePage(dir) {
@@ -668,9 +700,15 @@
     }
 
     function renderPagination() {
-        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+        const isMinimal = document.body.classList.contains('minimal-mode');
+        const searchVal = document.getElementById('searchInput').value.trim();
         const container = document.getElementById('pagination-controls');
-        if (filteredData.length === 0) { container.innerHTML = '<span class="text-slate-500 font-medium">No records found.</span>'; return; }
+        
+        // Hide pagination if in minimal mode with empty search
+        if(isMinimal && searchVal === '') { container.innerHTML = ''; return; }
+
+        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+        if (filteredData.length === 0) { container.innerHTML = ''; return; }
         const endRecord = Math.min(currentPage * rowsPerPage, filteredData.length);
         
         container.innerHTML = `
@@ -683,10 +721,8 @@
 
     function populateFilters() {
         const contractors = [...new Set(globalData.map(d => d.contractor).filter(Boolean))].sort();
-        
         document.getElementById('statusFilter').innerHTML = `<option value="">All Statuses</option><option value="Active">Active</option><option value="Left">Left</option>`;
         document.getElementById('contractorFilter').innerHTML = `<option value="">All Contractors</option>${contractors.map(c => `<option value="${c}">${c}</option>`).join('')}`;
-        
         document.getElementById('tlFilter').disabled = true;
         document.getElementById('supFilter').disabled = true;
     }
@@ -794,10 +830,7 @@
     }
 
     function getMonday(d) {
-        const date = new Date(d);
-        date.setHours(0,0,0,0);
-        const day = date.getDay();
-        const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+        const date = new Date(d); date.setHours(0,0,0,0); const day = date.getDay(); const diff = date.getDate() - day + (day === 0 ? -6 : 1);
         return new Date(date.setDate(diff));
     }
     
