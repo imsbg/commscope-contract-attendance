@@ -90,10 +90,11 @@
         body.minimal-mode #search-container:focus-within { transform: translateY(-3px) scale(1.02); box-shadow: 0 20px 45px -5px rgba(236, 72, 153, 0.4); }
         
         body.minimal-mode #search-inner { background-color: #ffffff; border-radius: 9999px; display: flex; align-items: center; width: 100%; position: relative; }
-        body.minimal-mode #searchInput { width: 100%; font-size: 1.1rem; padding: 1.1rem 1.5rem 1.1rem 3.5rem; border-radius: 9999px; border: none; background: transparent; color: #1e293b; }
+        body.minimal-mode #searchInput { width: 100%; font-size: 1.1rem; padding: 1.1rem 3rem 1.1rem 3.5rem; border-radius: 9999px; border: none; background: transparent; color: #1e293b; }
         body.minimal-mode #searchInput:focus { outline: none; box-shadow: none; }
         body.minimal-mode #search-icon { position: absolute; left: 1.25rem; font-size: 1.25rem; color: #4f46e5; }
         body.minimal-mode #dropdown-container { display: none !important; }
+        body.minimal-mode #clear-search-btn { right: 1.25rem; }
     </style>
 </head>
 <body class="antialiased minimal-mode">
@@ -186,16 +187,40 @@
                 </div>
                 
                 <div id="filter-wrapper">
-                    <!-- Glowing Search Box (Hidden feature: type /admin) -->
+                    <!-- Glowing Search Box -->
                     <div id="search-container" class="relative w-full rounded-lg bg-white">
                         <div id="search-inner" class="relative">
                             <i class="fa-solid fa-magnifying-glass text-slate-400 pointer-events-none absolute left-3 top-1/2 transform -translate-y-1/2" id="search-icon"></i>
-                            <input type="text" id="searchInput" placeholder="Search Employee (Name or ID)..." class="pl-9 pr-4 py-2 border border-slate-300 rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition-all shadow-sm bg-transparent">
+                            <input type="text" id="searchInput" placeholder="Search Employee, TL, or Supervisor..." class="pl-9 pr-10 py-2 border border-slate-300 rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition-all shadow-sm bg-transparent">
+                            <!-- Clear / Cross Icon -->
+                            <button id="clear-search-btn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden transition-colors z-10 w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100" onclick="clearSearch()" title="Clear Search">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
                         </div>
                     </div>
                     
+                    <!-- Search Scope Toggles -->
+                    <div id="search-toggles" class="flex flex-wrap justify-center gap-2 w-full transition-all duration-300">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="searchScope" value="all" class="peer hidden" checked onchange="currentPage=1; applyFilters()">
+                            <div class="text-[11px] sm:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm peer-checked:bg-slate-700 peer-checked:text-white peer-checked:border-slate-700 transition-all">🔍 All</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="searchScope" value="emp" class="peer hidden" onchange="currentPage=1; applyFilters()">
+                            <div class="text-[11px] sm:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm peer-checked:bg-teal-600 peer-checked:text-white peer-checked:border-teal-600 transition-all">👤 Employee</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="searchScope" value="tl" class="peer hidden" onchange="currentPage=1; applyFilters()">
+                            <div class="text-[11px] sm:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-600 transition-all">👔 Team Leader</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="searchScope" value="sup" class="peer hidden" onchange="currentPage=1; applyFilters()">
+                            <div class="text-[11px] sm:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm peer-checked:bg-rose-600 peer-checked:text-white peer-checked:border-rose-600 transition-all">📋 Supervisor</div>
+                        </label>
+                    </div>
+
                     <!-- Standard Mode Filters -->
-                    <div id="dropdown-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+                    <div id="dropdown-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full mt-2">
                         <select id="statusFilter" class="px-4 py-2 border border-slate-300 rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500 transition-all"></select>
                         <select id="contractorFilter" class="px-4 py-2 border border-slate-300 rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500 transition-all"></select>
                         <select id="tlFilter" class="hidden"></select>
@@ -239,11 +264,8 @@
                 </div>
             </div>
 
-            <p>Disclaimer: This site is not made by, endorsed by, or affiliated with Commscope.</p>
-            <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
-
-            <!-- Instagram Promo -->
-            <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" class="mt-8 flex items-center justify-center gap-4 bg-white border border-slate-200 px-6 py-4 rounded-2xl shadow-sm hover:shadow-md transition-all group w-full max-w-sm mx-auto cursor-pointer">
+            <!-- Instagram Promo MOVED ABOVE DISCLAIMER -->
+            <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" class="mb-8 flex items-center justify-center gap-4 bg-white border border-slate-200 px-6 py-4 rounded-2xl shadow-sm hover:shadow-md transition-all group w-full max-w-sm mx-auto cursor-pointer">
                 <div class="w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white shadow-md transform transition group-hover:-rotate-6 group-hover:scale-110 duration-300">
                     <i class="fa-brands fa-instagram text-2xl"></i>
                 </div>
@@ -252,6 +274,10 @@
                     <span class="text-[11px] text-slate-500 font-medium leading-tight mt-0.5">Liked this project? Follow <span class="text-[#fa8f21] font-bold group-hover:underline">@sandeepbiswalg</span></span>
                 </div>
             </a>
+
+            <!-- Disclaimers AT THE BOTTOM -->
+            <p>Disclaimer: This site is not made by, endorsed by, or affiliated with Commscope.</p>
+            <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
         </footer>
     </main>
 
@@ -404,10 +430,18 @@
             document.querySelector('#splash-screen p').innerHTML = `<span class="text-red-500 font-bold">Error: ${error.message}. Checking GitHub Action Sync...</span>`;
         }
         
-        // Search Listener with /admin interceptor
+        // Search Listener with cross toggle & admin interceptor
         document.getElementById('searchInput').addEventListener('keyup', (e) => {
-            if(e.target.value.trim() === '/admin') {
+            const val = e.target.value.trim();
+            const clearBtn = document.getElementById('clear-search-btn');
+            
+            // Toggle Clear Button
+            if (val.length > 0 && val !== '/admin') clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
+            
+            if(val === '/admin') {
                 e.target.value = '';
+                clearBtn.classList.add('hidden');
                 openAdminModal();
                 return;
             }
@@ -428,6 +462,29 @@
             }
         });
     });
+
+    // -------- CLEAR SEARCH FUNCTION --------
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('clear-search-btn').classList.add('hidden');
+        currentPage = 1;
+        applyFilters();
+    }
+
+    // -------- HIGHLIGHT MATCH FUNCTION (For TL / SUP) --------
+    function highlightMatch(text, query, isActive) {
+        if (!text) return 'N/A';
+        if (!query || !isActive) return text;
+        
+        // Escape special chars to prevent Regex break
+        const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        const regex = new RegExp(`(${escapedQuery})`, 'gi');
+        
+        if(regex.test(text)) {
+            return text.replace(regex, `<span class="bg-yellow-300 text-yellow-900 font-extrabold px-1 rounded shadow-sm">$1</span>`);
+        }
+        return text;
+    }
 
     // -------- ADMIN CONSOLE LOGIC --------
     function openAdminModal() {
@@ -486,7 +543,6 @@
         btn.classList.add('opacity-80', 'pointer-events-none');
 
         try {
-            // NOTE: Modify 'main.yml' to your exact workflow filename if needed (e.g. 'sync.yml' or 'parser.yml')
             const res = await fetch('https://api.github.com/repos/imsbg/commscope-contract-attendance/actions/workflows/main.yml/dispatches', {
                 method: 'POST',
                 headers: {
@@ -701,7 +757,7 @@
             minimalCards.classList.remove('hidden');
             
             if (searchVal === '' && !searchVal.startsWith('/')) {
-                minimalCards.innerHTML = `<div class="text-center py-16 fade-in-up"><i class="fa-solid fa-id-card text-6xl text-slate-200 mb-4 drop-shadow-sm"></i><h3 class="text-xl font-bold text-slate-700">Search to View Attendance</h3><p class="text-sm text-slate-500 mt-1">Enter your Name or Employee ID in the glowing search box above to instantly fetch your records.</p></div>`;
+                minimalCards.innerHTML = `<div class="text-center py-16 fade-in-up"><i class="fa-solid fa-id-card text-6xl text-slate-200 mb-4 drop-shadow-sm"></i><h3 class="text-xl font-bold text-slate-700">Search to View Attendance</h3><p class="text-sm text-slate-500 mt-1">Enter your Name, TL, or Employee ID in the glowing search box above to instantly fetch your records.</p></div>`;
                 pagination.innerHTML = ''; return;
             } else if (searchVal !== '/admin') {
                 renderMinimalCards(); renderPagination();
@@ -720,7 +776,18 @@
 
         if(pageData.length === 0) { minimalContainer.innerHTML = `<div class="text-center py-10 fade-in-up text-slate-500 font-medium">No records found for your search.</div>`; return; }
 
+        const searchVal = document.getElementById('searchInput').value.trim();
+        const scope = document.querySelector('input[name="searchScope"]:checked').value;
+        const hlAll = scope === 'all';
+
         pageData.forEach((row, i) => {
+            
+            // Dynamic Highlights
+            const tlDisplay = highlightMatch(row.tl, searchVal, hlAll || scope === 'tl');
+            const supDisplay = highlightMatch(row.sanctioner, searchVal, hlAll || scope === 'sup');
+            const nameDisplay = highlightMatch(row.name, searchVal, hlAll || scope === 'emp');
+            const codeDisplay = highlightMatch(row.code, searchVal, hlAll || scope === 'emp');
+
             // Exact same rule as modal calculation
             let p=0, a=0, mp=0, fd=0, hd=0, validDays=0;
             row.dates.slice(0,31).forEach(d => {
@@ -746,13 +813,13 @@
             minimalContainer.innerHTML += `
                 <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.04}s forwards; opacity: 0;" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md cursor-pointer transition transform hover:-translate-y-1 w-full">
                     <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-4">
-                        <div><h3 class="font-bold text-slate-800 text-lg leading-tight">${row.name}</h3><p class="text-xs text-slate-500 font-mono mt-1"><i class="fa-solid fa-id-badge text-slate-300 mr-1.5"></i>${row.code}</p></div>
+                        <div><h3 class="font-bold text-slate-800 text-lg leading-tight">${nameDisplay}</h3><p class="text-xs text-slate-500 font-mono mt-1"><i class="fa-solid fa-id-badge text-slate-300 mr-1.5"></i>${codeDisplay}</p></div>
                         <span class="text-[10px] font-bold px-2.5 py-1 rounded-full ${statusBg} uppercase tracking-wider">${row.status}</span>
                     </div>
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 sm:gap-0">
                         <div class="flex sm:flex-col gap-4 sm:gap-3 w-full sm:w-auto">
-                            <div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Team Leader</p><p class="text-sm font-bold text-slate-700">${row.tl || 'N/A'}</p></div>
-                            <div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Supervisor</p><p class="text-sm font-bold text-slate-700">${row.sanctioner || 'N/A'}</p></div>
+                            <div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Team Leader</p><p class="text-sm font-bold text-slate-700">${tlDisplay}</p></div>
+                            <div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Supervisor</p><p class="text-sm font-bold text-slate-700">${supDisplay}</p></div>
                         </div>
                         <div class="flex flex-col items-start sm:items-end gap-3 w-full sm:w-auto">
                             <div class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg font-bold text-xs sm:text-sm border border-indigo-100 shadow-sm flex items-center gap-1.5 ml-auto sm:ml-0"><i class="fa-solid fa-chart-pie opacity-70"></i> ${attRate}% Rate</div>
@@ -772,15 +839,24 @@
     function renderStandardRows() {
         const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
         
+        const searchVal = document.getElementById('searchInput').value.trim();
+        const scope = document.querySelector('input[name="searchScope"]:checked').value;
+        const hlAll = scope === 'all';
+
         // Desktop Rows
         const fragment = document.createDocumentFragment();
         pageData.forEach((row, i) => {
+            const tlDisplay = highlightMatch(row.tl, searchVal, hlAll || scope === 'tl');
+            const supDisplay = highlightMatch(row.sanctioner, searchVal, hlAll || scope === 'sup');
+            const nameDisplay = highlightMatch(row.name, searchVal, hlAll || scope === 'emp');
+            const codeDisplay = highlightMatch(row.code, searchVal, hlAll || scope === 'emp');
+
             const tr = document.createElement('tr'); 
             tr.className = "hover:bg-teal-50/50 transition-colors cursor-pointer"; 
             tr.style.animation = `fadeInUp 0.4s ease-out ${i * 0.03}s forwards`; 
             tr.style.opacity = "0";
             tr.onclick = () => openEmployeeModal((currentPage - 1) * rowsPerPage + i);
-            let html = `<td class="p-4 font-semibold whitespace-nowrap"><span class="hover:text-teal-600 transition">${row.name}</span><span class="block text-xs text-slate-500 font-normal mt-0.5"><i class="fa-solid fa-id-badge text-slate-300 mr-1"></i>${row.code}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}</td>`;
+            let html = `<td class="p-4 font-semibold whitespace-nowrap"><span class="hover:text-teal-600 transition">${nameDisplay}</span><span class="block text-xs text-slate-500 font-normal mt-0.5"><i class="fa-solid fa-id-badge text-slate-300 mr-1"></i>${codeDisplay}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}<div class="text-[10px] text-slate-400 mt-1 font-medium">TL: ${tlDisplay} | Sup: ${supDisplay}</div></td>`;
             row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
             tr.innerHTML = html; fragment.appendChild(tr);
         });
@@ -790,8 +866,17 @@
         const mobileContainer = document.getElementById('mobileCardsContainer'); 
         mobileContainer.innerHTML = '';
         pageData.forEach((row, i) => {
+            const tlDisplay = highlightMatch(row.tl, searchVal, hlAll || scope === 'tl');
+            const supDisplay = highlightMatch(row.sanctioner, searchVal, hlAll || scope === 'sup');
+            const nameDisplay = highlightMatch(row.name, searchVal, hlAll || scope === 'emp');
+            const codeDisplay = highlightMatch(row.code, searchVal, hlAll || scope === 'emp');
+
             const isLeft = (row.status !== 'Active'); const bgClass = isLeft ? 'bg-rose-50/50 border-rose-200' : 'bg-white border-slate-200'; const statusBadgeClass = isLeft ? 'bg-rose-200 text-rose-800' : 'bg-emerald-100 text-emerald-800';
-            mobileContainer.innerHTML += `<div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.05}s forwards; opacity: 0;" class="${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1"><div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800 text-lg">${row.name}</h3><p class="text-xs text-slate-500 font-mono mt-0.5">${row.code}</p></div><span class="text-xs font-bold px-2 py-1 rounded-full ${statusBadgeClass}">${row.status}</span></div><div class="mt-3 inline-flex items-center bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50"><i class="fa-solid fa-briefcase text-slate-400 mr-1.5"></i> ${row.contractor}</div></div>`;
+            mobileContainer.innerHTML += `<div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.05}s forwards; opacity: 0;" class="${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1">
+                <div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800 text-lg">${nameDisplay}</h3><p class="text-xs text-slate-500 font-mono mt-0.5">${codeDisplay}</p></div><span class="text-xs font-bold px-2 py-1 rounded-full ${statusBadgeClass}">${row.status}</span></div>
+                <div class="mt-2 text-[10px] text-slate-500 font-medium flex gap-3"><span><i class="fa-solid fa-user-tie text-slate-300 mr-1"></i> ${tlDisplay}</span><span><i class="fa-solid fa-file-signature text-slate-300 mr-1"></i> ${supDisplay}</span></div>
+                <div class="mt-3 inline-flex items-center bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50"><i class="fa-solid fa-briefcase text-slate-400 mr-1.5"></i> ${row.contractor}</div>
+            </div>`;
         });
     }
     
@@ -815,11 +900,51 @@
     }
     
     function applyFilters() {
-        const search = document.getElementById('searchInput').value.toLowerCase(); const status = document.getElementById('statusFilter').value; const contractor = document.getElementById('contractorFilter').value;
+        const search = document.getElementById('searchInput').value.toLowerCase().trim(); 
+        const status = document.getElementById('statusFilter').value; 
+        const contractor = document.getElementById('contractorFilter').value;
+        const scope = document.querySelector('input[name="searchScope"]:checked').value;
+
         if(search === '/admin') return; // Ignore admin command in main filter logic
         
-        filteredData = globalData.filter(row => (row.name.toLowerCase().includes(search) || row.code.toLowerCase().includes(search)) && (status ? row.status === status : true) && (contractor ? row.contractor === contractor : true) );
-        const count = document.getElementById('contractor-count'); (contractor || status || search) ? (count.textContent = `${filteredData.length} Employee(s)`, count.classList.remove('hidden')) : count.classList.add('hidden');
+        filteredData = globalData.filter(row => {
+            const s = search;
+            const matchName = row.name.toLowerCase().includes(s);
+            const matchCode = row.code.toLowerCase().includes(s);
+            const matchTl = (row.tl || '').toLowerCase().includes(s);
+            const matchSup = (row.sanctioner || '').toLowerCase().includes(s);
+            
+            let matchesSearch = false;
+            if (s === '') {
+                matchesSearch = true;
+            } else {
+                if (scope === 'all') matchesSearch = matchName || matchCode || matchTl || matchSup;
+                else if (scope === 'emp') matchesSearch = matchName || matchCode;
+                else if (scope === 'tl') matchesSearch = matchTl;
+                else if (scope === 'sup') matchesSearch = matchSup;
+            }
+
+            const matchesStatus = status ? row.status === status : true;
+            const matchesContractor = contractor ? row.contractor === contractor : true;
+            
+            return matchesSearch && matchesStatus && matchesContractor;
+        });
+
+        const count = document.getElementById('contractor-count'); 
+        if (contractor || status || search) {
+            let badgeText = `${filteredData.length} Employee(s)`;
+            
+            if (search !== '') {
+                if (scope === 'tl' && filteredData.length > 0) badgeText = `Team: ${filteredData.length} Employee(s)`;
+                if (scope === 'sup' && filteredData.length > 0) badgeText = `Under Sup: ${filteredData.length} Employee(s)`;
+            }
+            
+            count.textContent = badgeText; 
+            count.classList.remove('hidden');
+        } else {
+            count.classList.add('hidden');
+        }
+
         renderTable();
     }
 
