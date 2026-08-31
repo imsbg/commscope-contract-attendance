@@ -211,7 +211,7 @@
                         <table class="w-full text-left min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
                     </div>
                     <!-- Mobile Standard Cards -->
-                    <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3"></div>
+                    <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3 mt-4"></div>
                 </div>
                 
                 <!-- Minimal View Summary Cards (Desktop & Mobile) -->
@@ -248,12 +248,12 @@
             <!-- Clean Instagram Promo inside Footer -->
             <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" class="mt-8 flex items-center justify-center gap-4 bg-white border border-slate-200 px-6 py-4 rounded-2xl shadow-sm hover:shadow-md transition-all group w-full max-w-sm mx-auto cursor-pointer">
                 <!-- Clean FontAwesome Instagram Icon with proper gradient -->
-                <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white shadow-md transform transition group-hover:-rotate-6 group-hover:scale-110 duration-300">
+                <div class="w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white shadow-md transform transition group-hover:-rotate-6 group-hover:scale-110 duration-300">
                     <i class="fa-brands fa-instagram text-2xl"></i>
                 </div>
                 <div class="text-left flex flex-col justify-center">
                     <span class="font-bold text-slate-800 text-sm group-hover:text-[#d82d7e] transition-colors leading-tight">Support My Work</span>
-                    <span class="text-[11px] text-slate-500 font-medium leading-tight mt-0.5">Follow <span class="text-[#fa8f21] font-bold group-hover:underline">@sandeepbiswalg</span></span>
+                    <span class="text-[11px] text-slate-500 font-medium leading-tight mt-0.5">Liked this project? Follow <span class="text-[#fa8f21] font-bold group-hover:underline">@sandeepbiswalg</span></span>
                 </div>
             </a>
         </footer>
@@ -587,12 +587,21 @@
         if(pageData.length === 0) { minimalContainer.innerHTML = `<div class="text-center py-10 fade-in-up text-slate-500 font-medium">No records found for your search.</div>`; return; }
 
         pageData.forEach((row, i) => {
+            // Unify logic matching modal 100% calculation
             let p=0, a=0, mp=0, fd=0, hd=0, validDays=0;
             row.dates.slice(0,31).forEach(d => {
                 let val = d ? d.trim().toUpperCase() : '';
                 if (val && val !== '-' && val !== '--' && val !== 'L') {
                     validDays++;
-                    if (val === 'P') p++; else if (val === 'A' || val === 'ABSENT') a++; else if (val === 'MP' || val === 'MISS PUNCH') mp++; else if (val === 'FD' || val === 'FULL DAY') fd++; else if (val === 'HD' || val === 'HALF DAY') hd++;
+                    if (absenceList.includes(val)) {
+                        if (val === 'A' || val === 'ABSENT') a++; 
+                        else if (val === 'MP' || val === 'MISS PUNCH') mp++; 
+                        else if (val === 'FD' || val === 'FULL DAY') fd++; 
+                        else if (val === 'HD' || val === 'HALF DAY') hd++;
+                    } else {
+                        // Counts everything not an absence (P, WO, HO) into Present box matching Modal rate rule
+                        p++;
+                    }
                 }
             });
 
@@ -614,7 +623,7 @@
                         <div class="flex flex-col items-start sm:items-end gap-3 w-full sm:w-auto">
                             <div class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg font-bold text-xs sm:text-sm border border-indigo-100 shadow-sm flex items-center gap-1.5 ml-auto sm:ml-0"><i class="fa-solid fa-chart-pie opacity-70"></i> ${attRate}% Rate</div>
                             <div class="flex gap-1.5 sm:gap-2 w-full sm:w-auto justify-between sm:justify-start">
-                                <div class="bg-emerald-100 text-emerald-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-emerald-200" title="Present">${p}</div>
+                                <div class="bg-emerald-100 text-emerald-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-emerald-200" title="Present (Inc. WO/HO)">${p}</div>
                                 <div class="bg-rose-100 text-rose-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-rose-200" title="Absent">${a}</div>
                                 <div class="bg-blue-100 text-blue-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-blue-200" title="Full Day">${fd}</div>
                                 <div class="bg-yellow-100 text-yellow-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-yellow-200" title="Half Day">${hd}</div>
@@ -628,8 +637,9 @@
 
     function renderStandardRows() {
         const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-        const fragment = document.createDocumentFragment();
         
+        // Desktop Rows
+        const fragment = document.createDocumentFragment();
         pageData.forEach((row, i) => {
             const tr = document.createElement('tr'); 
             tr.className = "hover:bg-teal-50/50 transition-colors cursor-pointer"; 
@@ -642,7 +652,9 @@
         });
         document.getElementById('tableBody').innerHTML = ''; document.getElementById('tableBody').appendChild(fragment);
 
-        const mobileContainer = document.getElementById('mobileCardsContainer'); mobileContainer.innerHTML = '';
+        // Mobile Standard Cards
+        const mobileContainer = document.getElementById('mobileCardsContainer'); 
+        mobileContainer.innerHTML = '';
         pageData.forEach((row, i) => {
             const isLeft = (row.status !== 'Active'); const bgClass = isLeft ? 'bg-rose-50/50 border-rose-200' : 'bg-white border-slate-200'; const statusBadgeClass = isLeft ? 'bg-rose-200 text-rose-800' : 'bg-emerald-100 text-emerald-800';
             mobileContainer.innerHTML += `<div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.05}s forwards; opacity: 0;" class="${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1"><div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800 text-lg">${row.name}</h3><p class="text-xs text-slate-500 font-mono mt-0.5">${row.code}</p></div><span class="text-xs font-bold px-2 py-1 rounded-full ${statusBadgeClass}">${row.status}</span></div><div class="mt-3 inline-flex items-center bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50"><i class="fa-solid fa-briefcase text-slate-400 mr-1.5"></i> ${row.contractor}</div></div>`;
