@@ -18,7 +18,7 @@
     <meta property="og:url" content="https://imsbg.github.io/commscope-contract-attendance/">
     <meta property="og:image" content="https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0">
 
-    <!-- Fonts: Google Sans (English) + Noto Sans Oriya (Odia support) -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@0,400..700;1,400..700&family=Noto+Sans+Oriya:wght@400;600;700&display=swap" rel="stylesheet">
@@ -30,8 +30,9 @@
     
     <style>
         :root { --primary: #0d9488; --background: #f1f5f9; --card-bg: #ffffff; }
-        html { scroll-behavior: smooth; }
-        body { font-family: 'Google Sans', 'Noto Sans Oriya', sans-serif; background-color: var(--background); color: #0f172a; overflow-x: hidden; }
+        html { scroll-behavior: smooth; height: 100%; }
+        /* Adjusted body to push footer to bottom */
+        body { font-family: 'Google Sans', 'Noto Sans Oriya', sans-serif; background-color: var(--background); color: #0f172a; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
         
         #splash-screen { background-color: var(--card-bg); z-index: 100; transition: opacity 0.4s ease-out; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -65,11 +66,7 @@
         .sc-shift-OFF { background-color: #ffe4e6; color: #be123c; border: 1px solid #fecdd3;}
         .sc-holiday { background-color: #fef3c7 !important; color: #92400e !important; border: 1px dashed #d97706; }
 
-        /* Smooth Entry Animations */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(15px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
 
         /* Minimal Mode Global Rules */
@@ -80,59 +77,22 @@
         @media (min-width: 768px) { #filter-wrapper { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
         /* --- GLOWING MINIMAL SEARCH BAR STYLES --- */
-        body.minimal-mode #table-section-header {
-            background: transparent; border: none; box-shadow: none; padding: 1rem 0;
-        }
-        body.minimal-mode #table-header-title-container {
-            justify-content: center; margin-bottom: 2rem; position: relative;
-        }
+        body.minimal-mode #table-section-header { background: transparent; border: none; box-shadow: none; padding: 1rem 0; }
+        body.minimal-mode #table-header-title-container { justify-content: center; margin-bottom: 2rem; position: relative; }
         body.minimal-mode #viewToggleBtn { position: absolute; right: 0; }
         
-        body.minimal-mode #filter-wrapper {
-            display: flex; flex-direction: column; max-width: 650px; margin: 0 auto 2.5rem auto; align-items: center;
-        }
+        body.minimal-mode #filter-wrapper { display: flex; flex-direction: column; max-width: 650px; margin: 0 auto 2.5rem auto; align-items: center; }
         
-        /* The Gradient Border */
         body.minimal-mode #search-container {
-            width: 100%;
-            background: linear-gradient(135deg, #0d9488, #4f46e5, #ec4899);
-            padding: 4px; /* Thickness of gradient border */
-            border-radius: 9999px;
-            box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.35);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%; background: linear-gradient(135deg, #0d9488, #4f46e5, #ec4899); padding: 4px; border-radius: 9999px;
+            box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.35); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        body.minimal-mode #search-container:focus-within {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 20px 45px -5px rgba(236, 72, 153, 0.4);
-        }
+        body.minimal-mode #search-container:focus-within { transform: translateY(-3px) scale(1.02); box-shadow: 0 20px 45px -5px rgba(236, 72, 153, 0.4); }
         
-        /* The White Input Area */
-        body.minimal-mode #search-inner {
-            background-color: #ffffff;
-            border-radius: 9999px;
-            display: flex;
-            align-items: center;
-            width: 100%;
-            position: relative;
-        }
-        body.minimal-mode #searchInput {
-            width: 100%;
-            font-size: 1.1rem;
-            padding: 1.1rem 1.5rem 1.1rem 3.5rem;
-            border-radius: 9999px;
-            border: none;
-            background: transparent;
-            color: #1e293b;
-        }
+        body.minimal-mode #search-inner { background-color: #ffffff; border-radius: 9999px; display: flex; align-items: center; width: 100%; position: relative; }
+        body.minimal-mode #searchInput { width: 100%; font-size: 1.1rem; padding: 1.1rem 1.5rem 1.1rem 3.5rem; border-radius: 9999px; border: none; background: transparent; color: #1e293b; }
         body.minimal-mode #searchInput:focus { outline: none; box-shadow: none; }
-        
-        body.minimal-mode #search-icon {
-            position: absolute;
-            left: 1.25rem;
-            font-size: 1.25rem;
-            color: #4f46e5;
-        }
-
+        body.minimal-mode #search-icon { position: absolute; left: 1.25rem; font-size: 1.25rem; color: #4f46e5; }
         body.minimal-mode #dropdown-container { display: none !important; }
     </style>
 </head>
@@ -152,138 +112,140 @@
         </div>
     </div>
 
-    <!-- Main Content -->
-    <main id="main-content" class="hidden p-4 md:p-6 lg:p-8 max-w-screen-2xl mx-auto space-y-6">
+    <!-- Main Content (Flex-1 ensures footer is pushed down) -->
+    <main id="main-content" class="hidden p-4 md:p-6 lg:p-8 w-full max-w-screen-2xl mx-auto flex-1 flex flex-col">
         
-        <!-- Header -->
-        <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 transition-all duration-500">
-            <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-slate-900">CommScope Contractor Attendance Portal</h1>
-                <p id="current-month-header" class="text-slate-500 mt-1 hide-always-minimal">Loading Data...</p>
-            </div>
-            <div class="flex flex-wrap items-center gap-2 md:gap-3 w-full xl:w-auto">
-                <button onclick="toggleGraphs()" class="hide-always-minimal bg-white text-slate-700 border border-slate-300 px-3 md:px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
-                    <i class="fa-solid fa-chart-line"></i> <span id="toggle-graphs-text">Show Graphs</span>
-                </button>
-                <button onclick="openShiftModal()" class="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
-                    <i class="fa-solid fa-calendar-days"></i> <span class="hidden sm:inline">Shift</span> Calendar
-                </button>
-                <button onclick="openPdfModal()" class="bg-[var(--primary)] text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-teal-700 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 md:w-auto cursor-pointer">
-                    <i class="fa-solid fa-folder-open"></i> Original PDF
-                </button>
-                <a href="https://imsbg.github.io/commscope/" class="hide-always-minimal bg-slate-800 text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-slate-700 transition flex items-center justify-center gap-2 text-sm font-medium w-full md:w-auto cursor-pointer">
-                    <i class="fa-solid fa-house"></i> Home
-                </a>
-            </div>
-        </header>
-
-        <!-- Metric Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 hide-always-minimal">
-           <div class="bg-[var(--primary)] text-white p-6 rounded-2xl shadow-lg transform transition hover:-translate-y-1">
-               <p class="text-sm font-medium text-teal-200">Total Employees</p>
-               <p class="text-4xl font-bold" id="metric-total-val">0</p>
-           </div>
-           <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transform transition hover:-translate-y-1">
-               <p class="text-sm font-medium text-slate-500">Total Presents</p>
-               <p class="text-3xl font-bold text-emerald-600" id="metric-present-val">0</p>
-           </div>
-           <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transform transition hover:-translate-y-1">
-               <p class="text-sm font-medium text-slate-500">Total Absents</p>
-               <p class="text-3xl font-bold text-rose-600" id="metric-absent-val">0</p>
-           </div>
-        </div>
-        
-        <!-- Graphs -->
-        <section id="graphs-section" class="hidden grid grid-cols-1 lg:grid-cols-5 gap-6 transition-all duration-300 opacity-0 mb-6 hide-always-minimal">
-            <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-                    <h2 class="text-xl font-bold text-slate-800">Daily Attendance Trends</h2>
-                    <select id="chartTypeSelector" onchange="changeChartType(this.value)" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition">
-                        <option value="line">Line Graph</option>
-                        <option value="bar">Bar Graph</option>
-                        <option value="radar">Radar Chart</option>
-                    </select>
+        <div class="space-y-6 w-full flex-1">
+            <!-- Header -->
+            <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 transition-all duration-500">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-slate-900">CommScope Contractor Attendance Portal</h1>
+                    <p id="current-month-header" class="text-slate-500 mt-1 hide-always-minimal">Loading Data...</p>
                 </div>
-                <div class="h-80"><canvas id="dayWiseChart"></canvas></div>
-            </div>
-            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold mb-4 text-slate-800">Employee Status</h2>
-                <div class="h-64"><canvas id="statusChart"></canvas></div>
-            </div>
-        </section>
+                <div class="flex flex-wrap items-center gap-2 md:gap-3 w-full xl:w-auto">
+                    <button onclick="toggleGraphs()" class="hide-always-minimal bg-white text-slate-700 border border-slate-300 px-3 md:px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
+                        <i class="fa-solid fa-chart-line"></i> <span id="toggle-graphs-text">Show Graphs</span>
+                    </button>
+                    <button onclick="openShiftModal()" class="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
+                        <i class="fa-solid fa-calendar-days"></i> <span class="hidden sm:inline">Shift</span> Calendar
+                    </button>
+                    <button onclick="openPdfModal()" class="bg-[var(--primary)] text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-teal-700 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 md:w-auto cursor-pointer">
+                        <i class="fa-solid fa-folder-open"></i> Original PDF
+                    </button>
+                    <a href="https://imsbg.github.io/commscope/" class="hide-always-minimal bg-slate-800 text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-slate-700 transition flex items-center justify-center gap-2 text-sm font-medium w-full md:w-auto cursor-pointer">
+                        <i class="fa-solid fa-house"></i> Home
+                    </a>
+                </div>
+            </header>
 
-        <!-- Main Search & Results Section -->
-        <div id="table-section-header" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 relative transition-all duration-500">
-            
-            <div id="table-header-title-container" class="flex justify-between items-center w-full mb-4 relative transition-all duration-500">
-                <h2 class="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2 whitespace-nowrap hide-always-minimal">
-                    Records <span id="contractor-count" class="hidden bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full transition-all"></span>
-                </h2>
-                <!-- Minimal / Standard View Toggle -->
-                <button onclick="toggleViewMode()" id="viewToggleBtn" class="ml-auto text-xs md:text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-100 transition-colors flex items-center gap-1.5">
-                    <i class="fa-solid fa-desktop"></i> <span class="hidden sm:inline">Standard View</span>
-                </button>
+            <!-- Metric Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 hide-always-minimal">
+               <div class="bg-[var(--primary)] text-white p-6 rounded-2xl shadow-lg transform transition hover:-translate-y-1">
+                   <p class="text-sm font-medium text-teal-200">Total Employees</p>
+                   <p class="text-4xl font-bold" id="metric-total-val">0</p>
+               </div>
+               <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transform transition hover:-translate-y-1">
+                   <p class="text-sm font-medium text-slate-500">Total Presents</p>
+                   <p class="text-3xl font-bold text-emerald-600" id="metric-present-val">0</p>
+               </div>
+               <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transform transition hover:-translate-y-1">
+                   <p class="text-sm font-medium text-slate-500">Total Absents</p>
+                   <p class="text-3xl font-bold text-rose-600" id="metric-absent-val">0</p>
+               </div>
             </div>
             
-            <div id="filter-wrapper">
-                <!-- Glowing Search Box -->
-                <div id="search-container" class="relative w-full rounded-lg bg-white">
-                    <div id="search-inner" class="relative">
-                        <i class="fa-solid fa-magnifying-glass text-slate-400 pointer-events-none absolute left-3 top-1/2 transform -translate-y-1/2" id="search-icon"></i>
-                        <input type="text" id="searchInput" placeholder="Search Employee (Name or ID)..." class="pl-9 pr-4 py-2 border border-slate-300 rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition-all shadow-sm bg-transparent">
+            <!-- Graphs -->
+            <section id="graphs-section" class="hidden grid grid-cols-1 lg:grid-cols-5 gap-6 transition-all duration-300 opacity-0 mb-6 hide-always-minimal">
+                <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                        <h2 class="text-xl font-bold text-slate-800">Daily Attendance Trends</h2>
+                        <select id="chartTypeSelector" onchange="changeChartType(this.value)" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition">
+                            <option value="line">Line Graph</option>
+                            <option value="bar">Bar Graph</option>
+                            <option value="radar">Radar Chart</option>
+                        </select>
+                    </div>
+                    <div class="h-80"><canvas id="dayWiseChart"></canvas></div>
+                </div>
+                <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-bold mb-4 text-slate-800">Employee Status</h2>
+                    <div class="h-64"><canvas id="statusChart"></canvas></div>
+                </div>
+            </section>
+
+            <!-- Main Search & Results Section -->
+            <div id="table-section-header" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 relative transition-all duration-500 w-full">
+                
+                <div id="table-header-title-container" class="flex justify-between items-center w-full mb-4 relative transition-all duration-500">
+                    <h2 class="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2 whitespace-nowrap hide-always-minimal">
+                        Records <span id="contractor-count" class="hidden bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full transition-all"></span>
+                    </h2>
+                    <button onclick="toggleViewMode()" id="viewToggleBtn" class="ml-auto text-xs md:text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-100 transition-colors flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-desktop"></i> <span class="hidden sm:inline">Standard View</span>
+                    </button>
+                </div>
+                
+                <div id="filter-wrapper">
+                    <!-- Glowing Search Box -->
+                    <div id="search-container" class="relative w-full rounded-lg bg-white">
+                        <div id="search-inner" class="relative">
+                            <i class="fa-solid fa-magnifying-glass text-slate-400 pointer-events-none absolute left-3 top-1/2 transform -translate-y-1/2" id="search-icon"></i>
+                            <input type="text" id="searchInput" placeholder="Search Employee (Name or ID)..." class="pl-9 pr-4 py-2 border border-slate-300 rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition-all shadow-sm bg-transparent">
+                        </div>
+                    </div>
+                    
+                    <!-- Standard Mode Filters -->
+                    <div id="dropdown-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+                        <select id="statusFilter" class="px-4 py-2 border border-slate-300 rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500 transition-all"></select>
+                        <select id="contractorFilter" class="px-4 py-2 border border-slate-300 rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500 transition-all"></select>
+                        <select id="tlFilter" class="hidden"></select>
+                        <select id="supFilter" class="hidden"></select>
                     </div>
                 </div>
                 
-                <!-- Standard Mode Filters (Hidden in Minimal) -->
-                <div id="dropdown-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
-                    <select id="statusFilter" class="px-4 py-2 border border-slate-300 rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500 transition-all"></select>
-                    <select id="contractorFilter" class="px-4 py-2 border border-slate-300 rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500 transition-all"></select>
-                    <select id="tlFilter" class="hidden"></select>
-                    <select id="supFilter" class="hidden"></select>
+                <!-- Standard View Full Table -->
+                <div id="standard-view-table" class="hidden md:block table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg mt-4 hide-always-minimal">
+                    <table class="w-full text-left min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
                 </div>
-            </div>
-            
-            <!-- Standard View Full Table -->
-            <div id="standard-view-table" class="hidden md:block table-container custom-scrollbar overflow-auto border border-slate-200 rounded-lg mt-4 hide-always-minimal">
-                <table class="w-full text-left min-w-[1200px]"><thead id="tableHeader"></thead><tbody id="tableBody" class="divide-y divide-slate-200"></tbody></table>
-            </div>
 
-            <!-- Mobile Standard Cards -->
-            <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3 mt-4 hide-always-minimal"></div>
-            
-            <!-- Minimal View Summary Cards (Desktop & Mobile) -->
-            <div id="minimalCardsContainer" class="flex flex-col gap-3 mt-2 max-w-4xl mx-auto hidden"></div>
+                <!-- Mobile Standard Cards -->
+                <div id="mobileCardsContainer" class="md:hidden flex flex-col gap-3 mt-4 hide-always-minimal"></div>
+                
+                <!-- Minimal View Summary Cards (Desktop & Mobile) -->
+                <div id="minimalCardsContainer" class="flex flex-col gap-3 mt-2 max-w-4xl mx-auto hidden"></div>
 
-            <!-- Pagination -->
-            <div id="pagination-controls" class="pt-4 flex flex-col md:flex-row justify-between items-center text-sm gap-4"></div>
+                <!-- Pagination -->
+                <div id="pagination-controls" class="pt-4 flex flex-col md:flex-row justify-between items-center text-sm gap-4"></div>
+            </div>
         </div>
         
-       <footer class="text-center text-xs text-slate-500 pt-8 pb-12 relative flex flex-col items-center">
+       <footer class="text-center text-xs text-slate-500 pt-8 pb-12 relative flex flex-col items-center mt-auto w-full">
             
-            <!-- Stat Counter -->
-            <div class="flex justify-center gap-4 mb-6 hide-always-minimal">
-                <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Yesterday</p>
-                    <p class="text-lg font-bold text-slate-700" id="vis-yday">--</p>
+            <!-- Visiter Stats (Visible in both Minimal and Standard) - Clickable -->
+            <div class="flex justify-center gap-3 sm:gap-4 mb-6 cursor-pointer hover:scale-105 transition-transform" onclick="openVisitorModal()" title="Click to view daily visitors">
+                <div class="bg-white px-3 sm:px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
+                    <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Yesterday</p>
+                    <p class="text-base sm:text-lg font-bold text-slate-700" id="vis-yday">--</p>
                 </div>
-                <div class="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Today</p>
-                    <p class="text-lg font-bold text-indigo-600" id="vis-today">--</p>
+                <div class="bg-white px-3 sm:px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
+                    <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Today</p>
+                    <p class="text-base sm:text-lg font-bold text-indigo-600" id="vis-today">--</p>
                 </div>
-                <div class="bg-[var(--primary)] px-4 py-2 rounded-lg shadow-sm text-center text-white">
-                    <p class="text-[10px] font-bold text-teal-200 uppercase tracking-wider">Total Views</p>
-                    <p class="text-lg font-bold" id="vis-total">--</p>
+                <div class="bg-gradient-to-r from-teal-600 to-teal-500 px-3 sm:px-4 py-2 rounded-lg shadow-md text-center text-white relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:animate-[shimmer_1s_forwards]"></div>
+                    <p class="text-[9px] sm:text-[10px] font-bold text-teal-100 uppercase tracking-wider">Total Views</p>
+                    <p class="text-base sm:text-lg font-bold" id="vis-total">--</p>
                 </div>
             </div>
 
             <p>Disclaimer: This site is not made by, endorsed by, or affiliated with Commscope.</p>
             <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
 
-            <!-- Instagram Promo embedded in footer -->
-            <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" class="mt-8 flex flex-col items-center bg-white border border-slate-200 px-6 py-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow group max-w-xs cursor-pointer">
+            <!-- Permanent Instagram Promo embedded in footer -->
+            <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" class="mt-8 flex flex-col items-center bg-white border border-slate-200 px-6 py-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow group max-w-xs cursor-pointer w-full mx-auto">
                 <div class="flex items-center gap-3 mb-2">
                     <div class="w-7 h-7 transform transition group-hover:-rotate-6 group-hover:scale-110 duration-300">
-                        <svg class="w-full h-full drop-shadow-sm" viewBox="0 0 2500 2500" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="0" cx="332.14" cy="2511.81" r="3263.54" gradientUnits="userSpaceOnUse"><stop offset=".09" stop-color="#fa8f21"/><stop offset=".78" stop-color="#d82d7e"/></radialGradient><radialGradient id="1" cx="1516.14" cy="2623.81" r="2572.12" gradientUnits="userSpaceOnUse"><stop offset=".64" stop-color="#8c3aaa" stop-opacity="0"/><stop offset="1" stop-color="#8c3aaa"/></radialGradient></defs><path d="M833.4,1250c0-230.11,186.49-416.7,416.6-416.7s416.7,186.59,416.7,416.7-186.59,416.7-416.7,416.7S833.4,1480.11,833.4,1250m-225.26,0c0,354.5,287.36,641.86,641.86,641.86S1891.86,1604.5,1891.86,1250,1604.5,608.14,1250,608.14,608.14,895.5,608.14,1250M1767.27,582.69a150,150,0,1,0,150.06-149.94h-0.06a150.07,150.07,0,0,0-150,149.94M745,2267.47c-121.87-5.55-188.11-25.85-232.13-43-58.36-22.72-100-49.78-143.78-93.5s-70.88-85.32-93.5-143.68c-17.16-44-37.46-110.26-43-232.13-6.06-131.76-7.27-171.34-7.27-505.15s1.31-373.28,7.27-505.15c5.55-121.87,26-188,43-232.13,22.72-58.36,49.78-100,93.5-143.78s85.32-70.88,143.78-93.5c44-17.16,110.26-37.46,232.13-43,131.76-6.06,171.34-7.27,505-7.27s373.28,1.31,505.15,7.27c121.87,5.55,188,26,232.13,43,58.36,22.62,100,49.78,143.78,93.5s70.78,85.42,93.5,143.78c17.16,44,37.46,110.26,43,232.13,6.06,131.87,7.27,171.34,7.27,505.15s-1.21,373.28-7.27,505.15c-5.55,121.87-25.95,188.11-43,232.13-22.72,58.36-49.78,100-93.5,143.68s-85.42,70.78-143.78,93.5c-44,17.16-110.26,37.46-232.13,43-131.76,6.06-171.34,7.27-505.15,7.27s-373.28-1.21-505-7.27M734.65,7.57c-133.07,6.06-224,27.16-303.41,58.06C349,97.54,279.38,140.35,209.81,209.81S97.54,349,65.63,431.24c-30.9,79.46-52,170.34-58.06,303.41C1.41,867.93,0,910.54,0,1250s1.41,382.07,7.57,515.35c6.06,133.08,27.16,223.95,58.06,303.41,31.91,82.19,74.62,152,144.18,221.43S349,2402.37,431.24,2434.37c79.56,30.9,170.34,52,303.41,58.06C868,2498.49,910.54,2500,1250,2500s382.07-1.41,515.35-7.57c133.08-6.06,223.95-27.16,303.41-58.06,82.19-32,151.86-74.72,221.43-144.18s112.18-139.24,144.18-221.43c30.9-79.46,52.1-170.34,58.06-303.41,6.06-133.38,7.47-175.89,7.47-515.35s-1.41-382.07-7.47-515.35c-6.06-133.08-27.16-224-58.06-303.41-32-82.19-74.72-151.86-144.18-221.43S2150.95,97.54,2068.86,65.63c-79.56-30.9-170.44-52.1-303.41-58.06C1632.17,1.51,1589.56,0,1250.1,0S868,1.41,734.65,7.57" fill="url(#0)"/><path d="M833.4,1250c0-230.11,186.49-416.7,416.6-416.7s416.7,186.59,416.7,416.7-186.59,416.7-416.7,416.7S833.4,1480.11,833.4,1250m-225.26,0c0,354.5,287.36,641.86,641.86,641.86S1891.86,1604.5,1891.86,1250,1604.5,608.14,1250,608.14,608.14,895.5,608.14,1250M1767.27,582.69a150,150,0,1,0,150.06-149.94h-0.06a150.07,150.07,0,0,0-150,149.94M745,2267.47c-121.87-5.55-188.11-25.85-232.13-43-58.36-22.72-100-49.78-143.78-93.5s-70.88-85.32-93.5-143.68c-17.16-44-37.46-110.26-43-232.13-6.06-131.76-7.27-171.34-7.27-505.15s1.31-373.28,7.27-505.15c5.55-121.87,26-188,43-232.13,22.72-58.36,49.78-100,93.5-143.78s85.32-70.88,143.78-93.5c44-17.16,110.26-37.46,232.13-43,131.76-6.06,171.34-7.27,505-7.27s373.28,1.31,505.15,7.27c121.87,5.55,188,26,232.13,43,58.36,22.62,100,49.78,143.78,93.5s70.78,85.42,93.5,143.78c17.16,44,37.46,110.26,43,232.13,6.06,131.87,7.27,171.34,7.27,505.15s-1.21,373.28-7.27,505.15c-5.55,121.87-25.95,188.11-43,232.13-22.72,58.36-49.78,100-93.5,143.68s-85.42,70.78-143.78,93.5c-44,17.16-110.26,37.46-232.13,43-131.76,6.06-171.34,7.27-505.15,7.27s-373.28-1.21-505-7.27M734.65,7.57c-133.07,6.06-224,27.16-303.41,58.06C349,97.54,279.38,140.35,209.81,209.81S97.54,349,65.63,431.24c-30.9,79.46-52,170.34-58.06,303.41C1.41,867.93,0,910.54,0,1250s1.41,382.07,7.57,515.35c6.06,133.08,27.16,223.95,58.06,303.41,31.91,82.19,74.62,152,144.18,221.43S349,2402.37,431.24,2434.37c79.56,30.9,170.34,52,303.41,58.06C868,2498.49,910.54,2500,1250,2500s382.07-1.41,515.35-7.57c133.08-6.06,223.95-27.16,303.41-58.06,82.19-32,151.86-74.72,221.43-144.18s112.18-139.24,144.18-221.43c30.9-79.46,52.1-170.34,58.06-303.41,6.06-133.38,7.47-175.89,7.47-515.35s-1.41-382.07-7.47-515.35c-6.06-133.08-27.16-224-58.06-303.41-32-82.19-74.72-151.86-144.18-221.43S2150.95,97.54,2068.86,65.63c-79.56-30.9-170.44-52.1-303.41-58.06C1632.17,1.51,1589.56,0,1250.1,0S868,1.41,734.65,7.57" fill="url(#1)"/></svg>
+                        <svg class="w-full h-full drop-shadow-sm" viewBox="0 0 2500 2500" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="0" cx="332.14" cy="2511.81" r="3263.54" gradientUnits="userSpaceOnUse"><stop offset=".09" stop-color="#fa8f21"/><stop offset=".78" stop-color="#d82d7e"/></radialGradient><radialGradient id="1" cx="1516.14" cy="2623.81" r="2572.12" gradientUnits="userSpaceOnUse"><stop offset=".64" stop-color="#8c3aaa" stop-opacity="0"/><stop offset="1" stop-color="#8c3aaa"/></radialGradient></defs><path d="M833.4,1250c0-230.11,186.49-416.7,416.6-416.7s416.7,186.59,416.7,416.7-186.59,416.7-416.7,416.7S833.4,1480.11,833.4,1250m-225.26,0c0,354.5,287.36,641.86,641.86,641.86S1891.86,1604.5,1891.86,1250,1604.5,608.14,1250,608.14,608.14,895.5,608.14,1250M1767.27,582.69a150,150,0,1,0,150.06-149.94h-0.06a150.07,150.07,0,0,0-150,149.94M745,2267.47c-121.87-5.55-188.11-25.85-232.13-43-58.36-22.72-100-49.78-143.78-93.5s-70.88-85.32-93.5-143.68c-17.16-44-37.46-110.26-43-232.13-6.06-131.76-7.27-171.34-7.27-505.15s1.31-373.28,7.27-505.15c5.55-121.87,26-188,43-232.13,22.72-58.36,49.78-100,93.5-143.78s85.32-70.88,143.78-93.5c44-17.16,110.26-37.46,232.13-43,131.76-6.06,171.34-7.27,505-7.27s373.28,1.31,505.15,7.27c121.87,5.55,188,26,232.13,43,58.36,22.62,100,49.78,143.78,93.5s70.78,85.42,93.5,143.78c17.16,44,37.46,110.26,43,232.13,6.06,131.87,7.27,171.34,7.27,505.15s-1.21,373.28-7.27,505.15c-5.55,121.87-25.95,188.11-43,232.13-22.72,58.36-49.78,100-93.5,143.68s-85.42,70.78-143.78,93.5c-44,17.16-110.26,37.46-232.13,43-131.76,6.06-171.34,7.27-505.15,7.27s-373.28-1.21-505-7.27M734.65,7.57c-133.07,6.06-224,27.16-303.41,58.06C349,97.54,279.38,140.35,209.81,209.81S97.54,349,65.63,431.24c-30.9,79.46-52,170.34-58.06,303.41C1.41,867.93,0,910.54,0,1250s1.41,382.07,7.57,515.35c6.06,133.08,27.16,223.95,58.06,303.41,31.91,82.19,74.62,152,144.18,221.43S349,2402.37,431.24,2434.37c79.56,30.9,170.34,52,303.41,58.06C868,2498.49,910.54,2500,1250,2500s382.07-1.41,515.35-7.57c133.08-6.06,223.95-27.16,303.41-58.06,82.19-32,151.86-74.72,221.43-144.18s112.18-139.24,144.18-221.43c30.9-79.46,52.1-170.34,58.06-303.41,6.06-133.38,7.47-175.89,7.47-515.35s-1.41-382.07-7.47-515.35c-6.06-133.08-27.16-224-58.06-303.41-32-82.19-74.72-151.86-144.18-221.43S2150.95,97.54,2068.86,65.63c-79.56-30.9-170.44-52.1-303.41-58.06C1632.17,1.51,1589.56,0,1250.1,0S868,1.41,734.65,7.57" fill="url(#1)"/></svg>
                     </div>
                     <span class="font-bold text-slate-800 text-sm group-hover:text-[#d82d7e] transition-colors">Support My Work</span>
                 </div>
@@ -292,7 +254,22 @@
         </footer>
     </main>
 
-    <!-- PDF Notice Alert Modal (Clicking outside closes it) -->
+    <style>@keyframes shimmer { 100% { transform: translateX(100%); } }</style>
+
+    <!-- Daily Visitor Logs Modal -->
+    <div id="visitor-modal" onclick="if(event.target === this) closeVisitorModal()" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
+        <div id="visitor-modal-content" class="bg-slate-50 rounded-2xl w-full max-w-2xl mx-auto h-auto max-h-[90vh] flex flex-col scale-95 transition-transform duration-300 shadow-2xl relative mt-10 md:mt-20 cursor-default">
+             <button onclick="closeVisitorModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
+             <div class="p-5 md:p-6 bg-white rounded-t-2xl border-b border-slate-200">
+                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-chart-simple text-indigo-600"></i> Daily Visitor Logs</h3>
+             </div>
+             <div class="p-4 md:p-6 flex-1 overflow-y-auto custom-scrollbar">
+                 <div id="visitor-calendar-grid" class="grid grid-cols-7 gap-1.5 md:gap-3"></div>
+             </div>
+        </div>
+    </div>
+
+    <!-- PDF Notice Alert Modal -->
     <div id="pdf-alert-modal" onclick="if(event.target === this) closePdfModal()" class="fixed inset-0 bg-black bg-opacity-60 z-[100] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none modal-blur">
         <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300 cursor-default" id="pdf-alert-content">
             <div class="flex items-center gap-3 mb-3">
@@ -313,7 +290,7 @@
         </div>
     </div>
     
-    <!-- Employee Details Modal (Clicking outside closes it) -->
+    <!-- Employee Details Modal -->
     <div id="employee-modal" onclick="if(event.target === this) closeEmployeeModal()" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
         <div id="modal-content" class="bg-slate-50 rounded-2xl w-full h-full flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto lg:overflow-hidden max-w-7xl mx-auto relative shadow-2xl custom-scrollbar cursor-default">
              <button onclick="closeEmployeeModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
@@ -328,7 +305,7 @@
         </div>
     </div>
 
-    <!-- Shift Calendar Modal (Clicking outside closes it) -->
+    <!-- Shift Calendar Modal -->
     <div id="shift-modal" onclick="if(event.target === this) closeShiftModal()" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
         <div id="shift-modal-content" class="bg-slate-50 rounded-2xl w-full max-h-[95vh] h-auto flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto max-w-6xl mx-auto relative shadow-2xl custom-scrollbar cursor-default">
              <button onclick="closeShiftModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
@@ -364,6 +341,7 @@
     let trendChartInstance = null;
     let trendChartData = null;
     const absenceList = ['A', 'ABSENT', 'FD', 'FULL DAY', 'HD', 'HALF DAY', 'SLWP', 'SICK LEAVE', 'MP', 'MISS PUNCH'];
+    window.globalVisitorData = {}; // Global variable to store firebase data for the modal
 
     const DEFAULT_SETTINGS = { pattern: 'ACB', baseDate: '2026-01-05', baseShift: 'A' }; 
     let shiftSettings = JSON.parse(localStorage.getItem('shiftSettings')) || DEFAULT_SETTINGS;
@@ -404,7 +382,6 @@
         });
     });
 
-    // View Mode Management
     function initViewMode() {
         const savedMode = localStorage.getItem('attendanceViewMode');
         applyViewMode(savedMode ? savedMode : 'minimal'); // Default to Minimal
@@ -426,22 +403,15 @@
             btn.innerHTML = '<i class="fa-solid fa-bolt"></i> <span class="hidden sm:inline">Minimal View</span>';
             localStorage.setItem('attendanceViewMode', 'standard');
         }
-        // Force re-render of table when switching modes
         if (globalData.length > 0) renderTable();
     }
 
-    // Graphs enhancement
     function initOrUpdateTrendChart(type) {
         if(trendChartInstance) trendChartInstance.destroy();
         const ctx = document.getElementById('dayWiseChart').getContext('2d');
-        const options = { 
-            responsive: true, maintainAspectRatio: false, animation: { duration: 1000 },
-            plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } } }
-        };
-        let gradP = ctx.createLinearGradient(0, 0, 0, 400);
-        gradP.addColorStop(0, 'rgba(16, 185, 129, 0.4)'); gradP.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
-        let gradA = ctx.createLinearGradient(0, 0, 0, 400);
-        gradA.addColorStop(0, 'rgba(244, 63, 94, 0.4)'); gradA.addColorStop(1, 'rgba(244, 63, 94, 0.05)');
+        const options = { responsive: true, maintainAspectRatio: false, animation: { duration: 1000 }, plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } } } };
+        let gradP = ctx.createLinearGradient(0, 0, 0, 400); gradP.addColorStop(0, 'rgba(16, 185, 129, 0.4)'); gradP.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
+        let gradA = ctx.createLinearGradient(0, 0, 0, 400); gradA.addColorStop(0, 'rgba(244, 63, 94, 0.4)'); gradA.addColorStop(1, 'rgba(244, 63, 94, 0.05)');
 
         if (type === 'line' || type === 'radar') {
             trendChartData.datasets[0].backgroundColor = gradP; trendChartData.datasets[1].backgroundColor = gradA;
@@ -468,33 +438,70 @@
         }
     }
 
-    function openPdfModal() {
-        document.getElementById('pdf-alert-modal').classList.remove('opacity-0', 'pointer-events-none');
-        document.getElementById('pdf-alert-content').classList.remove('scale-95');
+    function openPdfModal() { document.getElementById('pdf-alert-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('pdf-alert-content').classList.remove('scale-95'); }
+    function closePdfModal() { document.getElementById('pdf-alert-modal').classList.add('opacity-0', 'pointer-events-none'); document.getElementById('pdf-alert-content').classList.add('scale-95'); }
+
+    // VISITOR MODAL FUNCTIONS
+    function openVisitorModal() { 
+        document.getElementById('visitor-modal').classList.remove('opacity-0', 'pointer-events-none'); 
+        document.getElementById('visitor-modal-content').classList.remove('scale-95');
+        renderVisitorCalendar();
     }
-    function closePdfModal() {
-        document.getElementById('pdf-alert-modal').classList.add('opacity-0', 'pointer-events-none');
-        document.getElementById('pdf-alert-content').classList.add('scale-95');
+    function closeVisitorModal() { 
+        document.getElementById('visitor-modal').classList.add('opacity-0', 'pointer-events-none'); 
+        document.getElementById('visitor-modal-content').classList.add('scale-95'); 
+    }
+
+    function renderVisitorCalendar() {
+        const grid = document.getElementById('visitor-calendar-grid');
+        if (!window.globalVisitorData || !window.globalVisitorData.daily) {
+            grid.innerHTML = '<div class="col-span-7 text-center text-slate-500 py-8 font-medium">Loading historical data...</div>';
+            return;
+        }
+        
+        const today = new Date();
+        const utc = today.getTime() + (today.getTimezoneOffset() * 60000); 
+        const ist = new Date(utc + (3600000 * 5.5)); // IST time
+        
+        const y = ist.getFullYear();
+        const m = ist.getMonth();
+        
+        const firstDay = new Date(y, m, 1).getDay();
+        const daysInMonth = new Date(y, m + 1, 0).getDate();
+        
+        let html = '<div class="col-span-7 grid grid-cols-7 gap-1.5 md:gap-3 mb-2 text-center font-bold text-[10px] md:text-xs text-slate-500 uppercase tracking-wider"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>';
+        html += '<div class="col-span-7 grid grid-cols-7 gap-1.5 md:gap-3">';
+        
+        for (let i = 0; i < firstDay; i++) { html += `<div></div>`; }
+        
+        for (let d = 1; d <= daysInMonth; d++) {
+            let dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            let visits = window.globalVisitorData.daily[dateStr] || 0;
+            
+            let isToday = (d === ist.getDate());
+            let bgClass = visits > 0 ? (isToday ? 'bg-indigo-50 border-indigo-300' : 'bg-slate-50 border-slate-200') : 'bg-white border-slate-100 opacity-50';
+            let textClass = visits > 0 ? (isToday ? 'text-indigo-800' : 'text-slate-700') : 'text-slate-400';
+            
+            html += `<div class="${bgClass} border rounded-xl p-2 md:p-3 text-center shadow-sm flex flex-col items-center justify-center min-h-[50px] md:min-h-[70px] transition-transform hover:scale-105 ${isToday ? 'ring-2 ring-indigo-500 ring-offset-1' : ''}">
+                <span class="text-xs md:text-sm font-bold ${textClass}">${d}</span>
+                ${visits > 0 ? `<span class="text-[9px] md:text-[11px] font-bold ${isToday ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'} px-1.5 md:px-2 py-0.5 rounded-full mt-1.5 flex items-center gap-1">${visits.toLocaleString()} <i class="fa-solid fa-eye text-[8px]"></i></span>` : ''}
+            </div>`;
+        }
+        html += '</div>';
+        grid.innerHTML = html;
     }
 
     function getDisplayStatus(val) { return (!val || val.trim() === '-') ? '-' : (val.trim() === '--' ? 'L' : val.trim()); }
-    function getStatusClass(val) { 
-        if (!val || val.trim() === '-') return 'pending'; 
-        return (val.trim() === '--' || val.trim().toUpperCase() === 'L') ? 'l' : val.trim().toLowerCase(); 
-    }
+    function getStatusClass(val) { return (!val || val.trim() === '-') ? 'pending' : (val.trim() === '--' || val.trim().toUpperCase() === 'L') ? 'l' : val.trim().toLowerCase(); }
 
     function shareEmployeeURL(employeeName) {
         const url = window.location.origin + window.location.pathname + '?Employee=' + encodeURIComponent(employeeName);
-        if (navigator.share) {
-            navigator.share({ title: 'CommScope Attendance', text: `Check attendance record for ${employeeName}:`, url: url }).catch(console.log);
-        } else {
-            navigator.clipboard.writeText(url).then(() => alert('Employee link copied to clipboard!'));
-        }
+        if (navigator.share) { navigator.share({ title: 'CommScope Attendance', text: `Check attendance record for ${employeeName}:`, url: url }).catch(console.log); } 
+        else { navigator.clipboard.writeText(url).then(() => alert('Employee link copied to clipboard!')); }
     }
 
     function animateValue(id, start, end, duration) {
-        const obj = document.getElementById(id);
-        if(!obj) return;
+        const obj = document.getElementById(id); if(!obj) return;
         let startTimestamp = null;
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
@@ -531,34 +538,19 @@
             row.dates.forEach((d, i) => {
                 const status = d ? d.trim().toUpperCase() : '';
                 if (status && status !== '-' && status !== '--' && status !== 'L') {
-                    if (absenceList.includes(status)) { totalAbsents++; if (i < 31) daily[i].a++; } 
-                    else { totalPresents++; if (i < 31) daily[i].p++; }
+                    if (absenceList.includes(status)) { totalAbsents++; if (i < 31) daily[i].a++; } else { totalPresents++; if (i < 31) daily[i].p++; }
                 }
             });
         });
 
         document.getElementById('current-month-header').textContent = `Overview for ${currentMonthStr}`;
-        animateValue('metric-total-val', 0, total, 1200);
-        animateValue('metric-present-val', 0, totalPresents, 1200);
-        animateValue('metric-absent-val', 0, totalAbsents, 1200);
+        animateValue('metric-total-val', 0, total, 1200); animateValue('metric-present-val', 0, totalPresents, 1200); animateValue('metric-absent-val', 0, totalAbsents, 1200);
         
-        new Chart(document.getElementById('statusChart').getContext('2d'), { 
-            type: 'doughnut', 
-            data: { labels: ['Active', 'Left'], datasets: [{ data: [active, total - active], backgroundColor: ['#10b981', '#64748b'], borderWidth: 0 }] }, 
-            options: { responsive: true, maintainAspectRatio: false, cutout: '75%', animation: { duration: 1500 } }
-        });
-
-        trendChartData = {
-            labels: Array.from({length:31}, (_,i)=>i+1), 
-            datasets: [
-                { label: 'Present / Default', data: daily.map(d=>d.p), borderColor: '#10b981', borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#10b981', pointBorderWidth: 2, pointRadius: 3 }, 
-                { label: 'Absent / Reduced', data: daily.map(d=>d.a), borderColor: '#f43f5e', borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#f43f5e', pointBorderWidth: 2, pointRadius: 3 }
-            ] 
-        };
+        new Chart(document.getElementById('statusChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Active', 'Left'], datasets: [{ data: [active, total - active], backgroundColor: ['#10b981', '#64748b'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', animation: { duration: 1500 } } });
+        trendChartData = { labels: Array.from({length:31}, (_,i)=>i+1), datasets: [{ label: 'Present / Default', data: daily.map(d=>d.p), borderColor: '#10b981', borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#10b981', pointBorderWidth: 2, pointRadius: 3 }, { label: 'Absent / Reduced', data: daily.map(d=>d.a), borderColor: '#f43f5e', borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#f43f5e', pointBorderWidth: 2, pointRadius: 3 }] };
         initOrUpdateTrendChart(document.getElementById('chartTypeSelector').value || 'line');
     }
 
-    // Advanced Render Logic depending on Minimal/Standard mode
     function renderTable() {
         const isMinimal = document.body.classList.contains('minimal-mode');
         const searchVal = document.getElementById('searchInput').value.trim();
@@ -569,32 +561,17 @@
         const pagination = document.getElementById('pagination-controls');
 
         if (isMinimal) {
-            standardTable.classList.add('hidden');
-            standardMobile.classList.add('hidden');
-            minimalCards.classList.remove('hidden');
-
+            standardTable.classList.add('hidden'); standardMobile.classList.add('hidden'); minimalCards.classList.remove('hidden');
             if (searchVal === '') {
-                // Empty state for minimal mode
-                minimalCards.innerHTML = `
-                    <div class="text-center py-16 fade-in-up">
-                        <i class="fa-solid fa-id-card text-6xl text-slate-200 mb-4 drop-shadow-sm"></i>
-                        <h3 class="text-xl font-bold text-slate-700">Search to View Attendance</h3>
-                        <p class="text-sm text-slate-500 mt-1">Enter your Name or Employee ID in the glowing search box above to instantly fetch your records.</p>
-                    </div>`;
-                pagination.innerHTML = '';
-                return;
+                minimalCards.innerHTML = `<div class="text-center py-16 fade-in-up"><i class="fa-solid fa-id-card text-6xl text-slate-200 mb-4 drop-shadow-sm"></i><h3 class="text-xl font-bold text-slate-700">Search to View Attendance</h3><p class="text-sm text-slate-500 mt-1">Enter your Name or Employee ID in the glowing search box above to instantly fetch your records.</p></div>`;
+                pagination.innerHTML = ''; return;
             } else {
-                renderMinimalCards();
-                renderPagination();
+                renderMinimalCards(); renderPagination();
             }
         } else {
-            minimalCards.classList.add('hidden');
-            standardTable.classList.remove('hidden');
-            // Remove hidden only on mobile size
+            minimalCards.classList.add('hidden'); standardTable.classList.remove('hidden');
             standardMobile.className = "md:hidden flex flex-col gap-3 mt-4 hide-always-minimal"; 
-            
-            renderStandardRows();
-            renderPagination();
+            renderStandardRows(); renderPagination();
         }
     }
 
@@ -603,50 +580,42 @@
         const minimalContainer = document.getElementById('minimalCardsContainer');
         minimalContainer.innerHTML = '';
 
-        if(pageData.length === 0) {
-            minimalContainer.innerHTML = `<div class="text-center py-10 fade-in-up text-slate-500 font-medium">No records found for your search.</div>`;
-            return;
-        }
+        if(pageData.length === 0) { minimalContainer.innerHTML = `<div class="text-center py-10 fade-in-up text-slate-500 font-medium">No records found for your search.</div>`; return; }
 
         pageData.forEach((row, i) => {
-            // Calculate Totals dynamically
-            let p=0, a=0, mp=0, fd=0, hd=0;
+            let p=0, a=0, mp=0, fd=0, hd=0, validDays=0;
             row.dates.slice(0,31).forEach(d => {
                 let val = d ? d.trim().toUpperCase() : '';
-                if (val === 'P') p++;
-                else if (val === 'A' || val === 'ABSENT') a++;
-                else if (val === 'MP' || val === 'MISS PUNCH') mp++;
-                else if (val === 'FD' || val === 'FULL DAY') fd++;
-                else if (val === 'HD' || val === 'HALF DAY') hd++;
+                if (val && val !== '-' && val !== '--' && val !== 'L') {
+                    validDays++;
+                    if (val === 'P') p++; else if (val === 'A' || val === 'ABSENT') a++; else if (val === 'MP' || val === 'MISS PUNCH') mp++; else if (val === 'FD' || val === 'FULL DAY') fd++; else if (val === 'HD' || val === 'HALF DAY') hd++;
+                }
             });
 
+            let attRate = validDays > 0 ? Math.round((p / validDays) * 100) : 0;
             const isLeft = (row.status !== 'Active');
             const statusBg = isLeft ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700';
 
             minimalContainer.innerHTML += `
-                <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" 
-                     style="animation: fadeInUp 0.4s ease-out ${i * 0.04}s forwards; opacity: 0;"
-                     class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md cursor-pointer transition transform hover:-translate-y-1">
-                    
-                    <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-lg leading-tight">${row.name}</h3>
-                            <p class="text-xs text-slate-500 font-mono mt-1"><i class="fa-solid fa-id-badge text-slate-300 mr-1.5"></i>${row.code}</p>
-                        </div>
+                <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.04}s forwards; opacity: 0;" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md cursor-pointer transition transform hover:-translate-y-1">
+                    <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-4">
+                        <div><h3 class="font-bold text-slate-800 text-lg leading-tight">${row.name}</h3><p class="text-xs text-slate-500 font-mono mt-1"><i class="fa-solid fa-id-badge text-slate-300 mr-1.5"></i>${row.code}</p></div>
                         <span class="text-[10px] font-bold px-2.5 py-1 rounded-full ${statusBg} uppercase tracking-wider">${row.status}</span>
                     </div>
-                    
                     <div class="flex justify-between items-end">
-                        <div>
-                            <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Team Leader</p>
-                            <p class="text-sm font-bold text-slate-700">${row.tl || 'N/A'}</p>
+                        <div class="flex flex-col gap-2 sm:gap-3">
+                            <div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Team Leader</p><p class="text-sm font-bold text-slate-700">${row.tl || 'N/A'}</p></div>
+                            <div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Supervisor</p><p class="text-sm font-bold text-slate-700">${row.sanctioner || 'N/A'}</p></div>
                         </div>
-                        <div class="flex gap-1.5 sm:gap-2">
-                            <div class="bg-emerald-100 text-emerald-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-emerald-200" title="Present">${p}</div>
-                            <div class="bg-rose-100 text-rose-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-rose-200" title="Absent">${a}</div>
-                            <div class="bg-blue-100 text-blue-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-blue-200" title="Full Day">${fd}</div>
-                            <div class="bg-yellow-100 text-yellow-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-yellow-200" title="Half Day">${hd}</div>
-                            <div class="bg-orange-100 text-orange-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-orange-200" title="Miss Punch">${mp}</div>
+                        <div class="flex flex-col items-end gap-3">
+                            <div class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg font-bold text-xs sm:text-sm border border-indigo-100 shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-chart-pie opacity-70"></i> ${attRate}% Rate</div>
+                            <div class="flex gap-1 sm:gap-2">
+                                <div class="bg-emerald-100 text-emerald-700 h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm border border-emerald-200" title="Present">${p}</div>
+                                <div class="bg-rose-100 text-rose-700 h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm border border-rose-200" title="Absent">${a}</div>
+                                <div class="bg-blue-100 text-blue-700 h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm border border-blue-200" title="Full Day">${fd}</div>
+                                <div class="bg-yellow-100 text-yellow-700 h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm border border-yellow-200" title="Half Day">${hd}</div>
+                                <div class="bg-orange-100 text-orange-700 h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm border border-orange-200" title="Miss Punch">${mp}</div>
+                            </div>
                         </div>
                     </div>
                 </div>`;
@@ -655,112 +624,56 @@
 
     function renderStandardRows() {
         const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-        
-        // Desktop Table
         const fragment = document.createDocumentFragment();
         pageData.forEach((row, i) => {
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-teal-50/50 transition-colors cursor-pointer";
-            tr.style.animation = `fadeInUp 0.4s ease-out ${i * 0.03}s forwards`;
-            tr.style.opacity = "0";
+            const tr = document.createElement('tr'); tr.className = "hover:bg-teal-50/50 transition-colors cursor-pointer"; tr.style.animation = `fadeInUp 0.4s ease-out ${i * 0.03}s forwards`; tr.style.opacity = "0";
             tr.onclick = () => openEmployeeModal((currentPage - 1) * rowsPerPage + i);
             let html = `<td class="p-4 font-semibold whitespace-nowrap"><span class="hover:text-teal-600 transition">${row.name}</span><span class="block text-xs text-slate-500 font-normal mt-0.5"><i class="fa-solid fa-id-badge text-slate-300 mr-1"></i>${row.code}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}</td>`;
             row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
-            tr.innerHTML = html;
-            fragment.appendChild(tr);
+            tr.innerHTML = html; fragment.appendChild(tr);
         });
-        document.getElementById('tableBody').innerHTML = '';
-        document.getElementById('tableBody').appendChild(fragment);
+        document.getElementById('tableBody').innerHTML = ''; document.getElementById('tableBody').appendChild(fragment);
 
-        // Mobile Cards
-        const mobileContainer = document.getElementById('mobileCardsContainer');
-        mobileContainer.innerHTML = '';
+        const mobileContainer = document.getElementById('mobileCardsContainer'); mobileContainer.innerHTML = '';
         pageData.forEach((row, i) => {
-            const isLeft = (row.status !== 'Active');
-            const bgClass = isLeft ? 'bg-rose-50/50 border-rose-200' : 'bg-white border-slate-200';
-            const statusBadgeClass = isLeft ? 'bg-rose-200 text-rose-800' : 'bg-emerald-100 text-emerald-800';
-
-            mobileContainer.innerHTML += `
-                <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" 
-                     style="animation: fadeInUp 0.4s ease-out ${i * 0.05}s forwards; opacity: 0;"
-                     class="${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1">
-                    <div class="flex justify-between items-start mb-2">
-                        <div><h3 class="font-bold text-slate-800 text-lg">${row.name}</h3><p class="text-xs text-slate-500 font-mono mt-0.5">${row.code}</p></div>
-                        <span class="text-xs font-bold px-2 py-1 rounded-full ${statusBadgeClass}">${row.status}</span>
-                    </div>
-                    <div class="mt-3 inline-flex items-center bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50"><i class="fa-solid fa-briefcase text-slate-400 mr-1.5"></i> ${row.contractor}</div>
-                </div>`;
+            const isLeft = (row.status !== 'Active'); const bgClass = isLeft ? 'bg-rose-50/50 border-rose-200' : 'bg-white border-slate-200'; const statusBadgeClass = isLeft ? 'bg-rose-200 text-rose-800' : 'bg-emerald-100 text-emerald-800';
+            mobileContainer.innerHTML += `<div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.05}s forwards; opacity: 0;" class="${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1"><div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800 text-lg">${row.name}</h3><p class="text-xs text-slate-500 font-mono mt-0.5">${row.code}</p></div><span class="text-xs font-bold px-2 py-1 rounded-full ${statusBadgeClass}">${row.status}</span></div><div class="mt-3 inline-flex items-center bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50"><i class="fa-solid fa-briefcase text-slate-400 mr-1.5"></i> ${row.contractor}</div></div>`;
         });
     }
     
-    function changePage(dir) {
-        currentPage += dir;
-        renderTable();
-        document.getElementById('table-section-header').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    function changePage(dir) { currentPage += dir; renderTable(); document.getElementById('table-section-header').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 
     function renderPagination() {
-        const isMinimal = document.body.classList.contains('minimal-mode');
-        const searchVal = document.getElementById('searchInput').value.trim();
-        const container = document.getElementById('pagination-controls');
-        
-        // Hide pagination if in minimal mode with empty search
+        const isMinimal = document.body.classList.contains('minimal-mode'); const searchVal = document.getElementById('searchInput').value.trim(); const container = document.getElementById('pagination-controls');
         if(isMinimal && searchVal === '') { container.innerHTML = ''; return; }
-
         const totalPages = Math.ceil(filteredData.length / rowsPerPage);
         if (filteredData.length === 0) { container.innerHTML = ''; return; }
         const endRecord = Math.min(currentPage * rowsPerPage, filteredData.length);
         
-        container.innerHTML = `
-            <span class="text-slate-600 font-medium">Showing ${((currentPage-1)*rowsPerPage)+1}-${endRecord} of ${filteredData.length}</span>
-            <div class="flex gap-2">
-                <button onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700">Previous</button>
-                <button onclick="changePage(1)" ${currentPage === totalPages || totalPages === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700">Next</button>
-            </div>`;
+        container.innerHTML = `<span class="text-slate-600 font-medium">Showing ${((currentPage-1)*rowsPerPage)+1}-${endRecord} of ${filteredData.length}</span><div class="flex gap-2"><button onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700">Previous</button><button onclick="changePage(1)" ${currentPage === totalPages || totalPages === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700">Next</button></div>`;
     }
 
     function populateFilters() {
         const contractors = [...new Set(globalData.map(d => d.contractor).filter(Boolean))].sort();
         document.getElementById('statusFilter').innerHTML = `<option value="">All Statuses</option><option value="Active">Active</option><option value="Left">Left</option>`;
         document.getElementById('contractorFilter').innerHTML = `<option value="">All Contractors</option>${contractors.map(c => `<option value="${c}">${c}</option>`).join('')}`;
-        document.getElementById('tlFilter').disabled = true;
-        document.getElementById('supFilter').disabled = true;
+        document.getElementById('tlFilter').disabled = true; document.getElementById('supFilter').disabled = true;
     }
     
     function applyFilters() {
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const status = document.getElementById('statusFilter').value;
-        const contractor = document.getElementById('contractorFilter').value;
-
-        filteredData = globalData.filter(row => 
-            (row.name.toLowerCase().includes(search) || row.code.toLowerCase().includes(search)) && 
-            (status ? row.status === status : true) && 
-            (contractor ? row.contractor === contractor : true)
-        );
-
-        const count = document.getElementById('contractor-count');
-        (contractor || status || search) ? (count.textContent = `${filteredData.length} Employee(s)`, count.classList.remove('hidden')) : count.classList.add('hidden');
+        const search = document.getElementById('searchInput').value.toLowerCase(); const status = document.getElementById('statusFilter').value; const contractor = document.getElementById('contractorFilter').value;
+        filteredData = globalData.filter(row => (row.name.toLowerCase().includes(search) || row.code.toLowerCase().includes(search)) && (status ? row.status === status : true) && (contractor ? row.contractor === contractor : true) );
+        const count = document.getElementById('contractor-count'); (contractor || status || search) ? (count.textContent = `${filteredData.length} Employee(s)`, count.classList.remove('hidden')) : count.classList.add('hidden');
         renderTable();
     }
 
     function openEmployeeModal(index) {
-        const employee = filteredData[index];
-        let date = new Date(currentMonthStr);
-        let firstDay = 0, totalDays = 31, displayMonthStr = currentMonthStr;
-        
+        const employee = filteredData[index]; let date = new Date(currentMonthStr); let firstDay = 0, totalDays = 31, displayMonthStr = currentMonthStr;
         if (!isNaN(date.getTime())) {
-            firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-            const woIndex = employee.dates.findIndex(d => d === 'WO');
+            firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay(); const woIndex = employee.dates.findIndex(d => d === 'WO');
             if (woIndex !== -1) {
                 const expectedFirstDay = (7 - (woIndex % 7)) % 7;
-                if (firstDay !== expectedFirstDay) {
-                    const prevDate = new Date(date.getFullYear(), date.getMonth() - 1, 1);
-                    if (prevDate.getDay() === expectedFirstDay) {
-                        date = prevDate;
-                        firstDay = expectedFirstDay;
-                        displayMonthStr = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-                    }
-                }
+                if (firstDay !== expectedFirstDay) { const prevDate = new Date(date.getFullYear(), date.getMonth() - 1, 1); if (prevDate.getDay() === expectedFirstDay) { date = prevDate; firstDay = expectedFirstDay; displayMonthStr = date.toLocaleString('default', { month: 'long', year: 'numeric' }); } }
             }
             totalDays = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
         }
@@ -769,12 +682,7 @@
         for (let i = 0; i < totalDays; i++) {
             const rawStatus = employee.dates[i] ? employee.dates[i].trim().toUpperCase() : '';
             if (rawStatus && rawStatus !== '-' && rawStatus !== '--' && rawStatus !== 'L') {
-                validDays++;
-                if (absenceList.includes(rawStatus)) {
-                    if (rawStatus === 'A' || rawStatus === 'ABSENT') a++;
-                    else if (rawStatus === 'MP' || rawStatus === 'MISS PUNCH') mp++;
-                    else if (rawStatus === 'FD' || rawStatus === 'FULL DAY') fd++;
-                } else p++;
+                validDays++; if (absenceList.includes(rawStatus)) { if (rawStatus === 'A' || rawStatus === 'ABSENT') a++; else if (rawStatus === 'MP' || rawStatus === 'MISS PUNCH') mp++; else if (rawStatus === 'FD' || rawStatus === 'FULL DAY') fd++; } else p++;
             }
         }
         let attendancePercentage = validDays > 0 ? Math.round((p / validDays) * 100) : 0;
@@ -817,77 +725,32 @@
             const rawStatus = employee.dates[i] || '-';
             daysHTML += `<div class="status-${getStatusClass(rawStatus)} flex flex-col justify-center items-center rounded-lg font-bold py-2 shadow-sm border border-slate-100 transition hover:scale-105 min-h-[44px] md:min-h-0"><span class="text-sm md:text-base">${i+1}</span><span class="text-[10px] md:text-xs opacity-80 mt-0.5">${getDisplayStatus(rawStatus)}</span></div>`;
         }
-        document.getElementById('modal-calendar').innerHTML = daysHTML;
-        document.getElementById('employee-modal').classList.remove('opacity-0', 'pointer-events-none');
-        document.getElementById('modal-content').classList.remove('scale-95');
-        history.pushState({}, '', `?Employee=${encodeURIComponent(employee.name)}`);
+        document.getElementById('modal-calendar').innerHTML = daysHTML; document.getElementById('employee-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('modal-content').classList.remove('scale-95'); history.pushState({}, '', `?Employee=${encodeURIComponent(employee.name)}`);
     }
 
-    function closeEmployeeModal() {
-        document.getElementById('employee-modal').classList.add('opacity-0', 'pointer-events-none');
-        document.getElementById('modal-content').classList.add('scale-95');
-        history.pushState({}, '', window.location.pathname);
-    }
-
-    function getMonday(d) {
-        const date = new Date(d); date.setHours(0,0,0,0); const day = date.getDay(); const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-        return new Date(date.setDate(diff));
-    }
-    
-    function updateShiftDropdown() {
-        const shiftSelect = document.getElementById('sc-setup-shift');
-        const pattern = shiftSettings.pattern;
-        shiftSelect.innerHTML = '';
-        if (pattern === 'ACB') { shiftSelect.innerHTML = '<option value="A">A Shift</option><option value="B">B Shift</option><option value="C">C Shift</option>'; } 
-        else if (pattern === 'BC') { shiftSelect.innerHTML = '<option value="B">B Shift</option><option value="C">C Shift</option>'; if (shiftSettings.baseShift === 'A') shiftSettings.baseShift = 'B'; }
-        shiftSelect.value = shiftSettings.baseShift;
-    }
-
+    function closeEmployeeModal() { document.getElementById('employee-modal').classList.add('opacity-0', 'pointer-events-none'); document.getElementById('modal-content').classList.add('scale-95'); history.pushState({}, '', window.location.pathname); }
+    function getMonday(d) { const date = new Date(d); date.setHours(0,0,0,0); const day = date.getDay(); const diff = date.getDate() - day + (day === 0 ? -6 : 1); return new Date(date.setDate(diff)); }
+    function updateShiftDropdown() { const shiftSelect = document.getElementById('sc-setup-shift'); const pattern = shiftSettings.pattern; shiftSelect.innerHTML = ''; if (pattern === 'ACB') { shiftSelect.innerHTML = '<option value="A">A Shift</option><option value="B">B Shift</option><option value="C">C Shift</option>'; } else if (pattern === 'BC') { shiftSelect.innerHTML = '<option value="B">B Shift</option><option value="C">C Shift</option>'; if (shiftSettings.baseShift === 'A') shiftSettings.baseShift = 'B'; } shiftSelect.value = shiftSettings.baseShift; }
     function onPatternChange() { shiftSettings.pattern = document.getElementById('sc-setup-pattern').value; updateShiftDropdown(); saveShiftSettings(); }
     function saveShiftSettings() { shiftSettings.pattern = document.getElementById('sc-setup-pattern').value; shiftSettings.baseShift = document.getElementById('sc-setup-shift').value; shiftSettings.baseDate = document.getElementById('sc-setup-date').value || shiftSettings.baseDate; localStorage.setItem('shiftSettings', JSON.stringify(shiftSettings)); renderShiftCalendar(); }
-
-    function getShiftForDate(dateObj) {
-        if (dateObj.getDay() === 0) return 'OFF'; 
-        const targetMon = getMonday(dateObj), baseMon = getMonday(new Date(shiftSettings.baseDate));
-        const diffWeeks = Math.floor(Math.round((targetMon - baseMon) / (1000 * 60 * 60 * 24)) / 7);
-        const activeSeq = SEQUENCES[shiftSettings.pattern] || SEQUENCES['ACB'];
-        let baseIndex = activeSeq.indexOf(shiftSettings.baseShift); if (baseIndex === -1) baseIndex = 0; 
-        let currentIndex = (baseIndex + diffWeeks) % activeSeq.length; if (currentIndex < 0) currentIndex += activeSeq.length;
-        return activeSeq[currentIndex];
-    }
-
+    function getShiftForDate(dateObj) { if (dateObj.getDay() === 0) return 'OFF'; const targetMon = getMonday(dateObj), baseMon = getMonday(new Date(shiftSettings.baseDate)); const diffWeeks = Math.floor(Math.round((targetMon - baseMon) / (1000 * 60 * 60 * 24)) / 7); const activeSeq = SEQUENCES[shiftSettings.pattern] || SEQUENCES['ACB']; let baseIndex = activeSeq.indexOf(shiftSettings.baseShift); if (baseIndex === -1) baseIndex = 0; let currentIndex = (baseIndex + diffWeeks) % activeSeq.length; if (currentIndex < 0) currentIndex += activeSeq.length; return activeSeq[currentIndex]; }
     function formatISODate(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0'); }
 
     function renderShiftCalendar() {
-        const y = calCurrentDate.getFullYear(), m = calCurrentDate.getMonth();
-        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        document.getElementById('sc-month-title').innerText = `${monthNames[m]} ${y}`;
-        const grid = document.getElementById('sc-days'); grid.innerHTML = '';
-        const firstDay = new Date(y, m, 1).getDay(), daysInMonth = new Date(y, m + 1, 0).getDate(), today = new Date();
+        const y = calCurrentDate.getFullYear(), m = calCurrentDate.getMonth(); const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; document.getElementById('sc-month-title').innerText = `${monthNames[m]} ${y}`; const grid = document.getElementById('sc-days'); grid.innerHTML = ''; const firstDay = new Date(y, m, 1).getDay(), daysInMonth = new Date(y, m + 1, 0).getDate(), today = new Date();
         for (let i = 0; i < firstDay; i++) { grid.innerHTML += `<div></div>`; }
         for (let d = 1; d <= daysInMonth; d++) {
             const cDate = new Date(y, m, d), isoDate = formatISODate(cDate), sCode = getShiftForDate(cDate), isHol = holidays2026[isoDate];
-            let cls = `sc-cell sc-shift-${sCode}`;
-            let isToday = (d === today.getDate() && m === today.getMonth() && y === today.getFullYear());
-            if (isToday) cls += ' ring-2 ring-indigo-500 ring-offset-2 scale-105 shadow-md z-10';
-            if (isHol) cls += ' sc-holiday';
+            let cls = `sc-cell sc-shift-${sCode}`; let isToday = (d === today.getDate() && m === today.getMonth() && y === today.getFullYear());
+            if (isToday) cls += ' ring-2 ring-indigo-500 ring-offset-2 scale-105 shadow-md z-10'; if (isHol) cls += ' sc-holiday';
             grid.innerHTML += `<div class="${cls} text-xs md:text-sm shadow-sm transition hover:scale-105"><div class="font-bold text-slate-700 ${isHol ? 'text-amber-900' : ''} ${isToday && !isHol ? 'text-indigo-900' : ''}">${d}</div><div class="text-[9px] md:text-xs font-bold mt-1 px-1.5 py-0.5 rounded-full bg-white/60 tracking-wider">${sCode}</div></div>`;
         }
-        let holHtml = '';
-        Object.keys(holidays2026).sort().forEach(dateStr => {
-            let hd = new Date(dateStr);
-            if(hd.getFullYear() === y && hd.getMonth() === m) { holHtml += `<div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm flex justify-between items-center"><span class="font-bold text-amber-700">${hd.getDate()} ${monthNames[m]}</span> <span class="text-amber-900 font-medium text-right">${holidays2026[dateStr]}</span></div>`; }
-        });
-        if(!holHtml) holHtml = `<div class="text-sm text-slate-400 text-center italic mt-4 bg-slate-50 p-4 rounded-xl border border-slate-200">No public holidays this month</div>`;
-        document.getElementById('sc-holiday-list').innerHTML = holHtml;
+        let holHtml = ''; Object.keys(holidays2026).sort().forEach(dateStr => { let hd = new Date(dateStr); if(hd.getFullYear() === y && hd.getMonth() === m) { holHtml += `<div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm flex justify-between items-center"><span class="font-bold text-amber-700">${hd.getDate()} ${monthNames[m]}</span> <span class="text-amber-900 font-medium text-right">${holidays2026[dateStr]}</span></div>`; } });
+        if(!holHtml) holHtml = `<div class="text-sm text-slate-400 text-center italic mt-4 bg-slate-50 p-4 rounded-xl border border-slate-200">No public holidays this month</div>`; document.getElementById('sc-holiday-list').innerHTML = holHtml;
     }
 
     function changeShiftMonth(dir) { calCurrentDate.setMonth(calCurrentDate.getMonth() + dir); renderShiftCalendar(); }
-    
-    function openShiftModal() {
-        document.getElementById('sc-setup-pattern').value = shiftSettings.pattern; updateShiftDropdown(); document.getElementById('sc-setup-date').value = shiftSettings.baseDate; renderShiftCalendar();
-        document.getElementById('shift-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('shift-modal-content').classList.remove('scale-95');
-    }
+    function openShiftModal() { document.getElementById('sc-setup-pattern').value = shiftSettings.pattern; updateShiftDropdown(); document.getElementById('sc-setup-date').value = shiftSettings.baseDate; renderShiftCalendar(); document.getElementById('shift-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('shift-modal-content').classList.remove('scale-95'); }
     function closeShiftModal() { document.getElementById('shift-modal').classList.add('opacity-0', 'pointer-events-none'); document.getElementById('shift-modal-content').classList.add('scale-95'); }
 </script>
 
@@ -913,8 +776,16 @@
         update(ref(db), updates).then(() => {
             get(ref(db, 'visitors')).then((snapshot) => {
                 let realTotal = 0, realToday = 0, realYday = 0;
-                if(snapshot.exists()) { const data = snapshot.val(); realTotal = data.total || 0; realToday = data.daily[todayStr] || 0; realYday = data.daily[yesterdayStr] || 0; }
-                document.getElementById('vis-total').innerText = realTotal.toLocaleString(); document.getElementById('vis-today').innerText = realToday.toLocaleString(); document.getElementById('vis-yday').innerText = realYday.toLocaleString();
+                if(snapshot.exists()) { 
+                    const data = snapshot.val(); 
+                    window.globalVisitorData = data; // Save globally for the calendar modal
+                    realTotal = data.total || 0; 
+                    realToday = data.daily[todayStr] || 0; 
+                    realYday = data.daily[yesterdayStr] || 0; 
+                }
+                document.getElementById('vis-total').innerText = realTotal.toLocaleString(); 
+                document.getElementById('vis-today').innerText = realToday.toLocaleString(); 
+                document.getElementById('vis-yday').innerText = realYday.toLocaleString();
                 goOffline(db); 
             }).catch(() => goOffline(db));
         }).catch(() => goOffline(db));
