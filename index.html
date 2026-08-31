@@ -31,7 +31,6 @@
     <style>
         :root { --primary: #0d9488; --background: #f1f5f9; --card-bg: #ffffff; }
         html { scroll-behavior: smooth; }
-        /* Notice the font-family stack includes Noto Sans Oriya now */
         body { font-family: 'Google Sans', 'Noto Sans Oriya', sans-serif; background-color: var(--background); color: #0f172a; }
         
         #splash-screen { background-color: var(--card-bg); z-index: 100; transition: opacity 0.4s ease-out; }
@@ -57,10 +56,8 @@
         tbody td:first-child, thead th:first-child { position: sticky; left: 0; z-index: 5; background-color: var(--card-bg);}
         thead th:first-child { z-index: 15; background-color: #f8fafc; }
         
-        /* Blur for modals */
         .modal-blur { backdrop-filter: blur(4px); }
 
-        /* Shift Calendar Custom CSS */
         .sc-cell { border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; min-height: 48px; }
         .sc-shift-A { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0;}
         .sc-shift-B { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;}
@@ -85,10 +82,8 @@
         </div>
     </div>
 
-    <!-- MAINTENANCE OVERLAY (LIGHT THEME) -->
+    <!-- MAINTENANCE OVERLAY -->
     <div id="maintenance-screen" class="fixed inset-0 bg-slate-50 z-[200] hidden flex-col items-center justify-center p-6 text-center">
-        
-        <!-- Language Toggle -->
         <div class="absolute top-6 right-6 md:top-8 md:right-8 bg-white border border-slate-200 rounded-xl p-1 flex gap-1 shadow-sm">
             <button onclick="setLang('en')" id="btn-en" class="px-3 py-1.5 text-sm font-bold rounded-lg bg-teal-600 text-white transition-all shadow-sm">EN</button>
             <button onclick="setLang('or')" id="btn-or" class="px-3 py-1.5 text-sm font-bold rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all">ଓଡ଼ିଆ</button>
@@ -96,22 +91,18 @@
         </div>
         
         <div class="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 max-w-2xl w-full shadow-2xl flex flex-col items-center">
-            
             <div class="bg-amber-100 h-24 w-24 rounded-full flex items-center justify-center mb-6 shadow-inner">
                 <i class="fa-solid fa-triangle-exclamation text-5xl text-amber-500 animate-bounce"></i>
             </div>
-            
             <h1 class="text-3xl md:text-5xl font-extrabold text-slate-800 mb-6 tracking-tight" id="maint-title">Under Maintenance</h1>
-            
             <p class="text-slate-600 text-base md:text-lg mb-10 leading-relaxed font-medium" id="maint-desc">
-                We are currently experiencing technical issues with the PDF file structure. For accurate attendance data, please view the original PDF directly from Google Drive. I am working hard to fix this issue and the portal will be back to normal next month. Until then, please adjust with the PDF. I understand your frustration and feel your pain!
+                We are currently experiencing technical issues with the PDF file structure. For accurate attendance data, please view the original PDF directly from Google Drive.
             </p>
-            
             <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                <a href="https://drive.google.com/drive/folders/1H5tR99F-DsbT9wQnlLqXST0aLsa0B1sO?usp=drive_link" target="_blank" class="px-6 py-3.5 bg-teal-600 text-white rounded-xl font-bold hover:scale-105 hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/30 flex items-center justify-center gap-3 text-sm md:text-base">
+                <a href="https://drive.google.com/drive/folders/1H5tR99F-DsbT9wQnlLqXST0aLsa0B1sO?usp=drive_link" target="_blank" class="px-6 py-3.5 bg-teal-600 text-white rounded-xl font-bold hover:scale-105 hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/30 flex items-center justify-center gap-3">
                     <i class="fa-solid fa-file-pdf text-xl"></i> <span id="maint-btn-pdf">View Original PDF</span>
                 </a>
-                <a href="https://imsbg.github.io/commscope/" class="px-6 py-3.5 bg-white text-slate-700 hover:bg-slate-50 rounded-xl font-bold transition-all flex items-center justify-center gap-3 text-sm md:text-base border border-slate-200 shadow-sm hover:shadow">
+                <a href="https://imsbg.github.io/commscope/" class="px-6 py-3.5 bg-white text-slate-700 hover:bg-slate-50 rounded-xl font-bold transition-all flex items-center justify-center gap-3 border border-slate-200 shadow-sm hover:shadow">
                     <i class="fa-solid fa-house text-lg text-slate-400"></i> <span id="maint-btn-home">Go to Home</span>
                 </a>
             </div>
@@ -152,7 +143,7 @@
            </div>
            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transform transition hover:-translate-y-1">
                <p class="text-sm font-medium text-slate-500">Total Absents</p>
-               <p class="text-3xl font-bold text-red-600" id="metric-absent-val">0</p>
+               <p class="text-3xl font-bold text-rose-600" id="metric-absent-val">0</p>
            </div>
         </div>
         
@@ -162,8 +153,8 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                     <h2 class="text-xl font-bold text-slate-800">Daily Attendance Trends</h2>
                     <select id="chartTypeSelector" onchange="changeChartType(this.value)" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition">
-                        <option value="bar">Bar Graph</option>
                         <option value="line">Line Graph</option>
+                        <option value="bar">Bar Graph</option>
                         <option value="radar">Radar Chart</option>
                     </select>
                 </div>
@@ -175,16 +166,20 @@
             </div>
         </section>
 
+        <!-- FILTERS AND TABLE SECTION -->
         <div id="table-section-header" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200">
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4">
-                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-4">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 whitespace-nowrap">
                     Employee Records 
                     <span id="contractor-count" class="hidden bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full"></span>
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 w-full lg:w-auto">
-                    <input type="text" id="searchInput" placeholder="Search Employee..." class="px-4 py-2 border rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition">
-                    <select id="statusFilter" class="px-4 py-2 border rounded-lg bg-white w-full"></select>
-                    <select id="contractorFilter" class="px-4 py-2 border rounded-lg bg-white w-full"></select>
+                <!-- New 5-column filter layout -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 w-full">
+                    <input type="text" id="searchInput" placeholder="Search Employee..." class="px-4 py-2 border rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition shadow-sm">
+                    <select id="statusFilter" class="px-4 py-2 border rounded-lg bg-white w-full shadow-sm"></select>
+                    <select id="contractorFilter" class="px-4 py-2 border rounded-lg bg-white w-full shadow-sm"></select>
+                    <select id="tlFilter" class="px-4 py-2 border rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500"></select>
+                    <select id="supFilter" class="px-4 py-2 border rounded-lg bg-white w-full shadow-sm outline-none focus:ring-2 focus:ring-teal-500"></select>
                 </div>
             </div>
             
@@ -217,6 +212,20 @@
             <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
         </footer>
     </main>
+
+    <!-- FOOTER POPUP (NEW) -->
+    <div id="footer-popup" class="fixed bottom-4 right-4 left-4 md:left-auto md:w-96 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-slate-200 p-4 z-[90] transform transition-all duration-500 translate-y-0 flex gap-3 items-start">
+        <div class="text-teal-600 bg-teal-50 p-2.5 rounded-full h-11 w-11 flex items-center justify-center flex-shrink-0 border border-teal-100">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <div class="mt-0.5">
+            <h4 class="font-bold text-slate-800 text-sm">New Filters Added!</h4>
+            <p class="text-xs text-slate-500 mt-1 leading-relaxed">You can now filter attendance explicitly by <strong class="text-teal-700">Team Leader</strong> or <strong class="text-teal-700">Shift Supervisor</strong> at the top of the table.</p>
+        </div>
+        <button onclick="document.getElementById('footer-popup').classList.add('translate-y-48', 'opacity-0', 'pointer-events-none')" class="text-slate-400 hover:text-rose-500 ml-auto flex-shrink-0 transition-colors p-1">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+    </div>
 
     <!-- PDF Notice Alert Modal -->
     <div id="pdf-alert-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] p-4 flex justify-center items-center transition-opacity duration-300 opacity-0 pointer-events-none modal-blur">
@@ -284,52 +293,9 @@
 
 <script>
     // ============================================
-    // MAINTENANCE MODE TOGGLE
-    // Change to 'false' to bring the portal back online
+    // MAINTENANCE MODE TOGGLE -> set to false
     // ============================================
     const IS_MAINTENANCE_MODE = false; 
-
-    // Language Content for Maintenance Mode
-    const maintLangs = {
-        'en': {
-            title: "Under Maintenance",
-            desc: "We are currently experiencing technical issues with the PDF file structure. For accurate attendance data, please view the original PDF directly from Google Drive. I am working hard to fix this issue and the portal will be back to normal next month. Until then, please adjust with the PDF. I understand your frustration and feel your pain!",
-            btnPdf: "View Original PDF",
-            btnHome: "Go to Home"
-        },
-        'hi': {
-            title: "रखरखाव जारी है",
-            desc: "हमें वर्तमान में PDF फ़ाइल को प्रोसेस करने में तकनीकी समस्या आ रही है। सटीक जानकारी के लिए कृपया सीधे Google Drive से मूल PDF देखें। मैं इसे ठीक करने पर काम कर रहा हूँ और हम अगले महीने तक वापस आ जाएंगे। तब तक, कृपया PDF के साथ सहयोग करें। मैं आपकी परेशानी को समझता हूँ और खेद व्यक्त करता हूँ!",
-            btnPdf: "मूल PDF देखें",
-            btnHome: "होम पर जाएं"
-        },
-        'or': {
-            title: "ରକ୍ଷଣାବେକ୍ଷଣ ଚାଲିଛି",
-            desc: "ବର୍ତ୍ତମାନ PDF ଫାଇଲ୍ ପଢିବାରେ ବୈଷୟିକ ସମସ୍ୟା ଦେଖାଦେଇଛି। ସଠିକ୍ ତଥ୍ୟ ପାଇଁ ଦୟାକରି ମୂଳ PDF କୁ ସିଧାସଳଖ ଦେଖନ୍ତୁ। ମୁଁ ଏହାକୁ ସମାଧାନ କରିବା ପାଇଁ କଠିନ ପରିଶ୍ରମ କରିବାକୁ ଚେଷ୍ଟା କରୁଛି ଏବଂ ଆମେ ଆସନ୍ତା ମାସ ସୁଦ୍ଧା ଫେରିବୁ। ସେପର୍ଯ୍ୟନ୍ତ ଦୟାକରି ମୂଳ PDF ବ୍ୟବହାର କରନ୍ତୁ। ମୁଁ ଆପଣଙ୍କ ଅସୁବିଧାକୁ ସମ୍ପୂର୍ଣ୍ଣ ଭାବେ ବୁଝିପାରୁଛି!",
-            btnPdf: "ଅସଲି PDF ଦେଖନ୍ତୁ",
-            btnHome: "ମୁଖ୍ୟ ପୃଷ୍ଠା କୁ ଯାଆନ୍ତୁ"
-        }
-    };
-
-    function setLang(lang) {
-        document.getElementById('maint-title').innerText = maintLangs[lang].title;
-        document.getElementById('maint-desc').innerText = maintLangs[lang].desc;
-        document.getElementById('maint-btn-pdf').innerText = maintLangs[lang].btnPdf;
-        document.getElementById('maint-btn-home').innerText = maintLangs[lang].btnHome;
-        
-        ['en', 'hi', 'or'].forEach(l => {
-            const btn = document.getElementById(`btn-${l}`);
-            if(l === lang) {
-                // Active State (Teal background)
-                btn.classList.add('bg-teal-600', 'text-white', 'shadow-sm');
-                btn.classList.remove('text-slate-500', 'hover:text-slate-800', 'hover:bg-slate-100', 'bg-transparent');
-            } else {
-                // Inactive State (Grey text, hover effect)
-                btn.classList.remove('bg-teal-600', 'text-white', 'shadow-sm');
-                btn.classList.add('text-slate-500', 'hover:text-slate-800', 'hover:bg-slate-100', 'bg-transparent');
-            }
-        });
-    }
 
     let globalData = [], filteredData = [], currentPage = 1, currentMonthStr = "";
     const rowsPerPage = 15; 
@@ -350,13 +316,12 @@
     document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('footer-year').textContent = new Date().getFullYear();
         
-        // CHECK MAINTENANCE MODE FIRST
         if (IS_MAINTENANCE_MODE) {
             document.getElementById('splash-screen').style.display = 'none';
             document.getElementById('main-content').classList.add('hidden');
             document.getElementById('maintenance-screen').classList.remove('hidden');
             document.getElementById('maintenance-screen').classList.add('flex');
-            return; // STOP EXECUTION OF NORMAL PORTAL
+            return;
         }
 
         try {
@@ -371,24 +336,45 @@
             document.querySelector('#splash-screen p').innerHTML = `<span class="text-red-500 font-bold">Error: ${error.message}. Checking GitHub Action Sync...</span>`;
         }
         
-        ['searchInput', 'statusFilter', 'contractorFilter'].forEach(id => {
+        ['searchInput', 'statusFilter', 'contractorFilter', 'tlFilter', 'supFilter'].forEach(id => {
             document.getElementById(id).addEventListener(id === 'searchInput' ? 'keyup' : 'change', () => {
                 currentPage = 1; applyFilters();
             });
         });
     });
 
+    // Graphs enhancement
     function initOrUpdateTrendChart(type) {
         if(trendChartInstance) trendChartInstance.destroy();
         const ctx = document.getElementById('dayWiseChart').getContext('2d');
-        const options = { responsive: true, maintainAspectRatio: false, animation: { duration: 1000 } };
-        if (type === 'line') {
+        const options = { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            animation: { duration: 1000 },
+            plugins: {
+                legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } }
+            }
+        };
+        
+        // Creating stylish gradients
+        let gradP = ctx.createLinearGradient(0, 0, 0, 400);
+        gradP.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+        gradP.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
+
+        let gradA = ctx.createLinearGradient(0, 0, 0, 400);
+        gradA.addColorStop(0, 'rgba(244, 63, 94, 0.4)');
+        gradA.addColorStop(1, 'rgba(244, 63, 94, 0.05)');
+
+        if (type === 'line' || type === 'radar') {
+            trendChartData.datasets[0].backgroundColor = gradP;
+            trendChartData.datasets[1].backgroundColor = gradA;
             trendChartData.datasets.forEach(ds => { ds.tension = 0.4; ds.fill = true; });
-        } else if (type === 'radar') {
-            trendChartData.datasets.forEach(ds => ds.fill = true);
         } else {
+            trendChartData.datasets[0].backgroundColor = 'rgba(16, 185, 129, 0.8)';
+            trendChartData.datasets[1].backgroundColor = 'rgba(244, 63, 94, 0.8)';
             trendChartData.datasets.forEach(ds => ds.fill = false);
         }
+        
         if (type !== 'radar') options.scales = { x: { grid: { display: false } }, y: { beginAtZero: true } };
         trendChartInstance = new Chart(ctx, { type: type, data: trendChartData, options: options });
     }
@@ -485,18 +471,18 @@
         
         new Chart(document.getElementById('statusChart').getContext('2d'), { 
             type: 'doughnut', 
-            data: { labels: ['Active', 'Left'], datasets: [{ data: [active, total - active], backgroundColor: ['#10b981', '#64748b'] }] }, 
-            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', animation: { duration: 1500 } }
+            data: { labels: ['Active', 'Left'], datasets: [{ data: [active, total - active], backgroundColor: ['#10b981', '#64748b'], borderWidth: 0 }] }, 
+            options: { responsive: true, maintainAspectRatio: false, cutout: '75%', animation: { duration: 1500 } }
         });
 
         trendChartData = {
             labels: Array.from({length:31}, (_,i)=>i+1), 
             datasets: [
-                { label: 'Present / Default', data: daily.map(d=>d.p), backgroundColor: 'rgba(16, 185, 129, 0.5)', borderColor: '#10b981', borderWidth: 2, borderRadius: 4 }, 
-                { label: 'Absent / Reduced', data: daily.map(d=>d.a), backgroundColor: 'rgba(244, 63, 94, 0.5)', borderColor: '#f43f5e', borderWidth: 2, borderRadius: 4 }
+                { label: 'Present / Default', data: daily.map(d=>d.p), borderColor: '#10b981', borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#10b981', pointBorderWidth: 2, pointRadius: 3 }, 
+                { label: 'Absent / Reduced', data: daily.map(d=>d.a), borderColor: '#f43f5e', borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#f43f5e', pointBorderWidth: 2, pointRadius: 3 }
             ] 
         };
-        initOrUpdateTrendChart(document.getElementById('chartTypeSelector').value || 'bar');
+        initOrUpdateTrendChart(document.getElementById('chartTypeSelector').value || 'line');
     }
 
     function renderTable() {
@@ -506,9 +492,9 @@
         
         pageData.forEach((row, i) => {
             const tr = document.createElement('tr');
-            tr.className = "hover:bg-f0fdfa transition-colors cursor-pointer";
+            tr.className = "hover:bg-teal-50/50 transition-colors cursor-pointer";
             tr.onclick = () => openEmployeeModal((currentPage - 1) * rowsPerPage + i);
-            let html = `<td class="p-4 font-semibold whitespace-nowrap"><span class="hover:text-teal-600 transition">${row.name}</span><span class="block text-xs text-slate-500 font-normal">${row.code}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}</td>`;
+            let html = `<td class="p-4 font-semibold whitespace-nowrap"><span class="hover:text-teal-600 transition">${row.name}</span><span class="block text-xs text-slate-500 font-normal mt-0.5"><i class="fa-solid fa-id-badge text-slate-300 mr-1"></i>${row.code}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}</td>`;
             row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
             tr.innerHTML = html;
             fragment.appendChild(tr);
@@ -520,8 +506,8 @@
         mobileContainer.innerHTML = '';
         pageData.forEach((row, i) => {
             const isLeft = (row.status !== 'Active');
-            const bgClass = isLeft ? 'bg-red-50 border-red-200 hover:border-red-400' : 'bg-white border-slate-200 hover:border-teal-300';
-            const statusBadgeClass = isLeft ? 'bg-red-200 text-red-800' : 'bg-emerald-100 text-emerald-800';
+            const bgClass = isLeft ? 'bg-rose-50/50 border-rose-200' : 'bg-white border-slate-200';
+            const statusBadgeClass = isLeft ? 'bg-rose-200 text-rose-800' : 'bg-emerald-100 text-emerald-800';
 
             mobileContainer.innerHTML += `
                 <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" class="${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1">
@@ -529,7 +515,7 @@
                         <div><h3 class="font-bold text-slate-800 text-lg">${row.name}</h3><p class="text-xs text-slate-500 font-mono mt-0.5">${row.code}</p></div>
                         <span class="text-xs font-bold px-2 py-1 rounded-full ${statusBadgeClass}">${row.status}</span>
                     </div>
-                    <div class="mt-3 inline-block bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50"><i class="fa-solid fa-briefcase text-slate-400 mr-1"></i> ${row.contractor}</div>
+                    <div class="mt-3 inline-flex items-center bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50"><i class="fa-solid fa-briefcase text-slate-400 mr-1.5"></i> ${row.contractor}</div>
                 </div>`;
         });
         renderPagination();
@@ -556,16 +542,33 @@
     }
 
     function populateFilters() {
-        const contractors = [...new Set(globalData.map(d => d.contractor))].sort();
+        const contractors = [...new Set(globalData.map(d => d.contractor).filter(Boolean))].sort();
+        const teamLeaders = [...new Set(globalData.map(d => d.tl).filter(v => v && v !== 'N/A'))].sort();
+        const supervisors = [...new Set(globalData.map(d => d.sanctioner).filter(v => v && v !== 'N/A'))].sort();
+
         document.getElementById('statusFilter').innerHTML = `<option value="">All Statuses</option><option value="Active">Active</option><option value="Left">Left</option>`;
         document.getElementById('contractorFilter').innerHTML = `<option value="">All Contractors</option>${contractors.map(c => `<option value="${c}">${c}</option>`).join('')}`;
+        document.getElementById('tlFilter').innerHTML = `<option value="">All Team Leaders</option>${teamLeaders.map(c => `<option value="${c}">${c}</option>`).join('')}`;
+        document.getElementById('supFilter').innerHTML = `<option value="">All Supervisors</option>${supervisors.map(c => `<option value="${c}">${c}</option>`).join('')}`;
     }
     
     function applyFilters() {
-        const search = document.getElementById('searchInput').value.toLowerCase(), status = document.getElementById('statusFilter').value, contractor = document.getElementById('contractorFilter').value;
-        filteredData = globalData.filter(row => (row.name.toLowerCase().includes(search) || row.code.toLowerCase().includes(search)) && (status ? row.status === status : true) && (contractor ? row.contractor === contractor : true));
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const status = document.getElementById('statusFilter').value;
+        const contractor = document.getElementById('contractorFilter').value;
+        const tl = document.getElementById('tlFilter').value;
+        const sup = document.getElementById('supFilter').value;
+
+        filteredData = globalData.filter(row => 
+            (row.name.toLowerCase().includes(search) || row.code.toLowerCase().includes(search)) && 
+            (status ? row.status === status : true) && 
+            (contractor ? row.contractor === contractor : true) &&
+            (tl ? row.tl === tl : true) &&
+            (sup ? row.sanctioner === sup : true)
+        );
+
         const count = document.getElementById('contractor-count');
-        (contractor || status || search) ? (count.textContent = `${filteredData.length} Employee(s)`, count.classList.remove('hidden')) : count.classList.add('hidden');
+        (contractor || status || search || tl || sup) ? (count.textContent = `${filteredData.length} Employee(s)`, count.classList.remove('hidden')) : count.classList.add('hidden');
         renderTable();
     }
 
@@ -610,12 +613,12 @@
                 <h2 class="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">${employee.name}</h2>
                 <p class="text-slate-500 mt-1 font-medium">${employee.code} &bull; ${employee.contractor} &bull; ${employee.status}</p>
                 <div class="mt-4 p-4 bg-slate-50 rounded-xl text-sm text-slate-700 space-y-2 border border-slate-200 shadow-sm">
-                    <p class="flex items-center gap-2"><i class="fa-solid fa-user-tie text-teal-600 w-4"></i> <strong>Team Leader:</strong> <span class="ml-auto text-right">${employee.tl || 'N/A'}</span></p>
-                    <p class="flex items-center gap-2 border-t border-slate-200 pt-2"><i class="fa-solid fa-file-signature text-teal-600 w-4"></i> <strong>Shift Supervisor:</strong> <span class="ml-auto text-right">${employee.sanctioner || 'N/A'}</span></p>
+                    <p class="flex items-center gap-2"><i class="fa-solid fa-user-tie text-teal-600 w-4"></i> <strong>Team Leader:</strong> <span class="ml-auto text-right font-medium">${employee.tl || 'N/A'}</span></p>
+                    <p class="flex items-center gap-2 border-t border-slate-200 pt-2"><i class="fa-solid fa-file-signature text-teal-600 w-4"></i> <strong>Shift Supervisor:</strong> <span class="ml-auto text-right font-medium">${employee.sanctioner || 'N/A'}</span></p>
                 </div>
                 <div class="mt-4 grid grid-cols-4 gap-2 text-sm h-16">
                     <div class="bg-emerald-50 text-emerald-800 p-1.5 rounded-lg border border-emerald-100 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${p}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Present</span></div>
-                    <div class="bg-red-50 text-red-800 p-1.5 rounded-lg border border-red-100 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${a}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Absent</span></div>
+                    <div class="bg-rose-50 text-rose-800 p-1.5 rounded-lg border border-rose-100 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${a}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Absent</span></div>
                     <div class="bg-blue-50 text-blue-800 p-1.5 rounded-lg border border-blue-200 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${fd}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Full Day</span></div>
                     <div class="bg-orange-50 text-orange-800 p-1.5 rounded-lg border border-orange-100 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${mp}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Miss Punch</span></div>
                 </div>
