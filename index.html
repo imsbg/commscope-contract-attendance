@@ -311,21 +311,34 @@
                 <button onclick="closeAdminModal()" class="text-slate-400 hover:text-rose-500 text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 overflow-y-auto custom-scrollbar">
+                
                 <div class="mb-5 bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-xs font-medium">
                     <i class="fa-solid fa-circle-info"></i> Enter ମାଲିକ Password.
                 </div>
-                <div class="mb-6">
+
+                <!-- Admin Auth Section -->
+                <div id="admin-auth-section" class="mb-6">
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Admin Password</label>
-                    <input type="password" id="admin-token" placeholder="Enter Admin Password" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm shadow-sm transition">
-                    <p class="text-[10px] text-slate-400 mt-1.5"><i class="fa-solid fa-lock text-slate-300"></i> Validates via Firebase. Token remains hidden.</p>
+                    <input type="password" id="admin-token" placeholder="Enter Admin Password" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm shadow-sm transition mb-3">
+                    
+                    <label class="flex items-center gap-2 text-sm text-slate-600 mb-4 cursor-pointer select-none w-max">
+                        <input type="checkbox" id="remember-pwd" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer transition">
+                        <span class="font-medium text-xs">Remember Password</span>
+                    </label>
+                    
+                    <button onclick="loginAdmin()" id="login-btn" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl transition shadow-md flex justify-center items-center gap-2 hover:shadow-lg hover:-translate-y-0.5">
+                        <i class="fa-solid fa-right-to-bracket"></i> Login
+                    </button>
                 </div>
                 
-                <div class="flex flex-col gap-2">
+                <!-- Admin Actions Section (Hidden by default) -->
+                <div id="admin-actions-section" class="hidden flex-col gap-2 mb-6">
+                    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-sm font-bold flex justify-between items-center mb-2 shadow-sm">
+                        <span><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i> Access Granted</span>
+                        <button onclick="logoutAdmin()" class="text-xs text-rose-500 hover:text-rose-700 underline font-semibold transition">Logout</button>
+                    </div>
                     <button onclick="triggerSync()" id="sync-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition shadow-md flex justify-center items-center gap-2 hover:shadow-lg hover:-translate-y-0.5">
                         <i class="fa-solid fa-rotate"></i> Force Update Data
-                    </button>
-                    <button onclick="loadLogsManual()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl transition shadow-sm flex justify-center items-center gap-2 text-sm mt-1">
-                        <i class="fa-solid fa-list"></i> View Recent Logs
                     </button>
                 </div>
 
@@ -429,6 +442,9 @@
 
     // Current Search Toggle State Tracker
     let currentSearchScope = 'emp'; // Default Scope
+
+    // Admin Authenticated Session
+    let currentAdminToken = null;
 
     const DEFAULT_SETTINGS = { pattern: 'ACB', baseDate: '2026-01-05', baseShift: 'A' }; 
     let shiftSettings = JSON.parse(localStorage.getItem('shiftSettings')) || DEFAULT_SETTINGS;
@@ -540,7 +556,6 @@
 
     // -------- TOGGLE CLICK LOGIC --------
     function handleScopeClick(radioBtn) {
-        // If clicking the currently active one and it's NOT the default (employee)
         if (currentSearchScope === radioBtn.value && radioBtn.value !== 'emp') {
             document.querySelector('input[name="searchScope"][value="emp"]').checked = true;
             currentSearchScope = 'emp';
@@ -559,7 +574,6 @@
         applyFilters();
     }
 
-    // -------- HIGHLIGHT MATCH FUNCTION (For TL / SUP) --------
     function highlightMatch(text, query, isActive) {
         if (!text) return 'N/A';
         if (!query || !isActive) return text;
@@ -575,10 +589,12 @@
     function openAdminModal() {
         document.getElementById('admin-modal').classList.remove('opacity-0', 'pointer-events-none');
         document.getElementById('admin-content').classList.remove('scale-95');
+        
         const savedPwd = localStorage.getItem('gh_admin_pwd');
         if(savedPwd) {
             document.getElementById('admin-token').value = savedPwd;
-            loadLogsManual(); // Auto load logs if valid password is found
+            document.getElementById('remember-pwd').checked = true;
+            loginAdmin(); // Automatically log in if they had requested "Remember Password" previously
         }
     }
 
@@ -587,10 +603,9 @@
         document.getElementById('admin-content').classList.add('scale-95');
     }
 
-    // Securely pull credentials from Firebase DB based on password
     async function getAdminCredentials(password) {
         try {
-            const safePwd = password.replace(/[.#$\[\]]/g, ''); // strip invalid DB characters if any
+            const safePwd = password.replace(/[.#$\[\]]/g, ''); 
             const res = await fetch(`https://sg-fun-default-rtdb.firebaseio.com/adminTokens/${safePwd}.json`);
             const tokenData = await res.json();
             return typeof tokenData === 'string' ? tokenData : (tokenData ? tokenData.gh_token : null);
@@ -599,15 +614,64 @@
         }
     }
 
-    async function loadLogsManual() {
-        const pwd = document.getElementById('admin-token').value.trim();
+    // New Login Flow Function
+    async function loginAdmin() {
+        const pwdInput = document.getElementById('admin-token');
+        const pwd = pwdInput.value.trim();
+        const loginBtn = document.getElementById('login-btn');
+        const rememberChk = document.getElementById('remember-pwd').checked;
+        
         if(!pwd) return alert('Enter Admin Password first.');
         
-        const token = await getAdminCredentials(pwd);
-        if(!token) return alert('Invalid Admin Password!');
+        const originalBtnHtml = loginBtn.innerHTML;
+        loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...';
+        loginBtn.classList.add('opacity-80', 'pointer-events-none');
         
-        localStorage.setItem('gh_admin_pwd', pwd);
+        const token = await getAdminCredentials(pwd);
+        
+        if(!token) {
+            loginBtn.innerHTML = originalBtnHtml;
+            loginBtn.classList.remove('opacity-80', 'pointer-events-none');
+            return alert('Invalid Admin Password!');
+        }
+        
+        // Setup successful login state
+        currentAdminToken = token;
+        
+        // Handle Remember Checkbox
+        if(rememberChk) {
+            localStorage.setItem('gh_admin_pwd', pwd);
+        } else {
+            localStorage.removeItem('gh_admin_pwd');
+        }
+        
+        // Update User Interface
+        document.getElementById('admin-auth-section').classList.add('hidden');
+        document.getElementById('admin-actions-section').classList.remove('hidden');
+        document.getElementById('admin-actions-section').classList.add('flex');
+        
+        // Restore login button (for next time)
+        loginBtn.innerHTML = originalBtnHtml;
+        loginBtn.classList.remove('opacity-80', 'pointer-events-none');
+        
+        // Show Logs Automatically upon successful login
         fetchGitHubLogs(token);
+    }
+
+    // New Logout Function
+    function logoutAdmin() {
+        currentAdminToken = null;
+        localStorage.removeItem('gh_admin_pwd');
+        document.getElementById('admin-token').value = '';
+        document.getElementById('remember-pwd').checked = false;
+        
+        // Toggle sections back
+        document.getElementById('admin-actions-section').classList.add('hidden');
+        document.getElementById('admin-actions-section').classList.remove('flex');
+        document.getElementById('admin-auth-section').classList.remove('hidden');
+        
+        // Clear logs
+        document.getElementById('sync-logs').innerHTML = '<div class="text-center text-slate-400 text-xs py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">Authenticate to load server logs...</div>';
     }
 
     async function fetchGitHubLogs(token) {
@@ -643,29 +707,18 @@
     }
 
     async function triggerSync() {
-        const pwd = document.getElementById('admin-token').value.trim();
-        if(!pwd) return alert('Please enter your Admin Password.');
+        if(!currentAdminToken) return alert('Not authenticated!');
         
         const btn = document.getElementById('sync-btn');
         const originalBtnHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...';
-        btn.classList.add('opacity-80', 'pointer-events-none');
-
-        const token = await getAdminCredentials(pwd);
-        if(!token) {
-            btn.innerHTML = originalBtnHtml;
-            btn.classList.remove('opacity-80', 'pointer-events-none');
-            return alert('Invalid Password!');
-        }
-
-        localStorage.setItem('gh_admin_pwd', pwd);
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending Request...';
+        btn.classList.add('opacity-80', 'pointer-events-none');
 
         try {
             const res = await fetch('https://api.github.com/repos/imsbg/commscope-contract-attendance/actions/workflows/update.yml/dispatches', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `token ${token}`,
+                    'Authorization': `token ${currentAdminToken}`,
                     'Accept': 'application/vnd.github.v3+json'
                 },
                 body: JSON.stringify({ ref: 'main' })
@@ -675,7 +728,9 @@
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> Triggered Successfully!';
                 btn.classList.replace('bg-indigo-600', 'bg-emerald-600');
                 btn.classList.remove('hover:bg-indigo-700');
-                fetchGitHubLogs(token); // Load the logs to confirm
+                
+                fetchGitHubLogs(currentAdminToken); // Load the logs to confirm
+                
                 setTimeout(() => {
                     btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Force Update Data';
                     btn.classList.replace('bg-emerald-600', 'bg-indigo-600');
