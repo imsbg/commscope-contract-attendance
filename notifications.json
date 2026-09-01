@@ -1,0 +1,14 @@
+[
+  {
+    "title": "📊 August Attendance Data",
+    "message": "The finalized attendance records for the month of August are now available in the archive.",
+    "link": "https://imsbg.github.io/commscope-contract-attendance/puruna/august/",
+    "buttonText": "View August Data"
+  },
+  {
+    "title": "📂 July Attendance Archived",
+    "message": "Looking for older records? You can safely access the complete attendance log for July in our puruna section.",
+    "link": "https://imsbg.github.io/commscope-contract-attendance/puruna/july/",
+    "buttonText": "View July Data"
+  }
+]
