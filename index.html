@@ -559,7 +559,7 @@
         btn.classList.add('opacity-80', 'pointer-events-none');
 
         try {
-            const res = await fetch('https://api.github.com/repos/imsbg/commscope-contract-attendance/actions/workflows/main.yml/dispatches', {
+            const res = await fetch('https://api.github.com/repos/imsbg/commscope-contract-attendance/actions/workflows/update.yml/dispatches', {
                 method: 'POST',
                 headers: {
                     'Authorization': `token ${token}`,
@@ -584,7 +584,7 @@
                 throw new Error(errData.message || 'Failed to trigger. Check token or workflow filename.');
             }
         } catch(e) {
-            alert("Error: " + e.message + "\n\nMake sure the token is correct and your workflow file is named 'main.yml'.");
+            alert("Error: " + e.message + "\n\nMake sure the token is correct and your workflow file is named 'update.yml'.");
             btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Force Update Data';
             btn.classList.remove('opacity-80', 'pointer-events-none');
         }
