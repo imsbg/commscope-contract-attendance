@@ -133,7 +133,8 @@ async function fetchAndParsePDF() {
                     }
                 }
                 
-                const attCodes = new Set(['p', 'a', 'wo', 'hd', 'fd', 'slwp', 'lwp', 'mp', 'l', '-', '--', 'ho', 'rota', 'ho (rota)']);
+                // ADDED 'pl' and 'wwo' TO THE SET HERE 👇
+                const attCodes = new Set(['p', 'a', 'wo', 'hd', 'fd', 'slwp', 'lwp', 'mp', 'l', '-', '--', 'ho', 'rota', 'ho (rota)', 'pl', 'wwo']);
                 
                 let firstDateIdx = -1;
                 for(let j = statusIdx + 1; j < sortedTexts.length; j++) {
