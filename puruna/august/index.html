@@ -51,6 +51,12 @@
         .status-l { background-color: #fce7f3; color: #be185d; } 
         .status-pending { background-color: #f8fafc; color: #94a3b8; } 
 
+        /* Special Absences & Leaves */
+        .status-pl { background-color: #dbeafe; color: #1e40af; } 
+        .status-wwo { background-color: #fef08a; color: #854d0e; } 
+        .status-cf { background-color: #e0e7ff; color: #3730a3; } 
+        .status-whorota, .status-horota { background-color: #fce7f3; color: #be185d; }
+
         .table-container { max-height: 65vh; }
         thead th { position: sticky; top: 0; z-index: 10; background-color: #f8fafc; }
         tbody td:first-child, thead th:first-child { position: sticky; left: 0; z-index: 5; background-color: var(--card-bg);}
@@ -412,6 +418,8 @@
     const rowsPerPage = 15; 
     let trendChartInstance = null;
     let trendChartData = null;
+    
+    // CF, PL, WWO, WHO (ROTA) are considered PRESENTS for rate calculation, so they are not here
     const absenceList = ['A', 'ABSENT', 'FD', 'FULL DAY', 'HD', 'HALF DAY', 'SLWP', 'SICK LEAVE', 'MP', 'MISS PUNCH'];
     window.globalVisitorData = {}; 
 
@@ -684,7 +692,13 @@
     }
 
     function getDisplayStatus(val) { return (!val || val.trim() === '-') ? '-' : (val.trim() === '--' ? 'L' : val.trim()); }
-    function getStatusClass(val) { return (!val || val.trim() === '-') ? 'pending' : (val.trim() === '--' || val.trim().toUpperCase() === 'L') ? 'l' : val.trim().toLowerCase(); }
+    
+    // Generates properly clean CSS classes by removing brackets, spaces, etc.
+    function getStatusClass(val) { 
+        return (!val || val.trim() === '-') ? 'pending' : 
+               (val.trim() === '--' || val.trim().toUpperCase() === 'L') ? 'l' : 
+               val.trim().toLowerCase().replace(/[^a-z0-9]/g, ''); 
+    }
 
     function shareEmployeeURL(employeeName) {
         const url = window.location.origin + window.location.pathname + '?Employee=' + encodeURIComponent(employeeName);
@@ -799,7 +813,7 @@
                         else if (val === 'FD' || val === 'FULL DAY') fd++; 
                         else if (val === 'HD' || val === 'HALF DAY') hd++;
                     } else {
-                        // All non-absence marks (P, WO, HO) count as Present
+                        // All non-absence marks (P, WO, HO, PL, WWO, CF, WHO) count as Present
                         p++;
                     }
                 }
@@ -823,7 +837,7 @@
                         <div class="flex flex-col items-start sm:items-end gap-3 w-full sm:w-auto">
                             <div class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg font-bold text-xs sm:text-sm border border-indigo-100 shadow-sm flex items-center gap-1.5 ml-auto sm:ml-0"><i class="fa-solid fa-chart-pie opacity-70"></i> ${attRate}% Rate</div>
                             <div class="flex gap-1.5 sm:gap-2 w-full sm:w-auto justify-between sm:justify-start">
-                                <div class="bg-emerald-100 text-emerald-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-emerald-200" title="Present (Inc. WO/HO)">${p}</div>
+                                <div class="bg-emerald-100 text-emerald-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-emerald-200" title="Present (Inc. WO/HO/PL/CF/WWO/WHO)">${p}</div>
                                 <div class="bg-rose-100 text-rose-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-rose-200" title="Absent">${a}</div>
                                 <div class="bg-blue-100 text-blue-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-blue-200" title="Full Day">${fd}</div>
                                 <div class="bg-yellow-100 text-yellow-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-yellow-200" title="Half Day">${hd}</div>
@@ -976,7 +990,7 @@
                     <p class="flex items-center gap-2 border-t border-slate-200 pt-2"><i class="fa-solid fa-file-signature text-teal-600 w-4"></i> <strong>Shift Supervisor:</strong> <span class="ml-auto text-right font-medium">${employee.sanctioner || 'N/A'}</span></p>
                 </div>
                 <div class="mt-4 grid grid-cols-4 gap-2 text-sm h-16">
-                    <div class="bg-emerald-50 text-emerald-800 p-1.5 rounded-lg border border-emerald-100 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${p}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Present</span></div>
+                    <div class="bg-emerald-50 text-emerald-800 p-1.5 rounded-lg border border-emerald-100 flex flex-col items-center justify-between h-full" title="Present (Inc. WO/HO/PL/CF/WWO/WHO)"><span class="font-bold text-xl leading-none mt-1">${p}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Present</span></div>
                     <div class="bg-rose-50 text-rose-800 p-1.5 rounded-lg border border-rose-100 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${a}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Absent</span></div>
                     <div class="bg-blue-50 text-blue-800 p-1.5 rounded-lg border border-blue-200 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${fd}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Full Day</span></div>
                     <div class="bg-orange-50 text-orange-800 p-1.5 rounded-lg border border-orange-100 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${mp}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Miss Punch</span></div>
@@ -993,6 +1007,9 @@
                         <div class="flex items-center gap-2"><span class="legend-badge status-a">A</span><span>Absent</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-hd">HD</span><span>Half Day</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-wo">WO</span><span>Week Off</span></div>
+                        <div class="flex items-center gap-2"><span class="legend-badge status-cf">CF</span><span>Carry Forward</span></div>
+                        <div class="flex items-center gap-2"><span class="legend-badge status-pl">PL</span><span>Privilege Leave</span></div>
+                        <div class="flex items-center gap-2"><span class="legend-badge status-wwo">WWO</span><span>Worked WO</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-slwp">SLWP</span><span>Sick Leave</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-mp">MP</span><span>Miss Punch</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-l">L</span><span>Left</span></div>
