@@ -747,15 +747,19 @@
         toggleKnob.classList.replace('translate-x-0', 'translate-x-5');
     }
 
-    toggleBtn.addEventListener('click', async () => {
+toggleBtn.addEventListener('click', async () => {
         if (!fcmEnabled) {
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
                     
-                    // VAPID KEY ADDED HERE!
+                    // 1. Tell the browser exactly where the Service Worker file is!
+                    const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+                    
+                    // 2. Pass that registration to Firebase
                     const currentToken = await getToken(messaging, { 
-                        vapidKey: 'BFQEnWpfqBy5efBUwzFbAUlayG35OYFUbeu_6BMnMyGGZ-i5GG9vQMdjihhxTkLgghFBkr-q0E8jD2mk-U6eAEY' 
+                        vapidKey: 'BFQEnWpfqBy5efBUwzFbAUlayG35OYFUbeu_6BMnMyGGZ-i5GG9vQMdjihhxTkLgghFBkr-q0E8jD2mk-U6eAEY',
+                        serviceWorkerRegistration: registration 
                     });
                     
                     if (currentToken) {
@@ -770,8 +774,8 @@
                     alert("Permission for notifications was denied. You can change this in your browser settings.");
                 }
             } catch (err) {
-                console.log('An error occurred while retrieving token. ', err);
-                alert("Couldn't enable notifications. Try reloading the page and making sure your browser allows notifications.");
+                console.error('An error occurred while retrieving token: ', err);
+                alert("Couldn't enable notifications. Please make sure you are not in Incognito Mode and the SW file is uploaded.");
             }
         } else {
             fcmEnabled = false;
