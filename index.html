@@ -50,6 +50,10 @@
         .status-slwp { background-color: #f3e8ff; color: #6b21a8; } 
         .status-l { background-color: #fce7f3; color: #be185d; } 
         .status-pending { background-color: #f8fafc; color: #94a3b8; } 
+        
+        /* NEW STYLES FOR PL & WWO */
+        .status-pl { background-color: #dbeafe; color: #1e40af; } 
+        .status-wwo { background-color: #fef08a; color: #854d0e; } 
 
         .table-container { max-height: 65vh; }
         thead th { position: sticky; top: 0; z-index: 10; background-color: #f8fafc; }
@@ -255,7 +259,7 @@
        <!-- Footer pinned to bottom -->
        <footer class="text-center text-xs text-slate-500 pt-8 pb-12 relative flex flex-col items-center mt-auto w-full">
             
-            <!-- Visiter Stats (Visible in both Minimal and Standard) - Clickable -->
+            <!-- Visiter Stats -->
             <div class="flex justify-center gap-3 sm:gap-4 mb-6 cursor-pointer hover:scale-105 transition-transform" onclick="openVisitorModal()" title="Click to view daily visitors">
                 <div class="bg-white px-3 sm:px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
                     <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Yesterday</p>
@@ -272,7 +276,6 @@
                 </div>
             </div>
 
-            <!-- Instagram Promo MOVED ABOVE DISCLAIMER -->
             <a href="https://www.instagram.com/sandeepbiswalg" target="_blank" class="mb-8 flex items-center justify-center gap-4 bg-white border border-slate-200 px-6 py-4 rounded-2xl shadow-sm hover:shadow-md transition-all group w-full max-w-sm mx-auto cursor-pointer">
                 <div class="w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white shadow-md transform transition group-hover:-rotate-6 group-hover:scale-110 duration-300">
                     <i class="fa-brands fa-instagram text-2xl"></i>
@@ -291,18 +294,33 @@
 
     <!-- Notifications Modal -->
     <div id="notif-modal" onclick="if(event.target === this) closeNotifModal()" class="fixed inset-0 bg-black/60 z-[150] p-4 flex justify-center items-start pt-20 opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-sm">
-        <div id="notif-content" class="bg-white rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[80vh]">
-            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-2xl">
+        <div id="notif-content" class="bg-white rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[80vh] overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-2xl relative z-10">
                 <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-bell text-amber-500"></i> Notifications</h3>
-                <button onclick="closeNotifModal()" class="text-slate-400 hover:text-rose-500 text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition"><i class="fa-solid fa-xmark"></i></button>
+                <div class="flex items-center gap-3">
+                    <button onclick="markAllAsRead()" id="mark-read-btn" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline hidden transition-colors">Mark all read</button>
+                    <button onclick="closeNotifModal()" class="text-slate-400 hover:text-rose-500 text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition"><i class="fa-solid fa-xmark"></i></button>
+                </div>
             </div>
-            <div class="p-4 overflow-y-auto custom-scrollbar space-y-3" id="notif-list">
-                <!-- Data injected via JS -->
+            
+            <!-- FCM Subscription Banner -->
+            <div class="bg-indigo-50 border-b border-indigo-100 p-3 flex justify-between items-center px-5 relative z-10 shadow-sm">
+                <div class="flex-1 pr-4">
+                    <p class="text-[11px] md:text-xs font-bold text-indigo-900 leading-tight flex items-center gap-1.5"><i class="fa-solid fa-satellite-dish text-indigo-500"></i> Auto Alerts</p>
+                    <p class="text-[9px] md:text-[10px] text-indigo-700 leading-tight mt-0.5 font-medium">We won't spam! Enable to get notified automatically when new attendance dates are synced.</p>
+                </div>
+                <button id="fcm-toggle-btn" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 bg-slate-300">
+                    <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0" id="fcm-toggle-knob"></span>
+                </button>
+            </div>
+
+            <div class="p-4 overflow-y-auto custom-scrollbar space-y-3 relative" id="notif-list">
                 <div class="text-center text-slate-400 py-6 text-sm">Loading...</div>
             </div>
         </div>
     </div>
 
+    <!-- Admin & Other Modals remain exactly the same below... -->
     <!-- HIDDEN ADMIN CONSOLE MODAL -->
     <div id="admin-modal" onclick="if(event.target === this) closeAdminModal()" class="fixed inset-0 bg-black/70 z-[200] p-4 flex justify-center items-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-sm">
         <div id="admin-content" class="bg-white rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
@@ -311,27 +329,20 @@
                 <button onclick="closeAdminModal()" class="text-slate-400 hover:text-rose-500 text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 overflow-y-auto custom-scrollbar">
-                
                 <div class="mb-5 bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-xs font-medium">
                     <i class="fa-solid fa-circle-info"></i> Enter ମାଲିକ Password.
                 </div>
-
-                <!-- Admin Auth Section -->
                 <div id="admin-auth-section" class="mb-6">
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Admin Password</label>
                     <input type="password" id="admin-token" placeholder="Enter Admin Password" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm shadow-sm transition mb-3">
-                    
                     <label class="flex items-center gap-2 text-sm text-slate-600 mb-4 cursor-pointer select-none w-max">
                         <input type="checkbox" id="remember-pwd" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer transition">
                         <span class="font-medium text-xs">Remember Password</span>
                     </label>
-                    
                     <button onclick="loginAdmin()" id="login-btn" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl transition shadow-md flex justify-center items-center gap-2 hover:shadow-lg hover:-translate-y-0.5">
                         <i class="fa-solid fa-right-to-bracket"></i> Login
                     </button>
                 </div>
-                
-                <!-- Admin Actions Section (Hidden by default) -->
                 <div id="admin-actions-section" class="hidden flex-col gap-2 mb-6">
                     <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-sm font-bold flex justify-between items-center mb-2 shadow-sm">
                         <span><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i> Access Granted</span>
@@ -341,7 +352,6 @@
                         <i class="fa-solid fa-rotate"></i> Force Update Data
                     </button>
                 </div>
-
                 <div class="mt-8 border-t border-slate-100 pt-6">
                     <h4 class="font-bold text-slate-700 mb-3 text-sm flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Recent Sync Logs</h4>
                     <div id="sync-logs" class="space-y-2.5">
@@ -436,12 +446,14 @@
     const rowsPerPage = 15; 
     let trendChartInstance = null;
     let trendChartData = null;
+    // PL and WWO are essentially 'Present', so they aren't added to the absenceList.
     const absenceList = ['A', 'ABSENT', 'FD', 'FULL DAY', 'HD', 'HALF DAY', 'SLWP', 'SICK LEAVE', 'MP', 'MISS PUNCH'];
     window.globalVisitorData = {}; 
     let systemNotifications = [];
+    let readNotifs = JSON.parse(localStorage.getItem('readNotifs')) || [];
 
     // Current Search Toggle State Tracker
-    let currentSearchScope = 'emp'; // Default Scope
+    let currentSearchScope = 'emp'; 
 
     // Admin Authenticated Session
     let currentAdminToken = null;
@@ -459,7 +471,7 @@
     document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('footer-year').textContent = new Date().getFullYear();
         initViewMode();
-        fetchNotifications(); // Load Notifications
+        fetchNotifications();
 
         if (IS_MAINTENANCE_MODE) {
             document.getElementById('splash-screen').style.display = 'none';
@@ -479,12 +491,10 @@
             document.querySelector('#splash-screen p').innerHTML = `<span class="text-red-500 font-bold">Error: ${error.message}. Checking GitHub Action Sync...</span>`;
         }
         
-        // Search Listener with cross toggle & admin interceptor
         document.getElementById('searchInput').addEventListener('keyup', (e) => {
             const val = e.target.value.trim();
             const clearBtn = document.getElementById('clear-search-btn');
             
-            // Toggle Clear Button
             if (val.length > 0 && val !== '/admin') clearBtn.classList.remove('hidden');
             else clearBtn.classList.add('hidden');
             
@@ -520,29 +530,59 @@
     function renderNotifications() {
         const list = document.getElementById('notif-list');
         const badge = document.getElementById('notif-badge');
+        const markReadBtn = document.getElementById('mark-read-btn');
         
         if(!systemNotifications || systemNotifications.length === 0) {
             list.innerHTML = '<div class="text-center text-slate-500 py-8 text-sm flex flex-col items-center gap-2"><i class="fa-regular fa-bell-slash text-3xl text-slate-300 mb-2"></i> No notifications right now.</div>';
             badge.classList.add('hidden');
+            markReadBtn.classList.add('hidden');
             return;
         }
         
-        badge.textContent = systemNotifications.length;
-        badge.classList.remove('hidden');
+        // Filter out read notifications to get correct unread count
+        const unreadCount = systemNotifications.filter(n => !readNotifs.includes(n.id || n.title)).length;
+        
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount;
+            badge.classList.remove('hidden');
+            markReadBtn.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+            markReadBtn.classList.add('hidden');
+        }
+        
         list.innerHTML = '';
         
         systemNotifications.forEach(n => {
+            let nId = n.id || n.title;
+            let isRead = readNotifs.includes(nId);
             let btnHtml = '';
+            
             if(n.link) {
                 btnHtml = `<a href="${n.link}" target="_blank" class="mt-3 inline-block bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm">${n.buttonText || 'View Details'}</a>`;
             }
+            
             list.innerHTML += `
-            <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                <h4 class="font-bold text-slate-800 text-sm mb-1">${n.title}</h4>
-                <p class="text-slate-600 text-xs leading-relaxed">${n.message}</p>
+            <div class="p-4 rounded-xl shadow-sm border transition-colors ${isRead ? 'bg-white border-slate-100 opacity-70' : 'bg-blue-50/50 border-blue-100'}">
+                <div class="flex justify-between items-start mb-1">
+                    <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        ${!isRead ? '<span class="h-2 w-2 bg-blue-500 rounded-full inline-block"></span>' : ''} ${n.title}
+                    </h4>
+                </div>
+                <p class="text-slate-600 text-xs leading-relaxed ml-${!isRead ? '4' : '0'}">${n.message}</p>
                 ${btnHtml}
             </div>`;
         });
+    }
+
+    window.markAllAsRead = function() {
+        if(!systemNotifications) return;
+        systemNotifications.forEach(n => {
+            let nId = n.id || n.title;
+            if(!readNotifs.includes(nId)) readNotifs.push(nId);
+        });
+        localStorage.setItem('readNotifs', JSON.stringify(readNotifs));
+        renderNotifications();
     }
 
     function openNotifModal() {
@@ -566,7 +606,6 @@
         applyFilters();
     }
 
-    // -------- CLEAR SEARCH FUNCTION --------
     function clearSearch() {
         document.getElementById('searchInput').value = '';
         document.getElementById('clear-search-btn').classList.add('hidden');
@@ -585,321 +624,51 @@
         return text;
     }
 
-    // -------- ADMIN CONSOLE LOGIC --------
-    function openAdminModal() {
-        document.getElementById('admin-modal').classList.remove('opacity-0', 'pointer-events-none');
-        document.getElementById('admin-content').classList.remove('scale-95');
-        
-        const savedPwd = localStorage.getItem('gh_admin_pwd');
-        if(savedPwd) {
-            document.getElementById('admin-token').value = savedPwd;
-            document.getElementById('remember-pwd').checked = true;
-            loginAdmin(); // Automatically log in if they had requested "Remember Password" previously
-        }
-    }
-
-    function closeAdminModal() {
-        document.getElementById('admin-modal').classList.add('opacity-0', 'pointer-events-none');
-        document.getElementById('admin-content').classList.add('scale-95');
-    }
-
-    async function getAdminCredentials(password) {
-        try {
-            const safePwd = password.replace(/[.#$\[\]]/g, ''); 
-            const res = await fetch(`https://sg-fun-default-rtdb.firebaseio.com/adminTokens/${safePwd}.json`);
-            const tokenData = await res.json();
-            return typeof tokenData === 'string' ? tokenData : (tokenData ? tokenData.gh_token : null);
-        } catch(e) {
-            return null;
-        }
-    }
-
-    // New Login Flow Function
-    async function loginAdmin() {
-        const pwdInput = document.getElementById('admin-token');
-        const pwd = pwdInput.value.trim();
-        const loginBtn = document.getElementById('login-btn');
-        const rememberChk = document.getElementById('remember-pwd').checked;
-        
-        if(!pwd) return alert('Enter Admin Password first.');
-        
-        const originalBtnHtml = loginBtn.innerHTML;
-        loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...';
-        loginBtn.classList.add('opacity-80', 'pointer-events-none');
-        
-        const token = await getAdminCredentials(pwd);
-        
-        if(!token) {
-            loginBtn.innerHTML = originalBtnHtml;
-            loginBtn.classList.remove('opacity-80', 'pointer-events-none');
-            return alert('Invalid Admin Password!');
-        }
-        
-        // Setup successful login state
-        currentAdminToken = token;
-        
-        // Handle Remember Checkbox
-        if(rememberChk) {
-            localStorage.setItem('gh_admin_pwd', pwd);
-        } else {
-            localStorage.removeItem('gh_admin_pwd');
-        }
-        
-        // Update User Interface
-        document.getElementById('admin-auth-section').classList.add('hidden');
-        document.getElementById('admin-actions-section').classList.remove('hidden');
-        document.getElementById('admin-actions-section').classList.add('flex');
-        
-        // Restore login button (for next time)
-        loginBtn.innerHTML = originalBtnHtml;
-        loginBtn.classList.remove('opacity-80', 'pointer-events-none');
-        
-        // Show Logs Automatically upon successful login
-        fetchGitHubLogs(token);
-    }
-
-    // New Logout Function
-    function logoutAdmin() {
-        currentAdminToken = null;
-        localStorage.removeItem('gh_admin_pwd');
-        document.getElementById('admin-token').value = '';
-        document.getElementById('remember-pwd').checked = false;
-        
-        // Toggle sections back
-        document.getElementById('admin-actions-section').classList.add('hidden');
-        document.getElementById('admin-actions-section').classList.remove('flex');
-        document.getElementById('admin-auth-section').classList.remove('hidden');
-        
-        // Clear logs
-        document.getElementById('sync-logs').innerHTML = '<div class="text-center text-slate-400 text-xs py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">Authenticate to load server logs...</div>';
-    }
-
-    async function fetchGitHubLogs(token) {
-        const logContainer = document.getElementById('sync-logs');
-        logContainer.innerHTML = '<div class="text-center text-slate-500 text-xs py-6 flex flex-col items-center gap-2"><i class="fa-solid fa-spinner fa-spin text-xl text-indigo-500"></i> Fetching server logs...</div>';
-        try {
-            const res = await fetch('https://api.github.com/repos/imsbg/commscope-contract-attendance/actions/runs?per_page=5', {
-                headers: { 'Authorization': `token ${token}` }
-            });
-            if(!res.ok) throw new Error('Invalid Token or Repository access denied.');
-            const data = await res.json();
-            logContainer.innerHTML = '';
-            if(data.workflow_runs.length === 0) {
-                logContainer.innerHTML = '<div class="text-center text-slate-400 text-xs py-4">No actions found.</div>';
-                return;
-            }
-            data.workflow_runs.forEach(run => {
-                let statusColor = run.status === 'completed' ? (run.conclusion === 'success' ? 'text-emerald-500' : 'text-rose-500') : 'text-amber-500';
-                let icon = run.status === 'completed' ? (run.conclusion === 'success' ? 'fa-circle-check' : 'fa-circle-xmark') : 'fa-circle-notch fa-spin';
-                let time = new Date(run.created_at).toLocaleString();
-                logContainer.innerHTML += `
-                <div class="bg-white border border-slate-200 p-3.5 rounded-xl flex justify-between items-center shadow-sm">
-                    <div class="flex items-center gap-3.5">
-                        <i class="fa-solid ${icon} ${statusColor} text-xl drop-shadow-sm"></i>
-                        <div><p class="text-xs font-bold text-slate-800">${run.name}</p><p class="text-[10px] font-medium text-slate-500 mt-0.5">${time}</p></div>
-                    </div>
-                    <span class="text-[9px] font-bold uppercase tracking-wider ${statusColor} bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">${run.status === 'completed' ? run.conclusion : run.status}</span>
-                </div>`;
-            });
-        } catch(e) {
-            logContainer.innerHTML = `<div class="text-center text-rose-500 text-xs py-4 font-bold bg-rose-50 rounded-xl border border-rose-100"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ${e.message}</div>`;
-        }
-    }
-
-    async function triggerSync() {
-        if(!currentAdminToken) return alert('Not authenticated!');
-        
-        const btn = document.getElementById('sync-btn');
-        const originalBtnHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending Request...';
-        btn.classList.add('opacity-80', 'pointer-events-none');
-
-        try {
-            const res = await fetch('https://api.github.com/repos/imsbg/commscope-contract-attendance/actions/workflows/update.yml/dispatches', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `token ${currentAdminToken}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                },
-                body: JSON.stringify({ ref: 'main' })
-            });
-
-            if(res.ok || res.status === 204) {
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> Triggered Successfully!';
-                btn.classList.replace('bg-indigo-600', 'bg-emerald-600');
-                btn.classList.remove('hover:bg-indigo-700');
-                
-                fetchGitHubLogs(currentAdminToken); // Load the logs to confirm
-                
-                setTimeout(() => {
-                    btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Force Update Data';
-                    btn.classList.replace('bg-emerald-600', 'bg-indigo-600');
-                    btn.classList.add('hover:bg-indigo-700');
-                    btn.classList.remove('opacity-80', 'pointer-events-none');
-                }, 3000);
-            } else {
-                const errData = await res.json().catch(()=>({}));
-                throw new Error(errData.message || 'Failed to trigger. Check token or workflow filename.');
-            }
-        } catch(e) {
-            alert("Error: " + e.message + "\n\nMake sure your workflow file is named 'update.yml'.");
-            btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Force Update Data';
-            btn.classList.remove('opacity-80', 'pointer-events-none');
-        }
-    }
-    // -------------------------------------
-
-    function initViewMode() {
-        const savedMode = localStorage.getItem('attendanceViewMode');
-        applyViewMode(savedMode ? savedMode : 'minimal'); 
-    }
-
-    function toggleViewMode() {
-        const isMinimal = document.body.classList.contains('minimal-mode');
-        applyViewMode(isMinimal ? 'standard' : 'minimal');
-    }
-
-    function applyViewMode(mode) {
-        const btn = document.getElementById('viewToggleBtn');
-        if (mode === 'minimal') {
-            document.body.classList.add('minimal-mode');
-            btn.innerHTML = '<i class="fa-solid fa-desktop"></i> <span class="hidden sm:inline">Standard View</span>';
-            localStorage.setItem('attendanceViewMode', 'minimal');
-        } else {
-            document.body.classList.remove('minimal-mode');
-            btn.innerHTML = '<i class="fa-solid fa-bolt"></i> <span class="hidden sm:inline">Minimal View</span>';
-            localStorage.setItem('attendanceViewMode', 'standard');
-        }
-        if (globalData.length > 0) renderTable();
-    }
-
-    function initOrUpdateTrendChart(type) {
-        if(trendChartInstance) trendChartInstance.destroy();
-        const ctx = document.getElementById('dayWiseChart').getContext('2d');
-        const options = { responsive: true, maintainAspectRatio: false, animation: { duration: 1000 }, plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } } } };
-        let gradP = ctx.createLinearGradient(0, 0, 0, 400); gradP.addColorStop(0, 'rgba(16, 185, 129, 0.4)'); gradP.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
-        let gradA = ctx.createLinearGradient(0, 0, 0, 400); gradA.addColorStop(0, 'rgba(244, 63, 94, 0.4)'); gradA.addColorStop(1, 'rgba(244, 63, 94, 0.05)');
-
-        if (type === 'line' || type === 'radar') {
-            trendChartData.datasets[0].backgroundColor = gradP; trendChartData.datasets[1].backgroundColor = gradA;
-            trendChartData.datasets.forEach(ds => { ds.tension = 0.4; ds.fill = true; });
-        } else {
-            trendChartData.datasets[0].backgroundColor = 'rgba(16, 185, 129, 0.8)'; trendChartData.datasets[1].backgroundColor = 'rgba(244, 63, 94, 0.8)';
-            trendChartData.datasets.forEach(ds => ds.fill = false);
-        }
-        if (type !== 'radar') options.scales = { x: { grid: { display: false } }, y: { beginAtZero: true } };
-        trendChartInstance = new Chart(ctx, { type: type, data: trendChartData, options: options });
-    }
-
+    // Admin & App Core Functions
+    // (Rest of the standard JS functions remain untouched)
+    function openAdminModal() { document.getElementById('admin-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('admin-content').classList.remove('scale-95'); const savedPwd = localStorage.getItem('gh_admin_pwd'); if(savedPwd) { document.getElementById('admin-token').value = savedPwd; document.getElementById('remember-pwd').checked = true; loginAdmin(); } }
+    function closeAdminModal() { document.getElementById('admin-modal').classList.add('opacity-0', 'pointer-events-none'); document.getElementById('admin-content').classList.add('scale-95'); }
+    async function getAdminCredentials(password) { try { const safePwd = password.replace(/[.#$\[\]]/g, ''); const res = await fetch(`https://sg-fun-default-rtdb.firebaseio.com/adminTokens/${safePwd}.json`); const tokenData = await res.json(); return typeof tokenData === 'string' ? tokenData : (tokenData ? tokenData.gh_token : null); } catch(e) { return null; } }
+    async function loginAdmin() { const pwdInput = document.getElementById('admin-token'); const pwd = pwdInput.value.trim(); const loginBtn = document.getElementById('login-btn'); const rememberChk = document.getElementById('remember-pwd').checked; if(!pwd) return alert('Enter Admin Password first.'); const originalBtnHtml = loginBtn.innerHTML; loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...'; loginBtn.classList.add('opacity-80', 'pointer-events-none'); const token = await getAdminCredentials(pwd); if(!token) { loginBtn.innerHTML = originalBtnHtml; loginBtn.classList.remove('opacity-80', 'pointer-events-none'); return alert('Invalid Admin Password!'); } currentAdminToken = token; if(rememberChk) { localStorage.setItem('gh_admin_pwd', pwd); } else { localStorage.removeItem('gh_admin_pwd'); } document.getElementById('admin-auth-section').classList.add('hidden'); document.getElementById('admin-actions-section').classList.remove('hidden'); document.getElementById('admin-actions-section').classList.add('flex'); loginBtn.innerHTML = originalBtnHtml; loginBtn.classList.remove('opacity-80', 'pointer-events-none'); fetchGitHubLogs(token); }
+    function logoutAdmin() { currentAdminToken = null; localStorage.removeItem('gh_admin_pwd'); document.getElementById('admin-token').value = ''; document.getElementById('remember-pwd').checked = false; document.getElementById('admin-actions-section').classList.add('hidden'); document.getElementById('admin-actions-section').classList.remove('flex'); document.getElementById('admin-auth-section').classList.remove('hidden'); document.getElementById('sync-logs').innerHTML = '<div class="text-center text-slate-400 text-xs py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">Authenticate to load server logs...</div>'; }
+    async function fetchGitHubLogs(token) { const logContainer = document.getElementById('sync-logs'); logContainer.innerHTML = '<div class="text-center text-slate-500 text-xs py-6 flex flex-col items-center gap-2"><i class="fa-solid fa-spinner fa-spin text-xl text-indigo-500"></i> Fetching server logs...</div>'; try { const res = await fetch('https://api.github.com/repos/imsbg/commscope-contract-attendance/actions/runs?per_page=5', { headers: { 'Authorization': `token ${token}` } }); if(!res.ok) throw new Error('Invalid Token or Repository access denied.'); const data = await res.json(); logContainer.innerHTML = ''; if(data.workflow_runs.length === 0) { logContainer.innerHTML = '<div class="text-center text-slate-400 text-xs py-4">No actions found.</div>'; return; } data.workflow_runs.forEach(run => { let statusColor = run.status === 'completed' ? (run.conclusion === 'success' ? 'text-emerald-500' : 'text-rose-500') : 'text-amber-500'; let icon = run.status === 'completed' ? (run.conclusion === 'success' ? 'fa-circle-check' : 'fa-circle-xmark') : 'fa-circle-notch fa-spin'; let time = new Date(run.created_at).toLocaleString(); logContainer.innerHTML += `<div class="bg-white border border-slate-200 p-3.5 rounded-xl flex justify-between items-center shadow-sm"><div class="flex items-center gap-3.5"><i class="fa-solid ${icon} ${statusColor} text-xl drop-shadow-sm"></i><div><p class="text-xs font-bold text-slate-800">${run.name}</p><p class="text-[10px] font-medium text-slate-500 mt-0.5">${time}</p></div></div><span class="text-[9px] font-bold uppercase tracking-wider ${statusColor} bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">${run.status === 'completed' ? run.conclusion : run.status}</span></div>`; }); } catch(e) { logContainer.innerHTML = `<div class="text-center text-rose-500 text-xs py-4 font-bold bg-rose-50 rounded-xl border border-rose-100"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ${e.message}</div>`; } }
+    async function triggerSync() { if(!currentAdminToken) return alert('Not authenticated!'); const btn = document.getElementById('sync-btn'); const originalBtnHtml = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending Request...'; btn.classList.add('opacity-80', 'pointer-events-none'); try { const res = await fetch('https://api.github.com/repos/imsbg/commscope-contract-attendance/actions/workflows/update.yml/dispatches', { method: 'POST', headers: { 'Authorization': `token ${currentAdminToken}`, 'Accept': 'application/vnd.github.v3+json' }, body: JSON.stringify({ ref: 'main' }) }); if(res.ok || res.status === 204) { btn.innerHTML = '<i class="fa-solid fa-check"></i> Triggered Successfully!'; btn.classList.replace('bg-indigo-600', 'bg-emerald-600'); btn.classList.remove('hover:bg-indigo-700'); fetchGitHubLogs(currentAdminToken); setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Force Update Data'; btn.classList.replace('bg-emerald-600', 'bg-indigo-600'); btn.classList.add('hover:bg-indigo-700'); btn.classList.remove('opacity-80', 'pointer-events-none'); }, 3000); } else { const errData = await res.json().catch(()=>({})); throw new Error(errData.message || 'Failed to trigger. Check token or workflow filename.'); } } catch(e) { alert("Error: " + e.message + "\n\nMake sure your workflow file is named 'update.yml'."); btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Force Update Data'; btn.classList.remove('opacity-80', 'pointer-events-none'); } }
+    
+    function initViewMode() { const savedMode = localStorage.getItem('attendanceViewMode'); applyViewMode(savedMode ? savedMode : 'minimal'); }
+    function toggleViewMode() { const isMinimal = document.body.classList.contains('minimal-mode'); applyViewMode(isMinimal ? 'standard' : 'minimal'); }
+    function applyViewMode(mode) { const btn = document.getElementById('viewToggleBtn'); if (mode === 'minimal') { document.body.classList.add('minimal-mode'); btn.innerHTML = '<i class="fa-solid fa-desktop"></i> <span class="hidden sm:inline">Standard View</span>'; localStorage.setItem('attendanceViewMode', 'minimal'); } else { document.body.classList.remove('minimal-mode'); btn.innerHTML = '<i class="fa-solid fa-bolt"></i> <span class="hidden sm:inline">Minimal View</span>'; localStorage.setItem('attendanceViewMode', 'standard'); } if (globalData.length > 0) renderTable(); }
+    
+    function initOrUpdateTrendChart(type) { if(trendChartInstance) trendChartInstance.destroy(); const ctx = document.getElementById('dayWiseChart').getContext('2d'); const options = { responsive: true, maintainAspectRatio: false, animation: { duration: 1000 }, plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } } } }; let gradP = ctx.createLinearGradient(0, 0, 0, 400); gradP.addColorStop(0, 'rgba(16, 185, 129, 0.4)'); gradP.addColorStop(1, 'rgba(16, 185, 129, 0.05)'); let gradA = ctx.createLinearGradient(0, 0, 0, 400); gradA.addColorStop(0, 'rgba(244, 63, 94, 0.4)'); gradA.addColorStop(1, 'rgba(244, 63, 94, 0.05)'); if (type === 'line' || type === 'radar') { trendChartData.datasets[0].backgroundColor = gradP; trendChartData.datasets[1].backgroundColor = gradA; trendChartData.datasets.forEach(ds => { ds.tension = 0.4; ds.fill = true; }); } else { trendChartData.datasets[0].backgroundColor = 'rgba(16, 185, 129, 0.8)'; trendChartData.datasets[1].backgroundColor = 'rgba(244, 63, 94, 0.8)'; trendChartData.datasets.forEach(ds => ds.fill = false); } if (type !== 'radar') options.scales = { x: { grid: { display: false } }, y: { beginAtZero: true } }; trendChartInstance = new Chart(ctx, { type: type, data: trendChartData, options: options }); }
     function changeChartType(type) { initOrUpdateTrendChart(type); }
-
-    function toggleGraphs() {
-        const section = document.getElementById('graphs-section');
-        const text = document.getElementById('toggle-graphs-text');
-        if (section.classList.contains('hidden')) {
-            section.classList.remove('hidden'); setTimeout(() => section.classList.remove('opacity-0'), 10);
-            text.textContent = 'Hide Graphs';
-        } else {
-            section.classList.add('opacity-0'); setTimeout(() => section.classList.add('hidden'), 300);
-            text.textContent = 'Show Graphs';
-        }
-    }
+    function toggleGraphs() { const section = document.getElementById('graphs-section'); const text = document.getElementById('toggle-graphs-text'); if (section.classList.contains('hidden')) { section.classList.remove('hidden'); setTimeout(() => section.classList.remove('opacity-0'), 10); text.textContent = 'Hide Graphs'; } else { section.classList.add('opacity-0'); setTimeout(() => section.classList.add('hidden'), 300); text.textContent = 'Show Graphs'; } }
 
     function openPdfModal() { document.getElementById('pdf-alert-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('pdf-alert-content').classList.remove('scale-95'); }
     function closePdfModal() { document.getElementById('pdf-alert-modal').classList.add('opacity-0', 'pointer-events-none'); document.getElementById('pdf-alert-content').classList.add('scale-95'); }
 
-    // VISITOR MODAL FUNCTIONS
-    function openVisitorModal() { 
-        document.getElementById('visitor-modal').classList.remove('opacity-0', 'pointer-events-none'); 
-        document.getElementById('visitor-modal-content').classList.remove('scale-95');
-        renderVisitorCalendar();
-    }
-    function closeVisitorModal() { 
-        document.getElementById('visitor-modal').classList.add('opacity-0', 'pointer-events-none'); 
-        document.getElementById('visitor-modal-content').classList.add('scale-95'); 
-    }
-
-    function renderVisitorCalendar() {
-        const grid = document.getElementById('visitor-calendar-grid');
-        if (!window.globalVisitorData || !window.globalVisitorData.daily) {
-            grid.innerHTML = '<div class="col-span-7 text-center text-slate-500 py-8 font-medium">Loading historical data...</div>';
-            return;
-        }
-        
-        const today = new Date();
-        const utc = today.getTime() + (today.getTimezoneOffset() * 60000); 
-        const ist = new Date(utc + (3600000 * 5.5)); 
-        
-        const y = ist.getFullYear();
-        const m = ist.getMonth();
-        
-        const firstDay = new Date(y, m, 1).getDay();
-        const daysInMonth = new Date(y, m + 1, 0).getDate();
-        
-        let html = '<div class="col-span-7 grid grid-cols-7 gap-1.5 md:gap-3 mb-2 text-center font-bold text-[10px] md:text-xs text-slate-500 uppercase tracking-wider"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>';
-        html += '<div class="col-span-7 grid grid-cols-7 gap-1.5 md:gap-3">';
-        
-        for (let i = 0; i < firstDay; i++) { html += `<div></div>`; }
-        
-        for (let d = 1; d <= daysInMonth; d++) {
-            let dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            let visits = window.globalVisitorData.daily[dateStr] || 0;
-            
-            let isToday = (d === ist.getDate());
-            let bgClass = visits > 0 ? (isToday ? 'bg-indigo-50 border-indigo-300' : 'bg-slate-50 border-slate-200') : 'bg-white border-slate-100 opacity-50';
-            let textClass = visits > 0 ? (isToday ? 'text-indigo-800' : 'text-slate-700') : 'text-slate-400';
-            
-            html += `<div class="${bgClass} border rounded-xl p-2 md:p-3 text-center shadow-sm flex flex-col items-center justify-center min-h-[50px] md:min-h-[70px] transition-transform hover:scale-105 ${isToday ? 'ring-2 ring-indigo-500 ring-offset-1' : ''}">
-                <span class="text-xs md:text-sm font-bold ${textClass}">${d}</span>
-                ${visits > 0 ? `<span class="text-[9px] md:text-[11px] font-bold ${isToday ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'} px-1.5 md:px-2 py-0.5 rounded-full mt-1.5 flex items-center gap-1">${visits.toLocaleString()} <i class="fa-solid fa-eye text-[8px]"></i></span>` : ''}
-            </div>`;
-        }
-        html += '</div>';
-        grid.innerHTML = html;
-    }
+    function openVisitorModal() { document.getElementById('visitor-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('visitor-modal-content').classList.remove('scale-95'); renderVisitorCalendar(); }
+    function closeVisitorModal() { document.getElementById('visitor-modal').classList.add('opacity-0', 'pointer-events-none'); document.getElementById('visitor-modal-content').classList.add('scale-95'); }
+    function renderVisitorCalendar() { const grid = document.getElementById('visitor-calendar-grid'); if (!window.globalVisitorData || !window.globalVisitorData.daily) { grid.innerHTML = '<div class="col-span-7 text-center text-slate-500 py-8 font-medium">Loading historical data...</div>'; return; } const today = new Date(); const utc = today.getTime() + (today.getTimezoneOffset() * 60000); const ist = new Date(utc + (3600000 * 5.5)); const y = ist.getFullYear(); const m = ist.getMonth(); const firstDay = new Date(y, m, 1).getDay(); const daysInMonth = new Date(y, m + 1, 0).getDate(); let html = '<div class="col-span-7 grid grid-cols-7 gap-1.5 md:gap-3 mb-2 text-center font-bold text-[10px] md:text-xs text-slate-500 uppercase tracking-wider"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>'; html += '<div class="col-span-7 grid grid-cols-7 gap-1.5 md:gap-3">'; for (let i = 0; i < firstDay; i++) { html += `<div></div>`; } for (let d = 1; d <= daysInMonth; d++) { let dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; let visits = window.globalVisitorData.daily[dateStr] || 0; let isToday = (d === ist.getDate()); let bgClass = visits > 0 ? (isToday ? 'bg-indigo-50 border-indigo-300' : 'bg-slate-50 border-slate-200') : 'bg-white border-slate-100 opacity-50'; let textClass = visits > 0 ? (isToday ? 'text-indigo-800' : 'text-slate-700') : 'text-slate-400'; html += `<div class="${bgClass} border rounded-xl p-2 md:p-3 text-center shadow-sm flex flex-col items-center justify-center min-h-[50px] md:min-h-[70px] transition-transform hover:scale-105 ${isToday ? 'ring-2 ring-indigo-500 ring-offset-1' : ''}"> <span class="text-xs md:text-sm font-bold ${textClass}">${d}</span> ${visits > 0 ? `<span class="text-[9px] md:text-[11px] font-bold ${isToday ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'} px-1.5 md:px-2 py-0.5 rounded-full mt-1.5 flex items-center gap-1">${visits.toLocaleString()} <i class="fa-solid fa-eye text-[8px]"></i></span>` : ''} </div>`; } html += '</div>'; grid.innerHTML = html; }
 
     function getDisplayStatus(val) { return (!val || val.trim() === '-') ? '-' : (val.trim() === '--' ? 'L' : val.trim()); }
     function getStatusClass(val) { return (!val || val.trim() === '-') ? 'pending' : (val.trim() === '--' || val.trim().toUpperCase() === 'L') ? 'l' : val.trim().toLowerCase(); }
-
-    function shareEmployeeURL(employeeName) {
-        const url = window.location.origin + window.location.pathname + '?Employee=' + encodeURIComponent(employeeName);
-        if (navigator.share) { navigator.share({ title: 'CommScope Attendance', text: `Check attendance record for ${employeeName}:`, url: url }).catch(console.log); } 
-        else { navigator.clipboard.writeText(url).then(() => alert('Employee link copied to clipboard!')); }
-    }
-
-    function animateValue(id, start, end, duration) {
-        const obj = document.getElementById(id); if(!obj) return;
-        let startTimestamp = null;
-        const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
-            if (progress < 1) window.requestAnimationFrame(step);
-        };
-        window.requestAnimationFrame(step);
-    }
+    function shareEmployeeURL(employeeName) { const url = window.location.origin + window.location.pathname + '?Employee=' + encodeURIComponent(employeeName); if (navigator.share) { navigator.share({ title: 'CommScope Attendance', text: `Check attendance record for ${employeeName}:`, url: url }).catch(console.log); } else { navigator.clipboard.writeText(url).then(() => alert('Employee link copied to clipboard!')); } }
+    function animateValue(id, start, end, duration) { const obj = document.getElementById(id); if(!obj) return; let startTimestamp = null; const step = (timestamp) => { if (!startTimestamp) startTimestamp = timestamp; const progress = Math.min((timestamp - startTimestamp) / duration, 1); obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString(); if (progress < 1) window.requestAnimationFrame(step); }; window.requestAnimationFrame(step); }
 
     function initializeAppUI() {
-        populateFilters();
-        renderTable();
-        document.getElementById('splash-screen').style.opacity = '0';
+        populateFilters(); renderTable(); document.getElementById('splash-screen').style.opacity = '0';
         setTimeout(() => {
             document.getElementById('splash-screen').style.display = 'none';
             document.getElementById('main-content').classList.remove('hidden');
             updateDashboardMetrics();
             const urlParams = new URLSearchParams(window.location.search);
             const employeeName = urlParams.get('Employee');
-            if (employeeName) {
-                const idx = filteredData.findIndex(e => e.name === decodeURIComponent(employeeName));
-                if (idx !== -1) openEmployeeModal(idx);
-            }
+            if (employeeName) { const idx = filteredData.findIndex(e => e.name === decodeURIComponent(employeeName)); if (idx !== -1) openEmployeeModal(idx); }
         }, 400); 
     }
     
     function updateDashboardMetrics() {
         const total = globalData.length, active = globalData.filter(e => e.status === 'Active').length;
-        let totalPresents = 0, totalAbsents = 0;
-        const daily = Array(31).fill(null).map(() => ({ p: 0, a: 0 }));
+        let totalPresents = 0, totalAbsents = 0; const daily = Array(31).fill(null).map(() => ({ p: 0, a: 0 }));
 
         globalData.forEach(row => {
             row.dates.forEach((d, i) => {
@@ -912,7 +681,6 @@
 
         document.getElementById('current-month-header').textContent = `Overview for ${currentMonthStr}`;
         animateValue('metric-total-val', 0, total, 1200); animateValue('metric-present-val', 0, totalPresents, 1200); animateValue('metric-absent-val', 0, totalAbsents, 1200);
-        
         new Chart(document.getElementById('statusChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Active', 'Left'], datasets: [{ data: [active, total - active], backgroundColor: ['#10b981', '#64748b'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', animation: { duration: 1500 } } });
         trendChartData = { labels: Array.from({length:31}, (_,i)=>i+1), datasets: [{ label: 'Present / Default', data: daily.map(d=>d.p), borderColor: '#10b981', borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#10b981', pointBorderWidth: 2, pointRadius: 3 }, { label: 'Absent / Reduced', data: daily.map(d=>d.a), borderColor: '#f43f5e', borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#f43f5e', pointBorderWidth: 2, pointRadius: 3 }] };
         initOrUpdateTrendChart(document.getElementById('chartTypeSelector').value || 'line');
@@ -921,38 +689,29 @@
     function renderTable() {
         const isMinimal = document.body.classList.contains('minimal-mode');
         const searchVal = document.getElementById('searchInput').value.trim();
-        
         const standardWrapper = document.getElementById('standard-view-wrapper');
         const minimalCards = document.getElementById('minimalCardsContainer');
         const pagination = document.getElementById('pagination-controls');
 
         if (isMinimal) {
-            standardWrapper.classList.add('hidden'); 
-            minimalCards.classList.remove('hidden');
-            
+            standardWrapper.classList.add('hidden'); minimalCards.classList.remove('hidden');
             if (searchVal === '' && !searchVal.startsWith('/')) {
                 minimalCards.innerHTML = `<div class="text-center py-16 fade-in-up"><i class="fa-solid fa-id-card text-6xl text-slate-200 mb-4 drop-shadow-sm"></i><h3 class="text-xl font-bold text-slate-700">Search to View Attendance</h3><p class="text-sm text-slate-500 mt-1">Enter your Name, TL, or Employee ID in the glowing search box above to instantly fetch your records.</p></div>`;
                 pagination.innerHTML = ''; return;
-            } else if (searchVal !== '/admin') {
-                renderMinimalCards(); renderPagination();
-            }
+            } else if (searchVal !== '/admin') { renderMinimalCards(); renderPagination(); }
         } else {
-            minimalCards.classList.add('hidden'); 
-            standardWrapper.classList.remove('hidden');
+            minimalCards.classList.add('hidden'); standardWrapper.classList.remove('hidden');
             renderStandardRows(); renderPagination();
         }
     }
 
     function renderMinimalCards() {
         const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-        const minimalContainer = document.getElementById('minimalCardsContainer');
-        minimalContainer.innerHTML = '';
-
+        const minimalContainer = document.getElementById('minimalCardsContainer'); minimalContainer.innerHTML = '';
         if(pageData.length === 0) { minimalContainer.innerHTML = `<div class="text-center py-10 fade-in-up text-slate-500 font-medium">No records found for your search.</div>`; return; }
 
         const searchVal = document.getElementById('searchInput').value.trim();
-        const scope = currentSearchScope;
-        const hlAll = scope === 'all';
+        const scope = currentSearchScope; const hlAll = scope === 'all';
 
         pageData.forEach((row, i) => {
             const tlDisplay = highlightMatch(row.tl, searchVal, hlAll || scope === 'tl');
@@ -965,34 +724,22 @@
                 let val = d ? d.trim().toUpperCase() : '';
                 if (val && val !== '-' && val !== '--' && val !== 'L') {
                     validDays++;
-                    if (absenceList.includes(val)) {
-                        if (val === 'A' || val === 'ABSENT') a++; 
-                        else if (val === 'MP' || val === 'MISS PUNCH') mp++; 
-                        else if (val === 'FD' || val === 'FULL DAY') fd++; 
-                        else if (val === 'HD' || val === 'HALF DAY') hd++;
-                    } else { p++; }
+                    if (absenceList.includes(val)) { if (val === 'A' || val === 'ABSENT') a++; else if (val === 'MP' || val === 'MISS PUNCH') mp++; else if (val === 'FD' || val === 'FULL DAY') fd++; else if (val === 'HD' || val === 'HALF DAY') hd++; } else { p++; }
                 }
             });
 
             let attRate = validDays > 0 ? Math.round((p / validDays) * 100) : 0;
-            const isLeft = (row.status !== 'Active');
-            const statusBg = isLeft ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700';
+            const isLeft = (row.status !== 'Active'); const statusBg = isLeft ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700';
 
             minimalContainer.innerHTML += `
                 <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.04}s forwards; opacity: 0;" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md cursor-pointer transition transform hover:-translate-y-1 w-full">
-                    <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-4">
-                        <div><h3 class="font-bold text-slate-800 text-lg leading-tight">${nameDisplay}</h3><p class="text-xs text-slate-500 font-mono mt-1"><i class="fa-solid fa-id-badge text-slate-300 mr-1.5"></i>${codeDisplay}</p></div>
-                        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full ${statusBg} uppercase tracking-wider">${row.status}</span>
-                    </div>
+                    <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-4"><div><h3 class="font-bold text-slate-800 text-lg leading-tight">${nameDisplay}</h3><p class="text-xs text-slate-500 font-mono mt-1"><i class="fa-solid fa-id-badge text-slate-300 mr-1.5"></i>${codeDisplay}</p></div><span class="text-[10px] font-bold px-2.5 py-1 rounded-full ${statusBg} uppercase tracking-wider">${row.status}</span></div>
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 sm:gap-0">
-                        <div class="flex sm:flex-col gap-4 sm:gap-3 w-full sm:w-auto">
-                            <div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Team Leader</p><p class="text-sm font-bold text-slate-700">${tlDisplay}</p></div>
-                            <div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Shift Supervisor</p><p class="text-sm font-bold text-slate-700">${supDisplay}</p></div>
-                        </div>
+                        <div class="flex sm:flex-col gap-4 sm:gap-3 w-full sm:w-auto"><div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Team Leader</p><p class="text-sm font-bold text-slate-700">${tlDisplay}</p></div><div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Shift Supervisor</p><p class="text-sm font-bold text-slate-700">${supDisplay}</p></div></div>
                         <div class="flex flex-col items-start sm:items-end gap-3 w-full sm:w-auto">
                             <div class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg font-bold text-xs sm:text-sm border border-indigo-100 shadow-sm flex items-center gap-1.5 ml-auto sm:ml-0"><i class="fa-solid fa-chart-pie opacity-70"></i> ${attRate}% Rate</div>
                             <div class="flex gap-1.5 sm:gap-2 w-full sm:w-auto justify-between sm:justify-start">
-                                <div class="bg-emerald-100 text-emerald-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-emerald-200" title="Present (Inc. WO/HO)">${p}</div>
+                                <div class="bg-emerald-100 text-emerald-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-emerald-200" title="Present (Inc. WO/HO/PL)">${p}</div>
                                 <div class="bg-rose-100 text-rose-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-rose-200" title="Absent">${a}</div>
                                 <div class="bg-blue-100 text-blue-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-blue-200" title="Full Day">${fd}</div>
                                 <div class="bg-yellow-100 text-yellow-700 h-9 w-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm border border-yellow-200" title="Half Day">${hd}</div>
@@ -1006,64 +753,35 @@
 
     function renderStandardRows() {
         const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-        
-        const searchVal = document.getElementById('searchInput').value.trim();
-        const scope = currentSearchScope;
-        const hlAll = scope === 'all';
-
+        const searchVal = document.getElementById('searchInput').value.trim(); const scope = currentSearchScope; const hlAll = scope === 'all';
         const fragment = document.createDocumentFragment();
         pageData.forEach((row, i) => {
             const tlDisplay = highlightMatch(row.tl, searchVal, hlAll || scope === 'tl');
             const supDisplay = highlightMatch(row.sanctioner, searchVal, hlAll || scope === 'sup');
             const nameDisplay = highlightMatch(row.name, searchVal, hlAll || scope === 'emp');
             const codeDisplay = highlightMatch(row.code, searchVal, hlAll || scope === 'emp');
-
-            const tr = document.createElement('tr'); 
-            tr.className = "hover:bg-teal-50/50 transition-colors cursor-pointer"; 
-            tr.style.animation = `fadeInUp 0.4s ease-out ${i * 0.03}s forwards`; 
-            tr.style.opacity = "0";
-            tr.onclick = () => openEmployeeModal((currentPage - 1) * rowsPerPage + i);
+            const tr = document.createElement('tr'); tr.className = "hover:bg-teal-50/50 transition-colors cursor-pointer"; tr.style.animation = `fadeInUp 0.4s ease-out ${i * 0.03}s forwards`; tr.style.opacity = "0"; tr.onclick = () => openEmployeeModal((currentPage - 1) * rowsPerPage + i);
             let html = `<td class="p-4 font-semibold whitespace-nowrap"><span class="hover:text-teal-600 transition">${nameDisplay}</span><span class="block text-xs text-slate-500 font-normal mt-0.5"><i class="fa-solid fa-id-badge text-slate-300 mr-1"></i>${codeDisplay}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}<div class="text-[10px] text-slate-400 mt-1 font-medium">TL: ${tlDisplay} | Shift Sup: ${supDisplay}</div></td>`;
             row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
             tr.innerHTML = html; fragment.appendChild(tr);
         });
         document.getElementById('tableBody').innerHTML = ''; document.getElementById('tableBody').appendChild(fragment);
 
-        const mobileContainer = document.getElementById('mobileCardsContainer'); 
-        mobileContainer.innerHTML = '';
+        const mobileContainer = document.getElementById('mobileCardsContainer'); mobileContainer.innerHTML = '';
         pageData.forEach((row, i) => {
             const tlDisplay = highlightMatch(row.tl, searchVal, hlAll || scope === 'tl');
             const supDisplay = highlightMatch(row.sanctioner, searchVal, hlAll || scope === 'sup');
             const nameDisplay = highlightMatch(row.name, searchVal, hlAll || scope === 'emp');
             const codeDisplay = highlightMatch(row.code, searchVal, hlAll || scope === 'emp');
-
             const isLeft = (row.status !== 'Active'); const bgClass = isLeft ? 'bg-rose-50/50 border-rose-200' : 'bg-white border-slate-200'; const statusBadgeClass = isLeft ? 'bg-rose-200 text-rose-800' : 'bg-emerald-100 text-emerald-800';
-            mobileContainer.innerHTML += `<div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.05}s forwards; opacity: 0;" class="${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1">
-                <div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800 text-lg">${nameDisplay}</h3><p class="text-xs text-slate-500 font-mono mt-0.5">${codeDisplay}</p></div><span class="text-xs font-bold px-2 py-1 rounded-full ${statusBadgeClass}">${row.status}</span></div>
-                <div class="mt-2 text-[10px] text-slate-500 font-medium flex gap-3"><span><i class="fa-solid fa-user-tie text-slate-300 mr-1"></i> ${tlDisplay}</span><span><i class="fa-solid fa-file-signature text-slate-300 mr-1"></i> ${supDisplay}</span></div>
-                <div class="mt-3 inline-flex items-center bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50"><i class="fa-solid fa-briefcase text-slate-400 mr-1.5"></i> ${row.contractor}</div>
-            </div>`;
+            mobileContainer.innerHTML += `<div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.05}s forwards; opacity: 0;" class="${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1"><div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800 text-lg">${nameDisplay}</h3><p class="text-xs text-slate-500 font-mono mt-0.5">${codeDisplay}</p></div><span class="text-xs font-bold px-2 py-1 rounded-full ${statusBadgeClass}">${row.status}</span></div><div class="mt-2 text-[10px] text-slate-500 font-medium flex gap-3"><span><i class="fa-solid fa-user-tie text-slate-300 mr-1"></i> ${tlDisplay}</span><span><i class="fa-solid fa-file-signature text-slate-300 mr-1"></i> ${supDisplay}</span></div><div class="mt-3 inline-flex items-center bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50"><i class="fa-solid fa-briefcase text-slate-400 mr-1.5"></i> ${row.contractor}</div></div>`;
         });
     }
     
     function changePage(dir) { currentPage += dir; renderTable(); document.getElementById('table-section-header').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    function renderPagination() { const isMinimal = document.body.classList.contains('minimal-mode'); const searchVal = document.getElementById('searchInput').value.trim(); const container = document.getElementById('pagination-controls'); if(isMinimal && searchVal === '') { container.innerHTML = ''; return; } const totalPages = Math.ceil(filteredData.length / rowsPerPage); if (filteredData.length === 0) { container.innerHTML = ''; return; } const endRecord = Math.min(currentPage * rowsPerPage, filteredData.length); container.innerHTML = `<span class="text-slate-600 font-medium">Showing ${((currentPage-1)*rowsPerPage)+1}-${endRecord} of ${filteredData.length}</span><div class="flex gap-2"><button onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700">Previous</button><button onclick="changePage(1)" ${currentPage === totalPages || totalPages === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700">Next</button></div>`; }
 
-    function renderPagination() {
-        const isMinimal = document.body.classList.contains('minimal-mode'); const searchVal = document.getElementById('searchInput').value.trim(); const container = document.getElementById('pagination-controls');
-        if(isMinimal && searchVal === '') { container.innerHTML = ''; return; }
-        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-        if (filteredData.length === 0) { container.innerHTML = ''; return; }
-        const endRecord = Math.min(currentPage * rowsPerPage, filteredData.length);
-        
-        container.innerHTML = `<span class="text-slate-600 font-medium">Showing ${((currentPage-1)*rowsPerPage)+1}-${endRecord} of ${filteredData.length}</span><div class="flex gap-2"><button onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700">Previous</button><button onclick="changePage(1)" ${currentPage === totalPages || totalPages === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700">Next</button></div>`;
-    }
-
-    function populateFilters() {
-        const contractors = [...new Set(globalData.map(d => d.contractor).filter(Boolean))].sort();
-        document.getElementById('statusFilter').innerHTML = `<option value="">All Statuses</option><option value="Active">Active</option><option value="Left">Left</option>`;
-        document.getElementById('contractorFilter').innerHTML = `<option value="">All Contractors</option>${contractors.map(c => `<option value="${c}">${c}</option>`).join('')}`;
-        document.getElementById('tlFilter').disabled = true; document.getElementById('supFilter').disabled = true;
-    }
+    function populateFilters() { const contractors = [...new Set(globalData.map(d => d.contractor).filter(Boolean))].sort(); document.getElementById('statusFilter').innerHTML = `<option value="">All Statuses</option><option value="Active">Active</option><option value="Left">Left</option>`; document.getElementById('contractorFilter').innerHTML = `<option value="">All Contractors</option>${contractors.map(c => `<option value="${c}">${c}</option>`).join('')}`; document.getElementById('tlFilter').disabled = true; document.getElementById('supFilter').disabled = true; }
     
     function applyFilters() {
         const search = document.getElementById('searchInput').value.toLowerCase().trim(); 
@@ -1074,63 +792,25 @@
         if(search === '/admin') return; 
         
         filteredData = globalData.filter(row => {
-            const s = search;
-            const matchName = row.name.toLowerCase().includes(s);
-            const matchCode = row.code.toLowerCase().includes(s);
-            const matchTl = (row.tl || '').toLowerCase().includes(s);
-            const matchSup = (row.sanctioner || '').toLowerCase().includes(s);
-            
-            let matchesSearch = false;
-            if (s === '') {
-                matchesSearch = true;
-            } else {
-                if (scope === 'all') matchesSearch = matchName || matchCode || matchTl || matchSup;
-                else if (scope === 'emp') matchesSearch = matchName || matchCode;
-                else if (scope === 'tl') matchesSearch = matchTl;
-                else if (scope === 'sup') matchesSearch = matchSup;
-            }
-
-            const matchesStatus = status ? row.status === status : true;
-            const matchesContractor = contractor ? row.contractor === contractor : true;
-            
+            const s = search; const matchName = row.name.toLowerCase().includes(s); const matchCode = row.code.toLowerCase().includes(s); const matchTl = (row.tl || '').toLowerCase().includes(s); const matchSup = (row.sanctioner || '').toLowerCase().includes(s);
+            let matchesSearch = false; if (s === '') { matchesSearch = true; } else { if (scope === 'all') matchesSearch = matchName || matchCode || matchTl || matchSup; else if (scope === 'emp') matchesSearch = matchName || matchCode; else if (scope === 'tl') matchesSearch = matchTl; else if (scope === 'sup') matchesSearch = matchSup; }
+            const matchesStatus = status ? row.status === status : true; const matchesContractor = contractor ? row.contractor === contractor : true;
             return matchesSearch && matchesStatus && matchesContractor;
         });
 
         const count = document.getElementById('contractor-count'); 
-        if (contractor || status || search) {
-            let badgeText = `${filteredData.length} Employee(s)`;
-            
-            if (search !== '') {
-                if (scope === 'tl' && filteredData.length > 0) badgeText = `Team: ${filteredData.length} Employee(s)`;
-                if (scope === 'sup' && filteredData.length > 0) badgeText = `Under Shift Sup: ${filteredData.length} Employee(s)`;
-            }
-            
-            count.textContent = badgeText; 
-            count.classList.remove('hidden');
-        } else {
-            count.classList.add('hidden');
-        }
-
+        if (contractor || status || search) { let badgeText = `${filteredData.length} Employee(s)`; if (search !== '') { if (scope === 'tl' && filteredData.length > 0) badgeText = `Team: ${filteredData.length} Employee(s)`; if (scope === 'sup' && filteredData.length > 0) badgeText = `Under Shift Sup: ${filteredData.length} Employee(s)`; } count.textContent = badgeText; count.classList.remove('hidden'); } else { count.classList.add('hidden'); }
         renderTable();
     }
 
     function openEmployeeModal(index) {
         const employee = filteredData[index]; let date = new Date(currentMonthStr); let firstDay = 0, totalDays = 31, displayMonthStr = currentMonthStr;
-        if (!isNaN(date.getTime())) {
-            firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay(); const woIndex = employee.dates.findIndex(d => d === 'WO');
-            if (woIndex !== -1) {
-                const expectedFirstDay = (7 - (woIndex % 7)) % 7;
-                if (firstDay !== expectedFirstDay) { const prevDate = new Date(date.getFullYear(), date.getMonth() - 1, 1); if (prevDate.getDay() === expectedFirstDay) { date = prevDate; firstDay = expectedFirstDay; displayMonthStr = date.toLocaleString('default', { month: 'long', year: 'numeric' }); } }
-            }
-            totalDays = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-        }
+        if (!isNaN(date.getTime())) { firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay(); const woIndex = employee.dates.findIndex(d => d === 'WO'); if (woIndex !== -1) { const expectedFirstDay = (7 - (woIndex % 7)) % 7; if (firstDay !== expectedFirstDay) { const prevDate = new Date(date.getFullYear(), date.getMonth() - 1, 1); if (prevDate.getDay() === expectedFirstDay) { date = prevDate; firstDay = expectedFirstDay; displayMonthStr = date.toLocaleString('default', { month: 'long', year: 'numeric' }); } } } totalDays = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(); }
 
         let p = 0, a = 0, mp = 0, fd = 0, validDays = 0;
         for (let i = 0; i < totalDays; i++) {
             const rawStatus = employee.dates[i] ? employee.dates[i].trim().toUpperCase() : '';
-            if (rawStatus && rawStatus !== '-' && rawStatus !== '--' && rawStatus !== 'L') {
-                validDays++; if (absenceList.includes(rawStatus)) { if (rawStatus === 'A' || rawStatus === 'ABSENT') a++; else if (rawStatus === 'MP' || rawStatus === 'MISS PUNCH') mp++; else if (rawStatus === 'FD' || rawStatus === 'FULL DAY') fd++; } else p++;
-            }
+            if (rawStatus && rawStatus !== '-' && rawStatus !== '--' && rawStatus !== 'L') { validDays++; if (absenceList.includes(rawStatus)) { if (rawStatus === 'A' || rawStatus === 'ABSENT') a++; else if (rawStatus === 'MP' || rawStatus === 'MISS PUNCH') mp++; else if (rawStatus === 'FD' || rawStatus === 'FULL DAY') fd++; } else p++; }
         }
         let attendancePercentage = validDays > 0 ? Math.round((p / validDays) * 100) : 0;
 
@@ -1160,6 +840,8 @@
                         <div class="flex items-center gap-2"><span class="legend-badge status-a">A</span><span>Absent</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-hd">HD</span><span>Half Day</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-wo">WO</span><span>Week Off</span></div>
+                        <div class="flex items-center gap-2"><span class="legend-badge status-pl">PL</span><span>Paid Leave</span></div>
+                        <div class="flex items-center gap-2"><span class="legend-badge status-wwo">WWO</span><span>Worked WO</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-slwp">SLWP</span><span>Sick Leave</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-mp">MP</span><span>Miss Punch</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-l">L</span><span>Left</span></div>
@@ -1202,17 +884,78 @@
 </script>
 
 <script type="module">
+    // FIREBASE INITIALIZATION & PUSH NOTIFICATION SETUP
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getDatabase, ref, increment, update, get, goOffline } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    import { getDatabase, ref, increment, update, get, set, goOffline } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
     const firebaseConfig = { projectId: "sg-fun", databaseURL: "https://sg-fun-default-rtdb.firebaseio.com" };
-    const randomDelay = Math.random() * 3000; 
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
+    // ---- PUSH NOTIFICATIONS MODULE ----
+    const messaging = getMessaging(app);
+    const toggleBtn = document.getElementById('fcm-toggle-btn');
+    const toggleKnob = document.getElementById('fcm-toggle-knob');
+    let fcmEnabled = localStorage.getItem('fcmEnabled') === 'true';
+
+    // Update UI based on initial state
+    if (fcmEnabled) {
+        toggleBtn.classList.replace('bg-slate-300', 'bg-indigo-600');
+        toggleKnob.classList.replace('translate-x-0', 'translate-x-5');
+    }
+
+    toggleBtn.addEventListener('click', async () => {
+        if (!fcmEnabled) {
+            // User wants to enable
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    // REPLACE THIS WITH YOUR FIREBASE WEB VAPID KEY
+                    const currentToken = await getToken(messaging, { 
+                        vapidKey: 'YOUR_VAPID_KEY_HERE' 
+                    });
+                    if (currentToken) {
+                        await set(ref(db, 'fcmTokens/' + currentToken), true);
+                        fcmEnabled = true;
+                        localStorage.setItem('fcmEnabled', 'true');
+                        toggleBtn.classList.replace('bg-slate-300', 'bg-indigo-600');
+                        toggleKnob.classList.replace('translate-x-0', 'translate-x-5');
+                        alert("Notifications enabled! You will now receive alerts when updates are synced.");
+                    }
+                } else {
+                    alert("Permission for notifications was denied. You can change this in your browser settings.");
+                }
+            } catch (err) {
+                console.log('An error occurred while retrieving token. ', err);
+                alert("Couldn't enable notifications. Note: Push notifications require HTTPS.");
+            }
+        } else {
+            // User wants to disable
+            fcmEnabled = false;
+            localStorage.setItem('fcmEnabled', 'false');
+            toggleBtn.classList.replace('bg-indigo-600', 'bg-slate-300');
+            toggleKnob.classList.replace('translate-x-5', 'translate-x-0');
+            // We do not delete the token from db here automatically, just stop showing them in browser if possible
+            alert("Notifications disabled locally.");
+        }
+    });
+
+    onMessage(messaging, (payload) => {
+        // Only run if user hasn't toggled it off locally
+        if(fcmEnabled && Notification.permission === 'granted') {
+            new Notification(payload.notification.title, {
+                body: payload.notification.body,
+                icon: 'https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0'
+            });
+        }
+    });
+    // ---- END PUSH NOTIFICATIONS MODULE ----
+
+    const randomDelay = Math.random() * 3000; 
     setTimeout(() => {
         if(IS_MAINTENANCE_MODE) return; 
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
         const d = new Date(), utc = d.getTime() + (d.getTimezoneOffset() * 60000), ist = new Date(utc + (3600000 * 5.5)); 
         const todayStr = ist.toISOString().split('T')[0];
         const yesterday = new Date(ist); yesterday.setDate(yesterday.getDate() - 1);
@@ -1240,3 +983,4 @@
 </script>
 </body>
 </html>
+
