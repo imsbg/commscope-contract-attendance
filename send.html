@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Send Push Notifications</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        body { font-family: 'Google Sans', sans-serif; background-color: #f1f5f9; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- UI Container -->
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
+        
+        <!-- Header -->
+        <div class="text-center mb-6 border-b border-slate-100 pb-4">
+            <h1 class="text-2xl font-bold text-slate-800"><i class="fa-solid fa-satellite-dish text-indigo-500 mr-2"></i> Push Sender</h1>
+            <p class="text-slate-500 text-sm mt-1">Broadcast alerts to subscribed devices</p>
+        </div>
+
+        <!-- Status Alert Box -->
+        <div id="status-box" class="hidden mb-4 p-3 rounded-xl text-sm font-bold text-center transition-all"></div>
+
+        <!-- Form -->
+        <form id="sendForm" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Admin Password</label>
+                <input type="password" id="adminPwd" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50" required>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">FCM Server Key (Legacy)</label>
+                <input type="password" id="serverKey" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-mono" placeholder="AAAA..." required>
+                <p class="text-[10px] text-slate-400 mt-1">Found in Firebase -> Project Settings -> Cloud Messaging</p>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Notification Title</label>
+                <input type="text" id="notifTitle" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="e.g. Attendance Updated" required>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Message Body</label>
+                <textarea id="notifBody" rows="3" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none" placeholder="e.g. Data for 25th Aug is now live on the portal..." required></textarea>
+            </div>
+
+            <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-md flex justify-center items-center gap-2 mt-4">
+                <i class="fa-solid fa-paper-plane"></i> Send Blast
+            </button>
+        </form>
+    </div>
+
+    <!-- Firebase Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // Your exact Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCeNFC0hZaz7H9nxsiYwtMbrbsoncliNqQ",
+            authDomain: "sg-fun.firebaseapp.com",
+            databaseURL: "https://sg-fun-default-rtdb.firebaseio.com",
+            projectId: "sg-fun"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const form = document.getElementById('sendForm');
+        const btn = document.getElementById('submitBtn');
+        const statusBox = document.getElementById('status-box');
+
+        function showStatus(msg, isError) {
+            statusBox.textContent = msg;
+            statusBox.className = `mb-4 p-3 rounded-xl text-sm font-bold text-center ${isError ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}`;
+            statusBox.classList.remove('hidden');
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Clean the password input just like the main admin console
+            const pwd = document.getElementById('adminPwd').value.trim().replace(/[.#$\[\]]/g, '');
+            const serverKey = document.getElementById('serverKey').value.trim();
+            const title = document.getElementById('notifTitle').value.trim();
+            const bodyText = document.getElementById('notifBody').value.trim();
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+            statusBox.classList.add('hidden');
+
+            try {
+                // 1. Verify Admin Password against Database
+                const pwdSnap = await get(ref(db, `adminTokens/${pwd}`));
+                if(!pwdSnap.exists()) throw new Error("Invalid Admin Password!");
+
+                // 2. Fetch all subscribed tokens
+                const tokenSnap = await get(ref(db, 'fcmTokens'));
+                if(!tokenSnap.exists()) throw new Error("No users are subscribed to notifications yet.");
+                
+                const tokensObj = tokenSnap.val();
+                
+                // Only get tokens that are set to "true"
+                const tokensArray = Object.keys(tokensObj).filter(key => tokensObj[key] === true);
+                
+                if(tokensArray.length === 0) throw new Error("No active tokens found.");
+
+                // 3. Send Notification via Firebase Legacy API
+                const response = await fetch('https://fcm.googleapis.com/fcm/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'key=' + serverKey
+                    },
+                    body: JSON.stringify({
+                        registration_ids: tokensArray,
+                        notification: {
+                            title: title,
+                            body: bodyText,
+                            icon: "https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0",
+                            click_action: "https://imsbg.github.io/commscope-contract-attendance/"
+                        }
+                    })
+                });
+
+                const resData = await response.json();
+                
+                if (response.ok && resData.success > 0) {
+                    showStatus(`Success! Blast sent to ${resData.success} devices.`, false);
+                    // Clear the message fields, but keep password and key for convenience
+                    document.getElementById('notifTitle').value = '';
+                    document.getElementById('notifBody').value = '';
+                } else {
+                    throw new Error("FCM Error: Check your Server Key. " + (resData.results?.[0]?.error || "Unknown error"));
+                }
+            } catch(error) {
+                showStatus(error.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Blast';
+            }
+        });
+    </script>
+</body>
+</html>
