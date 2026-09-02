@@ -43,7 +43,7 @@
         .status-fd { background-color: #cffafe; color: #155e75; } 
         .status-f { background-color: #d9f99d; color: #3f6212; } 
         .status-a { background-color: #fee2e2; color: #991b1b; } 
-        .status-wo { background-color: #e2e8f0; color: #475569; } 
+        .status-wo, .status-ho, .status-who, .status-horota, .status-whorota { background-color: #e2e8f0; color: #475569; } 
         .status-hd { background-color: #fef9c3; color: #854d0e; } 
         .status-mp { background-color: #ffedd5; color: #c2410c; } 
         .status-slwp { background-color: #f3e8ff; color: #6b21a8; } 
@@ -54,7 +54,6 @@
         .status-pl { background-color: #dbeafe; color: #1e40af; } 
         .status-wwo { background-color: #fef08a; color: #854d0e; } 
         .status-cf { background-color: #e0e7ff; color: #3730a3; } 
-        .status-whorota, .status-horota { background-color: #fce7f3; color: #be185d; }
 
         .table-container { max-height: 65vh; }
         thead th { position: sticky; top: 0; z-index: 10; background-color: #f8fafc; }
@@ -288,16 +287,6 @@
                 </div>
             </div>
             
-            <div class="bg-indigo-50 border-b border-indigo-100 p-3 flex justify-between items-center px-5 relative z-10 shadow-sm">
-                <div class="flex-1 pr-4">
-                    <p class="text-[11px] md:text-xs font-bold text-indigo-900 leading-tight flex items-center gap-1.5"><i class="fa-solid fa-satellite-dish text-indigo-500"></i> Auto Alerts</p>
-                    <p class="text-[9px] md:text-[10px] text-indigo-700 leading-tight mt-0.5 font-medium">Enable to get notified automatically when new attendance dates are synced.</p>
-                </div>
-                <button id="fcm-toggle-btn" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 bg-slate-300">
-                    <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0" id="fcm-toggle-knob"></span>
-                </button>
-            </div>
-
             <div class="p-4 overflow-y-auto custom-scrollbar space-y-3 relative" id="notif-list">
                 <div class="text-center text-slate-400 py-6 text-sm">Loading...</div>
             </div>
@@ -507,7 +496,7 @@
         globalData.forEach(row => {
             row.dates.forEach((d, i) => {
                 const status = d ? d.trim().toUpperCase() : '';
-                if (status && status !== '-' && status !== '--' && status !== 'L') {
+                if (status && status !== '-' && status !== '--' && status !== 'L' && status !== 'CF' && status !== 'WHO' && status !== 'WHO (ROTA)') {
                     if (absenceList.includes(status)) { totalAbsents++; if (i < 31) daily[i].a++; } else { totalPresents++; if (i < 31) daily[i].p++; }
                 }
             });
@@ -556,7 +545,7 @@
             let p=0, a=0, mp=0, fd=0, hd=0, validDays=0;
             row.dates.slice(0,31).forEach(d => {
                 let val = d ? d.trim().toUpperCase() : '';
-                if (val && val !== '-' && val !== '--' && val !== 'L') {
+                if (val && val !== '-' && val !== '--' && val !== 'L' && val !== 'CF' && val !== 'WHO' && val !== 'WHO (ROTA)') {
                     validDays++;
                     if (absenceList.includes(val)) { if (val === 'A' || val === 'ABSENT') a++; else if (val === 'MP' || val === 'MISS PUNCH') mp++; else if (val === 'FD' || val === 'FULL DAY') fd++; else if (val === 'HD' || val === 'HALF DAY') hd++; } else { p++; }
                 }
@@ -645,7 +634,10 @@
         let p = 0, a = 0, mp = 0, fd = 0, validDays = 0;
         for (let i = 0; i < totalDays; i++) {
             const rawStatus = employee.dates[i] ? employee.dates[i].trim().toUpperCase() : '';
-            if (rawStatus && rawStatus !== '-' && rawStatus !== '--' && rawStatus !== 'L') { validDays++; if (absenceList.includes(rawStatus)) { if (rawStatus === 'A' || rawStatus === 'ABSENT') a++; else if (rawStatus === 'MP' || rawStatus === 'MISS PUNCH') mp++; else if (rawStatus === 'FD' || rawStatus === 'FULL DAY') fd++; } else p++; }
+            if (rawStatus && rawStatus !== '-' && rawStatus !== '--' && rawStatus !== 'L' && rawStatus !== 'CF' && rawStatus !== 'WHO' && rawStatus !== 'WHO (ROTA)') { 
+                validDays++; 
+                if (absenceList.includes(rawStatus)) { if (rawStatus === 'A' || rawStatus === 'ABSENT') a++; else if (rawStatus === 'MP' || rawStatus === 'MISS PUNCH') mp++; else if (rawStatus === 'FD' || rawStatus === 'FULL DAY') fd++; } else p++; 
+            }
         }
         let attendancePercentage = validDays > 0 ? Math.round((p / validDays) * 100) : 0;
 
@@ -675,11 +667,9 @@
                         <div class="flex items-center gap-2"><span class="legend-badge status-a">A</span><span>Absent</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-hd">HD</span><span>Half Day</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-wo">WO</span><span>Week Off</span></div>
-                        <div class="flex items-center gap-2"><span class="legend-badge status-cf">CF</span><span>Carry Forward</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-pl">PL</span><span>Privilege Leave</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-wwo">WWO</span><span>Worked WO</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-slwp">SLWP</span><span>Sick Leave</span></div>
-                        <div class="flex items-center gap-2"><span class="legend-badge status-whorota" style="font-size:10px;">WHO</span><span>WHO (ROTA)</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-mp">MP</span><span>Miss Punch</span></div>
                         <div class="flex items-center gap-2"><span class="legend-badge status-l">L</span><span>Left</span></div>
                     </div>
@@ -721,10 +711,9 @@
 </script>
 
 <script type="module">
-    // FIREBASE INITIALIZATION & PUSH NOTIFICATION SETUP
+    // FIREBASE INITIALIZATION & VISITOR COUNTER SETUP
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getDatabase, ref, increment, update, get, set, goOffline } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
+    import { getDatabase, ref, increment, update, get, goOffline } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
     // EXACT FIREBASE CONFIGURATION
     const firebaseConfig = {
@@ -740,66 +729,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-
-    // ---- PUSH NOTIFICATIONS MODULE ----
-    const messaging = getMessaging(app);
-    const toggleBtn = document.getElementById('fcm-toggle-btn');
-    const toggleKnob = document.getElementById('fcm-toggle-knob');
-    let fcmEnabled = localStorage.getItem('fcmEnabled') === 'true';
-
-    // Update UI based on initial state
-    if (fcmEnabled) {
-        toggleBtn.classList.replace('bg-slate-300', 'bg-indigo-600');
-        toggleKnob.classList.replace('translate-x-0', 'translate-x-5');
-    }
-
-toggleBtn.addEventListener('click', async () => {
-        if (!fcmEnabled) {
-            try {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    
-                    // 1. Tell the browser exactly where the Service Worker file is!
-                    const registration = await navigator.serviceWorker.register('/commscope-contract-attendance/firebase-messaging-sw.js');
-                    
-                    // 2. Pass that registration to Firebase
-                    const currentToken = await getToken(messaging, { 
-                        vapidKey: 'BFQEnWpfqBy5efBUwzFbAUlayG35OYFUbeu_6BMnMyGGZ-i5GG9vQMdjihhxTkLgghFBkr-q0E8jD2mk-U6eAEY',
-                        serviceWorkerRegistration: registration 
-                    });
-                    
-                    if (currentToken) {
-                        await set(ref(db, 'fcmTokens/' + currentToken), true);
-                        fcmEnabled = true;
-                        localStorage.setItem('fcmEnabled', 'true');
-                        toggleBtn.classList.replace('bg-slate-300', 'bg-indigo-600');
-                        toggleKnob.classList.replace('translate-x-0', 'translate-x-5');
-                        alert("Notifications enabled! You will now receive alerts when updates are synced.");
-                    }
-                } else {
-                    alert("Permission for notifications was denied. You can change this in your browser settings.");
-                }
-            } catch (err) {
-                console.error('An error occurred while retrieving token: ', err);
-                alert("Couldn't enable notifications. Please make sure you are not in Incognito Mode and the SW file is uploaded.");
-            }
-        } else {
-            fcmEnabled = false;
-            localStorage.setItem('fcmEnabled', 'false');
-            toggleBtn.classList.replace('bg-indigo-600', 'bg-slate-300');
-            toggleKnob.classList.replace('translate-x-5', 'translate-x-0');
-            alert("Notifications disabled locally.");
-        }
-    });
-
-    onMessage(messaging, (payload) => {
-        if(fcmEnabled && Notification.permission === 'granted') {
-            new Notification(payload.notification.title, {
-                body: payload.notification.body,
-                icon: 'https://ugc.production.linktr.ee/3185d4c0-2ed6-4e02-b0e3-d464551e7f43_canva-design.png?io=true&size=avatar-v3_0'
-            });
-        }
-    });
 
     // ---- VISITOR COUNTER ----
     const randomDelay = Math.random() * 2000; 
