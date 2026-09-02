@@ -754,7 +754,7 @@ toggleBtn.addEventListener('click', async () => {
                 if (permission === 'granted') {
                     
                     // 1. Tell the browser exactly where the Service Worker file is!
-                    const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+                    const registration = await navigator.serviceWorker.register('/commscope-contract-attendance/firebase-messaging-sw.js');
                     
                     // 2. Pass that registration to Firebase
                     const currentToken = await getToken(messaging, { 
