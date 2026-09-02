@@ -913,7 +913,7 @@
                 if (permission === 'granted') {
                     // REPLACE THIS WITH YOUR FIREBASE WEB VAPID KEY
                     const currentToken = await getToken(messaging, { 
-                        vapidKey: 'YOUR_VAPID_KEY_HERE' 
+                        vapidKey: 'BFQEnWpfqBy5efBUwzFbAUlayG35OYFUbeu_6BMnMyGGZ-i5GG9vQMdjihhxTkLgghFBkr-q0E8jD2mk-U6eAEY' 
                     });
                     if (currentToken) {
                         await set(ref(db, 'fcmTokens/' + currentToken), true);
