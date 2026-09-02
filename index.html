@@ -722,7 +722,7 @@
 <script type="module">
     // FIREBASE INITIALIZATION & VISITOR COUNTER SETUP
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getDatabase, ref, increment, update, get, goOffline, onValue, onDisconnect, set, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    import { getDatabase, ref, increment, update, get, onValue, onDisconnect, set, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
     // EXACT FIREBASE CONFIGURATION
     const firebaseConfig = {
@@ -784,7 +784,8 @@
             const liveEl = document.getElementById('live-users-count');
             if(liveEl) {
                 const size = snap.exists() ? Object.keys(snap.val()).length : 0;
-                liveEl.innerText = size;
+                // If users > 100, show 100+. Otherwise show the actual count.
+                liveEl.innerText = size > 100 ? '100+' : size;
             }
         });
 
