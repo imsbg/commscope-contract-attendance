@@ -1,5 +1,11 @@
 [
   {
+    "title": "⚠️ Current Data Unavailable",
+    "message": "The latest contractor attendance PDF has internal formatting errors from the source, which is why it is currently showing 0 employees. While we work on a fix to restore your current data, you can view your finalized August records.",
+    "link": "https://imsbg.github.io/commscope-contract-attendance/puruna/august/",
+    "buttonText": "View August Data"
+  },
+  {
     "title": "📊 August Attendance Data",
     "message": "The finalized attendance records for the month of August are now available in the archive.",
     "link": "https://imsbg.github.io/commscope-contract-attendance/puruna/august/",
