@@ -1,7 +1,6 @@
 const fs = require('fs');
 const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
 
-// Your EXACT working Google Apps Script URL
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzBMx-fZAifindtXbsXVueYEYQz4uBT1cA8CnlrZH3MTHEyR4RMv6uxaPhdKwskiP4T/exec";
 
 async function fetchAndParsePDF() {
@@ -23,10 +22,10 @@ async function fetchAndParsePDF() {
     let globalData = [];
     let currentMonthStr = "Unknown Month";
 
-    // Global Grid Tracking
-    let globalDateBins = new Array(31).fill(null);
-    let globalRepX = 9999;
-    let globalSancX = 9999;
+    // Global Grids
+    let dateBins = new Array(31).fill(null);
+    let repX = 9999; 
+    let sancX = 9999;
 
     const attCodes = new Set(['p', 'a', 'wo', 'hd', 'fd', 'slwp', 'lwp', 'mp', 'l', '-', '--', 'ho', 'rota', 'ho(rota)', 'pl', 'wwo', 'cf', 'who', 'who(rota)']);
 
@@ -41,108 +40,112 @@ async function fetchAndParsePDF() {
         if (items.length === 0) continue;
 
         // 1. EXTRACT MONTH
-        let fullPageText = items.map(itm => itm.text).join(' ');
-        let monthMatch = fullPageText.match(/Month\s*of\s*([A-Za-z]+)\s*(\d{4})/i);
-        if (monthMatch && currentMonthStr === "Unknown Month") {
-            currentMonthStr = monthMatch[1] + " " + monthMatch[2];
+        if (currentMonthStr === "Unknown Month") {
+            let fullText = items.map(i => i.text).join(' ');
+            let match = fullText.match(/Month\s*of\s*([A-Za-z]+)\s*(\d{4})/i) || fullText.replace(/\s/g, '').match(/Monthof([A-Za-z]+)(\d{4})/i);
+            if (match) currentMonthStr = match[1] + " " + match[2];
         }
 
-        // 2. DETECT COLUMN HEADERS
-        let repHeader = items.find(itm => itm.text.toLowerCase().includes('reporting'));
-        let sancHeader = items.find(itm => itm.text.toLowerCase().includes('sanctioner'));
+        // 2. FIND COLUMNS X-COORDINATES
+        let contractorHead = items.find(itm => itm.text.toLowerCase().includes('contractor'));
+        let reportingHead = items.find(itm => itm.text.toLowerCase().includes('reporting'));
+        let sancHead = items.find(itm => itm.text.toLowerCase().includes('sanctioner'));
         
-        if (repHeader) globalRepX = repHeader.x;
-        if (sancHeader) globalSancX = sancHeader.x;
+        if (reportingHead) repX = reportingHead.x;
+        if (sancHead) sancX = sancHead.x;
 
-        let headerRowY = repHeader ? repHeader.y : (sancHeader ? sancHeader.y : null);
-
-        // 3. EXTRAPOLATE CALENDAR GRID (Only needs to run once successfully)
-        if (headerRowY !== null && globalDateBins[0] === null) {
-            let dayHeaders = items.filter(itm => Math.abs(itm.y - headerRowY) < 12 && /^\d{1,2}$/.test(itm.text));
+        if (contractorHead && dateBins[0] === null) {
+            let headerY = contractorHead.y;
+            let dayHeaders = items.filter(itm => Math.abs(itm.y - headerY) < 10 && /^\d{1,2}$/.test(itm.text));
             
-            if (dayHeaders.length > 0) {
-                dayHeaders.sort((a,b) => a.x - b.x);
-                dayHeaders.forEach(h => {
-                    let day = parseInt(h.text);
-                    if (day >= 1 && day <= 31) globalDateBins[day - 1] = h.x;
-                });
+            dayHeaders.forEach(h => {
+                let d = parseInt(h.text);
+                if (d >= 1 && d <= 31) dateBins[d - 1] = h.x;
+            });
 
-                let gap = 18.5; // Default column width
-                let gaps = [];
-                for(let k = 1; k < dayHeaders.length; k++) {
-                    let d = dayHeaders[k].x - dayHeaders[k-1].x;
-                    if (d > 5 && d < 35) gaps.push(d); 
-                }
-                if (gaps.length > 0) {
-                    gaps.sort((a,b) => a - b);
-                    gap = gaps[Math.floor(gaps.length / 2)]; 
-                }
-
-                // Extrapolate perfectly across 31 days
-                for (let k = 30; k >= 0; k--) {
-                    if (globalDateBins[k] !== null) {
-                        for (let j = k - 1; j >= 0; j--) {
-                            if (globalDateBins[j] === null) globalDateBins[j] = globalDateBins[j+1] - gap;
-                        }
-                        for (let j = k + 1; j < 31; j++) {
-                            if (globalDateBins[j] === null) globalDateBins[j] = globalDateBins[j-1] + gap;
-                        }
-                        break;
+            // Extrapolate missing columns
+            for (let k = 30; k >= 0; k--) {
+                if (dateBins[k] !== null) {
+                    for (let j = k - 1; j >= 0; j--) {
+                        if (dateBins[j] === null) dateBins[j] = dateBins[j+1] - 18.5;
                     }
+                    for (let j = k + 1; j < 31; j++) {
+                        if (dateBins[j] === null) dateBins[j] = dateBins[j-1] + 18.5;
+                    }
+                    break;
                 }
             }
         }
 
-        // 4. GROUP BY Y-COORDINATES (Magnetic binding for rows)
-        items.sort((a, b) => {
-            if (Math.abs(b.y - a.y) > 5) return b.y - a.y;
-            return a.x - b.x;
+        // 3. GROUP BY Y COORDINATE (Binds shattered rows together)
+        let rows = [];
+        items.forEach(item => {
+            let foundRow = rows.find(r => Math.abs(r.y - item.y) < 8);
+            if (foundRow) foundRow.items.push(item);
+            else rows.push({ y: item.y, items: [item] });
         });
 
-        let lines = [];
-        let currentRow = [];
-        let lastY = null;
-        for (let item of items) {
-            if (lastY === null || Math.abs(item.y - lastY) > 6) {
-                if (currentRow.length > 0) lines.push(currentRow);
-                currentRow = [item];
-                lastY = item.y;
-            } else {
-                currentRow.push(item);
-            }
-        }
-        if (currentRow.length > 0) lines.push(currentRow);
-
-        // 5. PROCESS EACH ROW VIA BULLETPROOF REGEX
-        for (let line of lines) {
+        // 4. PARSE ROWS
+        for (let row of rows) {
+            row.items.sort((a, b) => a.x - b.x); 
+            
             // Re-bind HO (ROTA) if split
-            for (let j = 0; j < line.length; j++) {
-                if (line[j].text.trim() === 'HO' && line[j+1] && line[j+1].text.trim() === '(ROTA)') {
-                    line[j].text = 'HO (ROTA)';
-                    line.splice(j+1, 1);
+            for (let j = 0; j < row.items.length; j++) {
+                if (row.items[j].text.trim() === 'HO' && row.items[j+1] && row.items[j+1].text.trim() === '(ROTA)') {
+                    row.items[j].text = 'HO (ROTA)';
+                    row.items.splice(j+1, 1);
                     j--;
                 }
             }
 
-            let fullText = line.map(i => i.text).join(' ');
+            let statusIdx = row.items.findIndex(i => i.text.toLowerCase() === 'active' || i.text.toLowerCase() === 'left');
+            if (statusIdx === -1) continue; 
+
+            let status = row.items[statusIdx].text;
+
+            // Extract Code and Name perfectly
+            let preStatusText = row.items.slice(0, statusIdx).map(i => i.text).join(' ');
+            let codeMatch = preStatusText.match(/([A-Z0-9]{2,6}\s*-\s*\d{3,8})/i);
             
-            // MAGIC REGEX: Captures [Code] [Name] [Status] [Contractor] safely regardless of weird spaces
-            let match = fullText.match(/^([A-Z0-9]{2,6}\s*-?\s*\d{3,8})\s*(.+?)\s*(Active|Left)\s*(ADECCO|ANANYA|Dibya[\w\s]*|ESJAY|MATHEW|Om\s*Sai[\w\s]*|SHAM|VASUDEVA|YASHASWI|\S+)/i);
+            if (!codeMatch) continue; // Not an employee row
             
-            if (!match) {
-                // Diagnostic logging to catch edge cases in GitHub Actions log
-                if (fullText.toLowerCase().includes('active') && /[0-9]/.test(fullText)) {
-                    console.log("⚠️ Skipped potential row (Regex failed): " + fullText);
+            let code = codeMatch[1].replace(/\s+/g, '');
+            let name = preStatusText.substring(codeMatch.index + codeMatch[0].length).trim();
+            name = name.replace(/^[-\s]+/, ''); // Clean leading hyphens
+
+            // Categorize the rest of the row
+            let contractorItems = [];
+            let attItems = [];
+            let supItems = [];
+            let contractorEnd = false;
+
+            for (let j = statusIdx + 1; j < row.items.length; j++) {
+                let item = row.items[j];
+                let tLow = item.text.toLowerCase().replace(/\s*\(pending\)/g, '').replace(/\s+/g, '');
+                let isAttCode = attCodes.has(tLow) || tLow === 'ho(rota)';
+
+                if (!contractorEnd) {
+                    if (isAttCode || /^\d{1,2}$/.test(tLow) || item.x >= repX - 30) {
+                        contractorEnd = true;
+                    } else {
+                        contractorItems.push(item);
+                        continue;
+                    }
                 }
-                continue;
+
+                // Post-Contractor separation
+                if (item.x >= repX - 30) {
+                    supItems.push(item);
+                } else if (isAttCode) {
+                    item.cleanVal = tLow === 'ho(rota)' ? 'HO (ROTA)' : item.text.trim();
+                    attItems.push(item);
+                } else if (!/^\d{1,2}$/.test(tLow)) {
+                    supItems.push(item); // Fallback for supervisors if columns shifted
+                }
             }
 
-            let code = match[1].replace(/\s+/g, '');
-            let name = match[2].replace(/^[-\s]+/, '').trim();
-            let status = match[3].charAt(0).toUpperCase() + match[3].slice(1).toLowerCase();
-            let contractorRaw = match[4];
-
-            // Normalize Contractor Name
+            // Clean Contractor
+            let contractorRaw = contractorItems.map(i => i.text).join(' ');
             let contractor = "Unknown";
             let cLow = contractorRaw.toLowerCase();
             if (cLow.includes('adecco')) contractor = 'ADECCO';
@@ -156,50 +159,35 @@ async function fetchAndParsePDF() {
             else if (cLow.includes('yashaswi')) contractor = 'YASHASWI';
             else contractor = contractorRaw;
 
-            // Map Attendance and Supervisors dynamically via X coordinates
+            // Map Attendance to 31-Day Grid
             let datesArray = new Array(31).fill('-');
-            let supItems = [];
-
-            for (let item of line) {
-                let tLow = item.text.toLowerCase().replace(/\s*\(pending\)/g, '').replace(/\s+/g, '');
+            attItems.forEach(att => {
+                let closestIdx = -1;
+                let minDiff = 14; 
                 
-                // If it's on the right side, it's a supervisor
-                if (globalRepX !== 9999 && item.x >= (globalRepX - 25)) {
-                    supItems.push(item);
-                } else {
-                    // If it's an attendance code, snap it to the calendar grid
-                    if (attCodes.has(tLow)) {
-                        let closestIdx = -1;
-                        let minDiff = 16; 
-                        
-                        if (globalDateBins[0] !== null) {
-                            for (let k = 0; k < 31; k++) {
-                                if (globalDateBins[k] !== null) {
-                                    let diff = Math.abs(item.x - globalDateBins[k]);
-                                    if (diff < minDiff) {
-                                        minDiff = diff;
-                                        closestIdx = k;
-                                    }
-                                }
-                            }
-                        }
-                        
-                        if (closestIdx !== -1) {
-                            datesArray[closestIdx] = (tLow === 'ho(rota)' ? 'HO (ROTA)' : item.text.trim());
-                        } else if (globalDateBins[0] === null) {
-                            // Absolute fallback if grid fails to build
-                            let emptySlot = datesArray.findIndex(d => d === '-');
-                            if(emptySlot !== -1) datesArray[emptySlot] = item.text.trim();
+                if (dateBins[0] !== null) {
+                    for (let k = 0; k < 31; k++) {
+                        if (dateBins[k] !== null && Math.abs(att.x - dateBins[k]) < minDiff) {
+                            minDiff = Math.abs(att.x - dateBins[k]);
+                            closestIdx = k;
                         }
                     }
                 }
-            }
+                
+                if (closestIdx !== -1) {
+                    datesArray[closestIdx] = att.cleanVal;
+                } else {
+                    // Emergency fallback: push to first empty slot
+                    let emptySlot = datesArray.indexOf('-');
+                    if (emptySlot !== -1) datesArray[emptySlot] = att.cleanVal;
+                }
+            });
 
-            // Map TL and Sanctioner safely
+            // Clean Supervisors
             let tl = "N/A", sanctioner = "N/A";
-            if (globalSancX !== 9999) {
-                let tlArr = supItems.filter(u => u.x < globalSancX - 15).map(u => u.text);
-                let sancArr = supItems.filter(u => u.x >= globalSancX - 15).map(u => u.text);
+            if (sancX !== 9999) {
+                let tlArr = supItems.filter(u => u.x < sancX - 15).map(u => u.text);
+                let sancArr = supItems.filter(u => u.x >= sancX - 15).map(u => u.text);
                 if (tlArr.length > 0) tl = tlArr.join(' ');
                 if (sancArr.length > 0) sanctioner = sancArr.join(' ');
             } else {
@@ -217,10 +205,6 @@ async function fetchAndParsePDF() {
                 globalData.push({ code, name, status, contractor, dates: datesArray, tl, sanctioner });
             }
         }
-    }
-
-    if (globalDateBins[0] === null) {
-        console.log("⚠️ WARNING: Could not find Day '1' to build Calendar Grid. Data might be shifted.");
     }
 
     console.log(`✅ Successfully parsed ${globalData.length} employee records.`);
