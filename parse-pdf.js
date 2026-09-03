@@ -12,22 +12,23 @@ async function fetchAndParsePDF() {
     const json = await response.json();
     if (!json.success) throw new Error("GAS Error: " + json.error);
 
+    // 🔴 Debug Log to ensure it's grabbing the right file!
+    console.log(`📄 Received PDF: ${json.fileNameUsed || "Unknown Name"}`);
+    if (json.fileUrl) console.log(`🔗 File Link: ${json.fileUrl}`);
+
     console.log("📦 Decoding Base64 PDF data...");
     const pdfBuffer = Buffer.from(json.data, 'base64');
     const pdfData = new Uint8Array(pdfBuffer);
 
     console.log("⚙️ Parsing PDF with pdf.js...");
     const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+    console.log(`📑 Total Pages Found in PDF: ${pdf.numPages}`);
 
     let globalData = [];
     let currentMonthStr = "Unknown Month";
 
-    // Global constraints maintained across pages
-    let colBounds = { status: null, contractor: null, rep: null, sanc: null };
-    let dateBins = {}; 
-
-    // Set of valid attendance codes for Strict Matching
-    const validAttSet = new Set(['p', 'mp', 'a', 'hd', 'wo', 'slwp', 'lvp', 'slp', 'pl', 'fd', 'l', 'ho', 'ho(rota)', 'wwo', 'cf', 'who', 'who(rota)']);
+    // Valid attendance codes used to identify date columns reliably
+    const validAttSet = new Set(['p', 'mp', 'a', 'hd', 'wo', 'slwp', 'lvp', 'slp', 'pl', 'fd', 'l', 'ho', 'wwo', 'cf', 'who', 'ho(rota)', 'who(rota)', '-']);
 
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
@@ -41,149 +42,123 @@ async function fetchAndParsePDF() {
 
         // 1. EXTRACT MONTH
         if (currentMonthStr === "Unknown Month") {
-            let fullText = items.map(i => i.text).join(' ');
+            let fullText = items.map(itm => itm.text).join(' ');
             let match = fullText.match(/Month\s*of\s*([A-Za-z]+)\s*(\d{4})/i) || fullText.replace(/\s/g, '').match(/Monthof([A-Za-z]+)(\d{4})/i);
             if (match) currentMonthStr = match[1] + " " + match[2];
         }
 
-        // 2. DYNAMICALLY FIND HEADERS & DATE COLUMNS ON THIS PAGE
-        let statusHead = items.find(itm => itm.text.toLowerCase().replace(/\s+/g, '') === 'status');
-        if (statusHead) {
-            let headersY = statusHead.y;
-            let headerRowItems = items.filter(itm => Math.abs(itm.y - headersY) < 10);
-            
-            for (let item of headerRowItems) {
-                let t = item.text.toLowerCase().replace(/\s+/g, '');
-                if (t === 'status') colBounds.status = item.x;
-                if (t === 'contractor') colBounds.contractor = item.x;
-                if (t === 'reportingperson' || t.includes('reporting')) colBounds.rep = item.x;
-                if (t === 'sanctioner') colBounds.sanc = item.x;
-            }
-
-            // Map Date headers dynamically based on what ACTUALLY exists (1, 2, 3...)
-            dateBins = {};
-            for (let item of headerRowItems) {
-                let day = parseInt(item.text);
-                if (!isNaN(day) && day >= 1 && day <= 31) {
-                    if (colBounds.contractor && colBounds.rep) {
-                        // Ensure it falls between Contractor and Reporting person
-                        if (item.x > colBounds.contractor && item.x < colBounds.rep) {
-                            dateBins[day] = item.x;
-                        }
-                    } else {
-                        dateBins[day] = item.x;
-                    }
-                }
-            }
-        }
-
-        // 3. GROUP BY Y COORDINATE
+        // 2. GROUP BY Y COORDINATE 
+        // (Tolerance increased to 12 to perfectly capture slightly misaligned rows)
         let rows = [];
         items.forEach(item => {
-            let foundRow = rows.find(r => Math.abs(r.y - item.y) < 8);
+            let foundRow = rows.find(r => Math.abs(r.y - item.y) < 12);
             if (foundRow) foundRow.items.push(item);
             else rows.push({ y: item.y, items: [item] });
         });
 
-        // 4. PARSE ROWS
+        // 3. PARSE ROWS SEQUENTIALLY
         for (let row of rows) {
-            row.items.sort((a, b) => a.x - b.x); 
+            row.items.sort((a, b) => a.x - b.x); // Sort elements left-to-right
             
-            let statusIdx = row.items.findIndex(i => i.text.toLowerCase() === 'active' || i.text.toLowerCase() === 'left');
-            if (statusIdx === -1) continue; 
+            // Find where "Active" or "Left" is
+            let statusIdx = row.items.findIndex(itm => {
+                let t = itm.text.toLowerCase().replace(/[^a-z]/g, '');
+                return t === 'active' || t === 'left';
+            });
 
-            let status = row.items[statusIdx].text;
+            if (statusIdx === -1) continue; // Skip header/empty rows
 
-            // Extract Code and Name perfectly
+            let status = row.items[statusIdx].text.replace(/[^A-Za-z]/g, ''); // Ensure clean "Active" or "Left"
+
+            // Extract Code and Name flawlessly
             let preStatusItems = row.items.slice(0, statusIdx);
-            let preStatusText = preStatusItems.map(i => i.text).join(' ');
-            let codeMatch = preStatusText.match(/([A-Z0-9]{2,6}\s*-\s*\d{3,8})/i);
+            let preStatusText = preStatusItems.map(itm => itm.text).join(' ');
             
+            let codeMatch = preStatusText.match(/([A-Z0-9]{2,8}\s*[-]?\s*\d{2,10})/i);
             if (!codeMatch) continue; 
             
             let code = codeMatch[1].replace(/\s+/g, '');
             let name = preStatusText.substring(codeMatch.index + codeMatch[0].length).trim();
-            name = name.replace(/^[-\s]+/, ''); // Clean leading hyphens
+            name = name.replace(/^[-\s]+/, ''); // Clean leading dashes/spaces
 
             let postStatus = row.items.slice(statusIdx + 1);
 
-            // Merge "HO" and "(ROTA)" if they were split into two elements
+            // Re-connect "HO" and "(ROTA)" if PDF splits them
             for (let j = 0; j < postStatus.length - 1; j++) {
-                if (postStatus[j].text.trim().toUpperCase() === 'HO' && postStatus[j+1].text.trim().toUpperCase() === '(ROTA)') {
+                let t1 = postStatus[j].text.toUpperCase().replace(/\s+/g, '');
+                let t2 = postStatus[j+1].text.toUpperCase().replace(/\s+/g, '');
+                if (t1 === 'HO' && t2 === '(ROTA)') {
                     postStatus[j].text = 'HO (ROTA)';
                     postStatus.splice(j+1, 1);
                     j--;
                 }
             }
 
-            let contractorParts = [];
-            let repParts = [];
-            let sancParts = [];
-            let datesMap = {};
+            let contractorRaw = "";
+            let datesArray = new Array(31).fill('-');
+            let supRaw = [];
+            let datePointer = 0;
+            let pastDatesSection = false;
 
-            // Strictly route data pieces based on Coordinates and Validity
+            // Sequential Left-to-Right reading for everything after Status
             for (let item of postStatus) {
-                // Remove "(Pending)" variations safely for matching against valid att codes
-                let tClean = item.text.toLowerCase().replace(/\s*\(pending\)/g, '').replace(/\s+/g, '');
-                let isAttCode = validAttSet.has(tClean) || tClean === '-';
+                let cleanText = item.text.toLowerCase().replace(/\s*\(pending\)/g, '').replace(/\s+/g, '');
+                let isAttCode = validAttSet.has(cleanText) || /^[\d\.]+$/.test(cleanText);
 
-                let matchedAsDate = false;
-                
-                // If it looks like a valid code AND it lives geographically in the dates column section
-                if (isAttCode && colBounds.contractor && colBounds.rep && item.x > colBounds.contractor + 10 && item.x < colBounds.rep - 10) {
-                    let nearestDay = null;
-                    let minDist = 999;
-                    
-                    // Route to the nearest actually existing day column
-                    for (let day in dateBins) {
-                        let dist = Math.abs(item.x - dateBins[day]);
-                        if (dist < minDist) {
-                            minDist = dist;
-                            nearestDay = day;
-                        }
-                    }
-                    if (nearestDay && minDist < 15) {
-                        datesMap[nearestDay] = item.text;
-                        matchedAsDate = true;
-                    }
+                // 1. Grab Contractor (First non-attendance item)
+                if (!contractorRaw && !isAttCode && cleanText.length > 2) {
+                    contractorRaw = item.text;
+                    continue;
                 }
-                
-                if (!matchedAsDate) {
-                    if (colBounds.rep && item.x < colBounds.rep - 25) {
-                        contractorParts.push(item.text);
-                    } else if (colBounds.sanc && item.x >= colBounds.sanc - 20) {
-                        sancParts.push(item.text);
-                    } else {
-                        repParts.push(item.text);
-                    }
+
+                // 2. Grab Attendance Codes (Fills up Day 1, Day 2, etc. sequentially)
+                if (isAttCode && validAttSet.has(cleanText) && datePointer < 31 && !pastDatesSection) {
+                    datesArray[datePointer] = cleanText === 'ho(rota)' ? 'HO (ROTA)' : cleanText.toUpperCase();
+                    datePointer++;
+                    continue;
+                }
+
+                // 3. Grab Supervisors (Everything at the end)
+                if (item.text.length > 1 && !validAttSet.has(cleanText)) {
+                    pastDatesSection = true; // Lock out dates once we hit supervisor names
+                    supRaw.push(item.text);
                 }
             }
 
-            // Clean Data
-            let contractorRaw = contractorParts.join(' ');
             let contractor = cleanContractor(contractorRaw);
             
-            let tl = repParts.join(' ').trim() || "N/A";
-            let sanctioner = sancParts.join(' ').trim() || "N/A";
-
-            // Fill standard 31-day array
-            let datesArray = new Array(31).fill('-');
-            for (let day in datesMap) {
-                datesArray[parseInt(day) - 1] = datesMap[day];
+            // Split supervisors text into TL and Sanctioner roughly in half
+            let tl = "N/A", sanctioner = "N/A";
+            if (supRaw.length > 0) {
+                let mid = Math.floor(supRaw.length / 2);
+                if (mid === 0) {
+                    tl = supRaw[0];
+                    sanctioner = supRaw[0];
+                } else {
+                    tl = supRaw.slice(0, mid).join(' ').trim();
+                    sanctioner = supRaw.slice(mid).join(' ').trim();
+                }
             }
 
-            if (name.length > 2) {
+            // Push to Database
+            if (name.length >= 2) {
                 globalData.push({ code, name, status, contractor, dates: datesArray, tl, sanctioner });
             }
         }
     }
 
     console.log(`✅ Successfully parsed ${globalData.length} employee records.`);
-    fs.writeFileSync('data.json', JSON.stringify({ currentMonthStr, globalData })); // Outputs compressed payload
+    
+    if (globalData.length === 0) {
+        console.log("⚠️ WARNING: 0 records found. Double check the PDF Link printed above.");
+    }
+
+    fs.writeFileSync('data.json', JSON.stringify({ currentMonthStr, globalData }));
     console.log("🚀 Saved to data.json successfully!");
 }
 
 function cleanContractor(raw) {
+    if (!raw) return "Unknown";
     let cLow = raw.toLowerCase();
     if (cLow.includes('adecco')) return 'ADECCO';
     if (cLow.includes('ananya')) return 'ANANYA';
