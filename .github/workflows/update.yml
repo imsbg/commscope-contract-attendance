@@ -1,6 +1,9 @@
 name: Update Attendance Data
 
 on:
+  push:                   # Trigger whenever a new change is pushed to 'main'
+    branches:
+      - main
   schedule:
     - cron: '*/30 * * * *' # Auto-updates every 30 minutes
   workflow_dispatch:      # Allows manual trigger from Admin Console / GitHub UI
