@@ -5,14 +5,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbzBMx-fZAifindtXbsXVueY
 
 async function fetchAndParsePDF() {
     console.log("🌐 Fetching PDF from Google Apps Script...");
-
     const response = await fetch(GAS_URL);
     if (!response.ok) throw new Error("Network response was not ok");
 
     const json = await response.json();
     if (!json.success) throw new Error("GAS Error: " + json.error);
 
-    // 🔴 Debug Log to ensure it's grabbing the right file!
     console.log(`📄 Received PDF: ${json.fileNameUsed || "Unknown Name"}`);
     if (json.fileUrl) console.log(`🔗 File Link: ${json.fileUrl}`);
 
@@ -27,7 +25,7 @@ async function fetchAndParsePDF() {
     let globalData = [];
     let currentMonthStr = "Unknown Month";
 
-    // Valid attendance codes used to identify date columns reliably
+    // Valid attendance codes used to identify dates (add any specific ones you need)
     const validAttSet = new Set(['p', 'mp', 'a', 'hd', 'wo', 'slwp', 'lvp', 'slp', 'pl', 'fd', 'l', 'ho', 'wwo', 'cf', 'who', 'ho(rota)', 'who(rota)', '-']);
 
     for (let i = 1; i <= pdf.numPages; i++) {
@@ -42,106 +40,104 @@ async function fetchAndParsePDF() {
 
         // 1. EXTRACT MONTH
         if (currentMonthStr === "Unknown Month") {
-            let fullText = items.map(itm => itm.text).join(' ');
-            let match = fullText.match(/Month\s*of\s*([A-Za-z]+)\s*(\d{4})/i) || fullText.replace(/\s/g, '').match(/Monthof([A-Za-z]+)(\d{4})/i);
+            let fullTextPage = items.map(itm => itm.text).join(' ');
+            let match = fullTextPage.match(/Month\s*of\s*([A-Za-z]+)\s*(\d{4})/i) || fullTextPage.replace(/\s/g, '').match(/Monthof([A-Za-z]+)(\d{4})/i);
             if (match) currentMonthStr = match[1] + " " + match[2];
         }
 
-        // 2. GROUP BY Y COORDINATE 
-        // (Tolerance increased to 12 to perfectly capture slightly misaligned rows)
+        // 2. GROUP BY Y COORDINATE (Tolerance 10 to catch slight misalignments)
         let rows = [];
         items.forEach(item => {
-            let foundRow = rows.find(r => Math.abs(r.y - item.y) < 12);
+            let foundRow = rows.find(r => Math.abs(r.y - item.y) < 10);
             if (foundRow) foundRow.items.push(item);
             else rows.push({ y: item.y, items: [item] });
         });
 
-        // 3. PARSE ROWS SEQUENTIALLY
+        // 3. PARSE ROWS via String Matching (Reads left to right)
         for (let row of rows) {
-            row.items.sort((a, b) => a.x - b.x); // Sort elements left-to-right
+            row.items.sort((a, b) => a.x - b.x); 
             
-            // Find where "Active" or "Left" is
-            let statusIdx = row.items.findIndex(itm => {
-                let t = itm.text.toLowerCase().replace(/[^a-z]/g, '');
-                return t === 'active' || t === 'left';
-            });
-
-            if (statusIdx === -1) continue; // Skip header/empty rows
-
-            let status = row.items[statusIdx].text.replace(/[^A-Za-z]/g, ''); // Ensure clean "Active" or "Left"
-
-            // Extract Code and Name flawlessly
-            let preStatusItems = row.items.slice(0, statusIdx);
-            let preStatusText = preStatusItems.map(itm => itm.text).join(' ');
+            // Build full row string
+            let fullText = row.items.map(itm => itm.text.trim()).filter(t => t).join(' ');
             
-            let codeMatch = preStatusText.match(/([A-Z0-9]{2,8}\s*[-]?\s*\d{2,10})/i);
-            if (!codeMatch) continue; 
+            // Pre-process known multi-word attendance codes so they don't break tokenizing
+            fullText = fullText.replace(/HO\s*\(ROTA\)/gi, 'HO(ROTA)').replace(/WHO\s*\(ROTA\)/gi, 'WHO(ROTA)');
+
+            // Regex looks for: (Letters-Numbers) (Name) (Active or Left)
+            let regex = /([A-Z0-9]+[-\s]+\d+)\s+(.+?)\s+(Active|Left)\s+/i;
+            let match = fullText.match(regex);
+
+            if (!match) continue; // Skip if it doesn't look like an employee row
+
+            let code = match[1].replace(/\s+/g, ''); // Ensure no spaces in code (e.g. AD-123)
+            let name = match[2].trim();
+            let status = match[3];
+
+            // Everything after 'Active' / 'Left'
+            let remainder = fullText.substring(match.index + match[0].length).trim();
+
+            // 4. Extract Contractor
+            let knownContractors = ['ADECCO', 'ANANYA', 'Dibya Industrial Service', 'Dibya', 'ESJAY', 'MATHEW', 'Om Sai Krupa Enterprise', 'Om Sai', 'SHAM', 'VASUDEVA', 'YASHASWI'];
+            let contractor = 'Unknown';
             
-            let code = codeMatch[1].replace(/\s+/g, '');
-            let name = preStatusText.substring(codeMatch.index + codeMatch[0].length).trim();
-            name = name.replace(/^[-\s]+/, ''); // Clean leading dashes/spaces
-
-            let postStatus = row.items.slice(statusIdx + 1);
-
-            // Re-connect "HO" and "(ROTA)" if PDF splits them
-            for (let j = 0; j < postStatus.length - 1; j++) {
-                let t1 = postStatus[j].text.toUpperCase().replace(/\s+/g, '');
-                let t2 = postStatus[j+1].text.toUpperCase().replace(/\s+/g, '');
-                if (t1 === 'HO' && t2 === '(ROTA)') {
-                    postStatus[j].text = 'HO (ROTA)';
-                    postStatus.splice(j+1, 1);
-                    j--;
+            for (let c of knownContractors) {
+                if (remainder.toLowerCase().startsWith(c.toLowerCase())) {
+                    contractor = c;
+                    remainder = remainder.substring(c.length).trim(); // Remove contractor from remainder
+                    break;
                 }
             }
+            
+            if (contractor === 'Unknown') {
+                // Fallback: just grab the first word
+                let parts = remainder.split(/\s+/);
+                contractor = parts[0];
+                remainder = parts.slice(1).join(' ').trim();
+            }
 
-            let contractorRaw = "";
+            // 5. Extract Attendance & Supervisors
+            let tokens = remainder.split(/\s+/);
             let datesArray = new Array(31).fill('-');
-            let supRaw = [];
             let datePointer = 0;
-            let pastDatesSection = false;
+            let supTokens = [];
+            let parsingDates = true;
 
-            // Sequential Left-to-Right reading for everything after Status
-            for (let item of postStatus) {
-                let cleanText = item.text.toLowerCase().replace(/\s*\(pending\)/g, '').replace(/\s+/g, '');
-                let isAttCode = validAttSet.has(cleanText) || /^[\d\.]+$/.test(cleanText);
-
-                // 1. Grab Contractor (First non-attendance item)
-                if (!contractorRaw && !isAttCode && cleanText.length > 2) {
-                    contractorRaw = item.text;
-                    continue;
-                }
-
-                // 2. Grab Attendance Codes (Fills up Day 1, Day 2, etc. sequentially)
-                if (isAttCode && validAttSet.has(cleanText) && datePointer < 31 && !pastDatesSection) {
-                    datesArray[datePointer] = cleanText === 'ho(rota)' ? 'HO (ROTA)' : cleanText.toUpperCase();
-                    datePointer++;
-                    continue;
-                }
-
-                // 3. Grab Supervisors (Everything at the end)
-                if (item.text.length > 1 && !validAttSet.has(cleanText)) {
-                    pastDatesSection = true; // Lock out dates once we hit supervisor names
-                    supRaw.push(item.text);
-                }
-            }
-
-            let contractor = cleanContractor(contractorRaw);
-            
-            // Split supervisors text into TL and Sanctioner roughly in half
-            let tl = "N/A", sanctioner = "N/A";
-            if (supRaw.length > 0) {
-                let mid = Math.floor(supRaw.length / 2);
-                if (mid === 0) {
-                    tl = supRaw[0];
-                    sanctioner = supRaw[0];
+            for (let token of tokens) {
+                let tClean = token.toLowerCase();
+                
+                if (parsingDates) {
+                    if (validAttSet.has(tClean) && datePointer < 31) {
+                        // It's a valid attendance code, add it to the calendar
+                        datesArray[datePointer] = token.toUpperCase() === 'HO(ROTA)' ? 'HO (ROTA)' : token.toUpperCase();
+                        datePointer++;
+                    } else if (/^\d{1,2}$/.test(token)) {
+                        // Stray number (likely a day header that bled in), ignore it safely
+                        continue;
+                    } else {
+                        // We hit a word that IS NOT an attendance code (e.g., 'Nitesh').
+                        // This means the dates are over and Supervisors have started!
+                        parsingDates = false;
+                        supTokens.push(token);
+                    }
                 } else {
-                    tl = supRaw.slice(0, mid).join(' ').trim();
-                    sanctioner = supRaw.slice(mid).join(' ').trim();
+                    supTokens.push(token);
                 }
             }
 
-            // Push to Database
-            if (name.length >= 2) {
+            // 6. Split Supervisors roughly in half (TL / Sanctioner)
+            let tl = "N/A", sanctioner = "N/A";
+            if (supTokens.length > 0) {
+                let mid = Math.floor(supTokens.length / 2);
+                if (mid === 0) {
+                    tl = supTokens[0];
+                    sanctioner = supTokens[0];
+                } else {
+                    tl = supTokens.slice(0, mid).join(' ');
+                    sanctioner = supTokens.slice(mid).join(' ');
+                }
+            }
+
+            if (name.length > 2) {
                 globalData.push({ code, name, status, contractor, dates: datesArray, tl, sanctioner });
             }
         }
@@ -150,26 +146,11 @@ async function fetchAndParsePDF() {
     console.log(`✅ Successfully parsed ${globalData.length} employee records.`);
     
     if (globalData.length === 0) {
-        console.log("⚠️ WARNING: 0 records found. Double check the PDF Link printed above.");
+        console.log("⚠️ WARNING: 0 records found. The regex didn't match any rows.");
     }
 
     fs.writeFileSync('data.json', JSON.stringify({ currentMonthStr, globalData }));
     console.log("🚀 Saved to data.json successfully!");
-}
-
-function cleanContractor(raw) {
-    if (!raw) return "Unknown";
-    let cLow = raw.toLowerCase();
-    if (cLow.includes('adecco')) return 'ADECCO';
-    if (cLow.includes('ananya')) return 'ANANYA';
-    if (cLow.includes('dibya')) return 'Dibya Industrial Service';
-    if (cLow.includes('esjay')) return 'ESJAY';
-    if (cLow.includes('mathew')) return 'MATHEW';
-    if (cLow.includes('om sai')) return 'Om Sai Krupa Enterprise';
-    if (cLow.includes('sham')) return 'SHAM';
-    if (cLow.includes('vasudeva')) return 'VASUDEVA';
-    if (cLow.includes('yashaswi')) return 'YASHASWI';
-    return raw.trim() || "Unknown";
 }
 
 fetchAndParsePDF().catch(err => { 
