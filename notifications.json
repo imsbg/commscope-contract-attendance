@@ -6,6 +6,12 @@
     "buttonText": "View August Data"
   },
   {
+    "title": "🎉 New Tool: Age Calculator",
+    "message": "Curious about your exact age in months, weeks, days, or even seconds? Try out this fun and precise Age Calculator tool!",
+    "link": "https://imsbg.github.io/age-calculator/",
+    "buttonText": "Calculate Age Now"
+  },
+  {
     "title": "📊 August Attendance Data",
     "message": "The finalized attendance records for the month of August are now available in the archive.",
     "link": "https://imsbg.github.io/commscope-contract-attendance/puruna/august/",
