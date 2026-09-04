@@ -28,8 +28,8 @@
     
     <style>
         :root { --primary: #0d9488; --background: #f1f5f9; --card-bg: #ffffff; }
-        html { scroll-behavior: smooth; height: 100%; }
-        body { font-family: 'Google Sans', 'Noto Sans Oriya', sans-serif; background-color: var(--background); color: #0f172a; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
+        html { scroll-behavior: smooth; height: 100%; overscroll-behavior-y: contain; }
+        body { font-family: 'Google Sans', 'Noto Sans Oriya', sans-serif; background-color: var(--background); color: #0f172a; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; overscroll-behavior-y: none; }
         
         #splash-screen { background-color: var(--card-bg); z-index: 100; transition: opacity 0.4s ease-out; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -97,9 +97,30 @@
         
         /* HIDE DROPDOWNS ENTIRELY IN MINIMAL MODE */
         body.minimal-mode #dropdown-container { display: none !important; }
+
+        /* Sticky Mobile Search */
+        @media (max-width: 768px) {
+            body.minimal-mode #search-container { position: sticky; top: 10px; z-index: 45; }
+            #search-container { position: sticky; top: 10px; z-index: 45; }
+        }
+
+        /* Pull-to-refresh Indicator */
+        #ptr-indicator { position: fixed; top: 0; left: 0; right: 0; height: 60px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #4f46e5; background: #e0e7ff; transform: translateY(-100%); transition: transform 0.2s ease; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body class="antialiased minimal-mode">
+
+    <!-- Pull to Refresh UI -->
+    <div id="ptr-indicator"><i class="fa-solid fa-arrow-down mr-2"></i> Pull to refresh</div>
+
+    <!-- Dynamic Marquee Container -->
+    <div id="marquee-container" class="hidden bg-indigo-600 text-white text-xs md:text-sm shadow-md relative z-50">
+        <div class="max-w-screen-2xl mx-auto flex items-center px-4 py-2.5">
+            <span class="font-bold mr-3 uppercase tracking-wider text-indigo-200 shrink-0 flex items-center gap-2"><i class="fa-solid fa-bullhorn animate-pulse"></i> Notice</span>
+            <marquee id="marquee-text" scrollamount="6" class="font-medium flex-1 tracking-wide"></marquee>
+            <button onclick="document.getElementById('marquee-container').style.display='none'" class="ml-3 text-indigo-300 hover:text-white shrink-0 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+    </div>
 
     <!-- SPLASH SCREEN -->
     <div id="splash-screen" class="fixed inset-0 flex justify-center items-center">
@@ -136,7 +157,7 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-2 md:gap-3 w-full xl:w-auto">
                     
-                    <button onclick="openNotifModal()" class="relative bg-white text-slate-700 border border-slate-300 w-10 h-10 md:w-auto md:px-4 md:py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium flex-none">
+                    <button onclick="openNotifModal()" class="relative bg-white text-slate-700 border border-slate-300 w-10 h-10 md:w-auto md:px-4 md:py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium flex-none" title="Notifications">
                         <i class="fa-solid fa-bell"></i>
                         <span id="notif-badge" class="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full hidden border-2 border-white shadow-sm">0</span>
                         <span class="hidden md:inline">Alerts</span>
@@ -145,7 +166,7 @@
                     <button onclick="toggleGraphs()" class="hide-always-minimal bg-white text-slate-700 border border-slate-300 px-3 md:px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
                         <i class="fa-solid fa-chart-line"></i> <span id="toggle-graphs-text">Show Graphs</span>
                     </button>
-                    <button onclick="openShiftModal()" class="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none">
+                    <button onclick="openShiftModal()" class="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 xl:flex-none" title="Shift Calendar (Shortcut: T)">
                         <i class="fa-solid fa-calendar-days"></i> <span class="hidden sm:inline">Shift</span> Calendar
                     </button>
                     <button onclick="openPdfModal()" class="bg-[var(--primary)] text-white px-3 md:px-4 py-2 rounded-lg shadow hover:bg-teal-700 transition flex items-center justify-center gap-2 text-sm font-medium flex-1 md:w-auto cursor-pointer">
@@ -196,21 +217,24 @@
                     <h2 class="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2 whitespace-nowrap hide-always-minimal">
                         Records <span id="contractor-count" class="hidden bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full transition-all"></span>
                     </h2>
-                    <button onclick="toggleViewMode()" id="viewToggleBtn" class="ml-auto text-xs md:text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-100 transition-colors flex items-center gap-1.5 shadow-sm">
+                    <button onclick="toggleViewMode()" id="viewToggleBtn" class="ml-auto text-xs md:text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-100 transition-colors flex items-center gap-1.5 shadow-sm" title="Toggle Views">
                         <i class="fa-solid fa-desktop"></i> <span class="hidden sm:inline">Standard View</span>
                     </button>
                 </div>
                 
                 <div id="filter-wrapper">
-                    <div id="search-container" class="relative w-full rounded-lg bg-white">
+                    <div id="search-container" class="relative w-full rounded-lg bg-white group">
                         <div id="search-inner" class="relative">
                             <i class="fa-solid fa-magnifying-glass text-slate-400 pointer-events-none absolute left-3 top-1/2 transform -translate-y-1/2" id="search-icon"></i>
-                            <input type="text" id="searchInput" placeholder="Search Employee, TL, or Shift Supervisor..." class="pl-9 pr-10 py-2 border border-slate-300 rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition-all shadow-sm bg-transparent">
+                            <input type="text" id="searchInput" placeholder="Search Employee, TL... (Press '/' to focus)" class="pl-9 pr-10 py-2 border border-slate-300 rounded-lg w-full outline-none focus:ring-2 focus:ring-teal-500 transition-all shadow-sm bg-transparent group-hover:border-indigo-300">
                             <button id="clear-search-btn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden transition-colors z-10 w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100" onclick="clearSearch()" title="Clear Search">
                                 <i class="fa-solid fa-xmark text-lg"></i>
                             </button>
                         </div>
                     </div>
+                    
+                    <!-- Did you mean / Fuzzy suggestion -->
+                    <div id="search-suggestion" class="hidden w-full text-center text-sm text-slate-600 bg-indigo-50 border border-indigo-100 py-1.5 rounded-lg font-medium shadow-sm transition-all duration-300"></div>
                     
                     <div id="search-toggles" class="flex flex-wrap justify-center gap-2 w-full transition-all duration-300">
                         <label class="cursor-pointer">
@@ -260,7 +284,7 @@
                     <p class="text-base sm:text-lg font-bold text-slate-700" id="vis-yday">--</p>
                 </div>
                 <div class="bg-white px-3 sm:px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
-                    <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Today</p>
+                    <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Today (IST)</p>
                     <p class="text-base sm:text-lg font-bold text-indigo-600" id="vis-today">--</p>
                 </div>
                 <div class="bg-gradient-to-r from-teal-600 to-teal-500 px-3 sm:px-4 py-2 rounded-lg shadow-md text-center text-white relative overflow-hidden group">
@@ -283,6 +307,11 @@
             <p class="mt-1">© <span id="footer-year"></span> <a href="https://imsbg.github.io/commscope/" target="_blank" class="text-teal-600 hover:underline">Sandeep Biswal G Apps</a></p>
         </footer>
     </main>
+
+    <!-- Floating Action Button (Back to top) -->
+    <button id="backToTopFab" onclick="window.scrollTo({top:0, behavior:'smooth'})" class="fixed bottom-6 right-6 bg-indigo-600 text-white h-12 w-12 rounded-full shadow-lg flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 z-40 transform translate-y-4 hover:bg-indigo-700 hover:scale-110 outline-none focus:ring-2 focus:ring-indigo-300" title="Back to Top (Shortcut: Home)">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
 
     <!-- Notifications Modal -->
     <div id="notif-modal" onclick="if(event.target === this) closeNotifModal()" class="fixed inset-0 bg-black/60 z-[150] p-4 flex justify-center items-start pt-20 opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-sm">
@@ -345,7 +374,7 @@
     <div id="visitor-modal" onclick="if(event.target === this) closeVisitorModal()" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
         <div id="visitor-modal-content" class="bg-slate-50 rounded-2xl w-full max-w-2xl mx-auto h-auto max-h-[90vh] flex flex-col scale-95 transition-transform duration-300 shadow-2xl relative mt-10 md:mt-20 cursor-default">
              <button onclick="closeVisitorModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
-             <div class="p-5 md:p-6 bg-white rounded-t-2xl border-b border-slate-200"><h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-chart-simple text-indigo-600"></i> Daily Visitor Logs</h3></div>
+             <div class="p-5 md:p-6 bg-white rounded-t-2xl border-b border-slate-200"><h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-chart-simple text-indigo-600"></i> Daily Visitor Logs (IST)</h3></div>
              <div class="p-4 md:p-6 flex-1 overflow-y-auto custom-scrollbar"><div id="visitor-calendar-grid" class="grid grid-cols-7 gap-1.5 md:gap-3"></div></div>
         </div>
     </div>
@@ -362,8 +391,8 @@
              <div id="modal-info-panel" class="w-full lg:w-80 p-5 md:p-6 bg-white lg:border-r border-slate-200 flex flex-col flex-shrink-0"></div>
              <div class="p-4 md:p-6 flex-1 flex flex-col overflow-y-auto custom-scrollbar bg-slate-50">
                 <h3 id="modal-calendar-title" class="text-lg md:text-xl font-semibold mb-4 text-slate-700"></h3>
-                <div class="grid grid-cols-7 gap-1 md:gap-1.5 mb-2 text-[10px] md:text-xs font-bold text-center text-slate-500"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
-                <div id="modal-calendar" class="grid grid-cols-7 gap-1 md:gap-1.5 flex-1"></div>
+                <div class="grid grid-cols-7 gap-1 md:gap-1.5 mb-2 text-[10px] md:text-xs font-bold text-center text-slate-500 uppercase tracking-wider"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
+                <div id="modal-calendar" class="grid grid-cols-7 gap-1 md:gap-1.5 flex-1 content-start"></div>
             </div>
         </div>
     </div>
@@ -372,8 +401,8 @@
              <button onclick="closeShiftModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
              <div class="p-4 md:p-6 flex-1 flex flex-col bg-slate-50">
                 <div class="flex justify-between items-center mb-6"><button onclick="changeShiftMonth(-1)" class="w-10 h-10 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold transition shadow-sm">&lt;</button><h3 id="sc-month-title" class="text-xl md:text-2xl font-bold text-indigo-900">Month Year</h3><button onclick="changeShiftMonth(1)" class="w-10 h-10 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold transition shadow-sm">&gt;</button></div>
-                <div class="grid grid-cols-7 gap-1 md:gap-2 text-center font-bold text-xs md:text-sm text-slate-500 mb-2"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
-                <div id="sc-days" class="grid grid-cols-7 gap-1 md:gap-2 flex-1"></div>
+                <div class="grid grid-cols-7 gap-1 md:gap-2 text-center font-bold text-xs md:text-sm text-slate-500 mb-2 uppercase tracking-wider"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
+                <div id="sc-days" class="grid grid-cols-7 gap-1 md:gap-2 flex-1 content-start"></div>
              </div>
              <div class="w-full lg:w-80 p-5 md:p-6 bg-white lg:border-l border-slate-200 flex flex-col flex-shrink-0">
                 <h4 class="font-bold text-slate-800 mb-3 text-lg flex items-center gap-2"><i class="fa-solid fa-gear text-indigo-500"></i> Shift Settings</h4>
@@ -402,6 +431,7 @@
 
     let currentSearchScope = 'emp'; 
     let currentAdminToken = null;
+    let selectedIndex = -1; // For keyboard navigation
 
     const DEFAULT_SETTINGS = { pattern: 'ACB', baseDate: '2026-01-05', baseShift: 'A' }; 
     let shiftSettings = JSON.parse(localStorage.getItem('shiftSettings')) || DEFAULT_SETTINGS;
@@ -412,7 +442,7 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('footer-year').textContent = new Date().getFullYear();
-        initViewMode(); fetchNotifications();
+        initViewMode(); fetchNotifications(); loadMarquee();
         if (IS_MAINTENANCE_MODE) { document.getElementById('splash-screen').style.display = 'none'; document.getElementById('main-content').classList.add('hidden'); return; }
 
         try {
@@ -429,11 +459,129 @@
             if(val === '/admin') { e.target.value = ''; clearBtn.classList.add('hidden'); openAdminModal(); return; }
             currentPage = 1; applyFilters();
         });
-        // We removed TL and SUP filters from UI interactions here, only contractor and status
+        
         ['statusFilter', 'contractorFilter'].forEach(id => {
             document.getElementById(id).addEventListener('change', () => { currentPage = 1; applyFilters(); });
         });
+
+        setupKeyboardShortcuts();
+        setupPullToRefresh();
+        setupScrollObserver();
     });
+
+    // --- LEVENSHTEIN FUZZY SEARCH ---
+    function levenshteinDistance(a, b) {
+        if(a.length === 0) return b.length;
+        if(b.length === 0) return a.length;
+        const matrix = [];
+        for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+        for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+        for (let i = 1; i <= b.length; i++) {
+            for (let j = 1; j <= a.length; j++) {
+                if (b.charAt(i-1) === a.charAt(j-1)) {
+                    matrix[i][j] = matrix[i-1][j-1];
+                } else {
+                    matrix[i][j] = Math.min(matrix[i-1][j-1] + 1, Math.min(matrix[i][j-1] + 1, matrix[i-1][j] + 1));
+                }
+            }
+        }
+        return matrix[b.length][a.length];
+    }
+
+    // --- PULL TO REFRESH LOGIC ---
+    let ptrStartY = 0, ptrRefreshing = false;
+    function setupPullToRefresh() {
+        document.addEventListener('touchstart', e => { if(window.scrollY === 0) ptrStartY = e.touches[0].clientY; }, {passive: true});
+        document.addEventListener('touchmove', e => {
+            if(ptrRefreshing || window.scrollY > 0 || ptrStartY === 0) return;
+            let delta = e.touches[0].clientY - ptrStartY;
+            if(delta > 50) {
+                document.getElementById('ptr-indicator').style.transform = `translateY(${Math.min(delta/2.5, 45)}px)`;
+                if(delta > 140 && !ptrRefreshing) { ptrRefreshing = true; doRefreshData(); }
+            }
+        }, {passive: true});
+        document.addEventListener('touchend', () => {
+            if(!ptrRefreshing) document.getElementById('ptr-indicator').style.transform = `translateY(-100%)`;
+            ptrStartY = 0;
+        });
+    }
+    async function doRefreshData() {
+        const ind = document.getElementById('ptr-indicator');
+        ind.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Refreshing...';
+        try {
+            const res = await fetch('data.json?t=' + new Date().getTime());
+            if(res.ok) {
+                const rawData = await res.json();
+                globalData = rawData.globalData; currentMonthStr = rawData.currentMonthStr; 
+                applyFilters(); updateDashboardMetrics();
+            }
+        } catch(e) {}
+        setTimeout(() => {
+            ind.innerHTML = '<i class="fa-solid fa-check mr-2 text-emerald-600"></i> Updated!';
+            setTimeout(() => { ind.style.transform = `translateY(-100%)`; setTimeout(() => ind.innerHTML = '<i class="fa-solid fa-arrow-down mr-2"></i> Pull to refresh', 300); ptrRefreshing = false; }, 800);
+        }, 500);
+    }
+
+    // --- KEYBOARD SHORTCUTS & NAVIGATION ---
+    function setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            const isInputFocus = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT';
+            
+            if (e.key === '/') {
+                if(!isInputFocus) { e.preventDefault(); document.getElementById('searchInput').focus(); }
+            } else if (e.key === 'Escape') {
+                closeNotifModal(); closeAdminModal(); closeVisitorModal(); closePdfModal(); closeEmployeeModal(); closeShiftModal();
+                if(isInputFocus) document.activeElement.blur();
+            } else if (e.key === 'Home' && !isInputFocus) {
+                e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if ((e.key === 't' || e.key === 'T') && !isInputFocus) {
+                e.preventDefault(); openShiftModal();
+            } else if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !isInputFocus) {
+                const cards = document.querySelectorAll('.selectable-card');
+                if(cards.length === 0) return;
+                e.preventDefault();
+                if(e.key === 'ArrowDown') { if(selectedIndex < cards.length - 1) selectedIndex++; }
+                else { if(selectedIndex > 0) selectedIndex--; }
+                
+                cards.forEach((el, i) => {
+                    if(i === selectedIndex) {
+                        el.classList.add('ring-2', 'ring-teal-500', 'scale-[1.02]');
+                        el.scrollIntoView({ block: "center", behavior: "smooth" });
+                    } else { el.classList.remove('ring-2', 'ring-teal-500', 'scale-[1.02]'); }
+                });
+            } else if (e.key === 'Enter' && !isInputFocus && selectedIndex >= 0) {
+                const cards = document.querySelectorAll('.selectable-card');
+                if(cards[selectedIndex]) cards[selectedIndex].click();
+            }
+        });
+    }
+
+    // --- SCROLL LISTENER FOR FAB ---
+    function setupScrollObserver() {
+        window.addEventListener('scroll', () => {
+            const fab = document.getElementById('backToTopFab');
+            if (window.scrollY > 300) {
+                fab.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+                fab.classList.add('opacity-100');
+            } else {
+                fab.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+                fab.classList.remove('opacity-100');
+            }
+        });
+    }
+
+    // --- MARQUEE LOADER ---
+    async function loadMarquee() {
+        try {
+            const res = await fetch('marquee.html?t=' + new Date().getTime());
+            if(!res.ok) return;
+            const text = await res.text();
+            if(text.trim() && !text.includes('<html')) {
+                document.getElementById('marquee-text').innerHTML = text;
+                document.getElementById('marquee-container').classList.remove('hidden');
+            }
+        } catch(e) {}
+    }
 
     async function fetchNotifications() { try { const res = await fetch('https://imsbg.github.io/commscope-contract-attendance/notifications.json?t=' + new Date().getTime()); if(res.ok) systemNotifications = await res.json(); else systemNotifications = []; } catch(e) { systemNotifications = []; } renderNotifications(); }
     function renderNotifications() { const list = document.getElementById('notif-list'); const badge = document.getElementById('notif-badge'); const markReadBtn = document.getElementById('mark-read-btn'); if(!systemNotifications || systemNotifications.length === 0) { list.innerHTML = '<div class="text-center text-slate-500 py-8 text-sm flex flex-col items-center gap-2"><i class="fa-regular fa-bell-slash text-3xl text-slate-300 mb-2"></i> No notifications right now.</div>'; badge.classList.add('hidden'); markReadBtn.classList.add('hidden'); return; } const unreadCount = systemNotifications.filter(n => !readNotifs.includes(n.id || n.title)).length; if (unreadCount > 0) { badge.textContent = unreadCount; badge.classList.remove('hidden'); markReadBtn.classList.remove('hidden'); } else { badge.classList.add('hidden'); markReadBtn.classList.add('hidden'); } list.innerHTML = ''; systemNotifications.forEach(n => { let nId = n.id || n.title; let isRead = readNotifs.includes(nId); let btnHtml = ''; if(n.link) { btnHtml = `<a href="${n.link}" target="_blank" class="mt-3 inline-block bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm">${n.buttonText || 'View Details'}</a>`; } list.innerHTML += `<div class="p-4 rounded-xl shadow-sm border transition-colors ${isRead ? 'bg-white border-slate-100 opacity-70' : 'bg-blue-50/50 border-blue-100'}"><div class="flex justify-between items-start mb-1"><h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">${!isRead ? '<span class="h-2 w-2 bg-blue-500 rounded-full inline-block"></span>' : ''} ${n.title}</h4></div><p class="text-slate-600 text-xs leading-relaxed ml-${!isRead ? '4' : '0'}">${n.message}</p>${btnHtml}</div>`; }); }
@@ -441,7 +589,7 @@
     function openNotifModal() { document.getElementById('notif-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('notif-content').classList.remove('scale-95'); }
     function closeNotifModal() { document.getElementById('notif-modal').classList.add('opacity-0', 'pointer-events-none'); document.getElementById('notif-content').classList.add('scale-95'); }
     function handleScopeClick(radioBtn) { if (currentSearchScope === radioBtn.value && radioBtn.value !== 'emp') { document.querySelector('input[name="searchScope"][value="emp"]').checked = true; currentSearchScope = 'emp'; } else { currentSearchScope = radioBtn.value; } currentPage = 1; applyFilters(); }
-    function clearSearch() { document.getElementById('searchInput').value = ''; document.getElementById('clear-search-btn').classList.add('hidden'); currentPage = 1; applyFilters(); }
+    function clearSearch() { document.getElementById('searchInput').value = ''; document.getElementById('clear-search-btn').classList.add('hidden'); document.getElementById('search-suggestion').classList.add('hidden'); currentPage = 1; applyFilters(); }
     function highlightMatch(text, query, isActive) { if (!text) return 'N/A'; if (!query || !isActive) return text; const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'); const regex = new RegExp(`(${escapedQuery})`, 'gi'); if(regex.test(text)) { return text.replace(regex, `<span class="bg-yellow-300 text-yellow-900 font-extrabold px-1 rounded shadow-sm">$1</span>`); } return text; }
 
     function openAdminModal() { document.getElementById('admin-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('admin-content').classList.remove('scale-95'); const savedPwd = localStorage.getItem('gh_admin_pwd'); if(savedPwd) { document.getElementById('admin-token').value = savedPwd; document.getElementById('remember-pwd').checked = true; loginAdmin(); } }
@@ -465,11 +613,11 @@
     function openVisitorModal() { document.getElementById('visitor-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('visitor-modal-content').classList.remove('scale-95'); renderVisitorCalendar(); }
     function closeVisitorModal() { document.getElementById('visitor-modal').classList.add('opacity-0', 'pointer-events-none'); document.getElementById('visitor-modal-content').classList.add('scale-95'); }
     
-    function renderVisitorCalendar() { const grid = document.getElementById('visitor-calendar-grid'); if (!window.globalVisitorData || !window.globalVisitorData.daily) { grid.innerHTML = '<div class="col-span-7 text-center text-slate-500 py-8 font-medium">Loading historical data...</div>'; return; } const today = new Date(); const utc = today.getTime() + (today.getTimezoneOffset() * 60000); const ist = new Date(utc + (3600000 * 5.5)); const y = ist.getFullYear(); const m = ist.getMonth(); const firstDay = new Date(y, m, 1).getDay(); const daysInMonth = new Date(y, m + 1, 0).getDate(); let html = '<div class="col-span-7 grid grid-cols-7 gap-1.5 md:gap-3 mb-2 text-center font-bold text-[10px] md:text-xs text-slate-500 uppercase tracking-wider"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>'; html += '<div class="col-span-7 grid grid-cols-7 gap-1.5 md:gap-3">'; for (let i = 0; i < firstDay; i++) { html += `<div></div>`; } for (let d = 1; d <= daysInMonth; d++) { let dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; let visits = window.globalVisitorData.daily[dateStr] || 0; let isToday = (d === ist.getDate()); let bgClass = visits > 0 ? (isToday ? 'bg-indigo-50 border-indigo-300' : 'bg-slate-50 border-slate-200') : 'bg-white border-slate-100 opacity-50'; let textClass = visits > 0 ? (isToday ? 'text-indigo-800' : 'text-slate-700') : 'text-slate-400'; html += `<div class="${bgClass} border rounded-xl p-2 md:p-3 text-center shadow-sm flex flex-col items-center justify-center min-h-[50px] md:min-h-[70px] transition-transform hover:scale-105 ${isToday ? 'ring-2 ring-indigo-500 ring-offset-1' : ''}"> <span class="text-xs md:text-sm font-bold ${textClass}">${d}</span> ${visits > 0 ? `<span class="text-[9px] md:text-[11px] font-bold ${isToday ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'} px-1.5 md:px-2 py-0.5 rounded-full mt-1.5 flex items-center gap-1">${visits.toLocaleString()} <i class="fa-solid fa-eye text-[8px]"></i></span>` : ''} </div>`; } html += '</div>'; grid.innerHTML = html; }
+    function renderVisitorCalendar() { const grid = document.getElementById('visitor-calendar-grid'); if (!window.globalVisitorData || !window.globalVisitorData.daily) { grid.innerHTML = '<div class="col-span-7 text-center text-slate-500 py-8 font-medium">Loading historical data...</div>'; return; } const today = new Date(); const utc = today.getTime() + (today.getTimezoneOffset() * 60000); const ist = new Date(utc + (3600000 * 5.5)); const y = ist.getFullYear(); const m = ist.getMonth(); const firstDay = new Date(y, m, 1).getDay(); const daysInMonth = new Date(y, m + 1, 0).getDate(); let html = '<div class="col-span-7 grid grid-cols-7 gap-1.5 md:gap-3 mb-2 text-center font-bold text-[10px] md:text-xs text-slate-500 uppercase tracking-wider"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>'; html += '<div class="col-span-7 grid grid-cols-7 gap-1.5 md:gap-3">'; for (let i = 0; i < firstDay; i++) { html += `<div class="border border-slate-100/50 bg-slate-50/30 rounded-xl min-h-[50px] md:min-h-[70px]"></div>`; } for (let d = 1; d <= daysInMonth; d++) { let dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; let visits = window.globalVisitorData.daily[dateStr] || 0; let isToday = (d === ist.getDate()); let bgClass = visits > 0 ? (isToday ? 'bg-indigo-50 border-indigo-300' : 'bg-slate-50 border-slate-200') : 'bg-white border-slate-100 opacity-50'; let textClass = visits > 0 ? (isToday ? 'text-indigo-800' : 'text-slate-700') : 'text-slate-400'; html += `<div class="${bgClass} border rounded-xl p-2 md:p-3 text-center shadow-sm flex flex-col items-center justify-center min-h-[50px] md:min-h-[70px] transition-transform hover:scale-105 ${isToday ? 'ring-2 ring-indigo-500 ring-offset-1' : ''}"> <span class="text-xs md:text-sm font-bold ${textClass}">${d}</span> ${visits > 0 ? `<span class="text-[9px] md:text-[11px] font-bold ${isToday ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'} px-1.5 md:px-2 py-0.5 rounded-full mt-1.5 flex items-center gap-1">${visits.toLocaleString()} <i class="fa-solid fa-eye text-[8px]"></i></span>` : ''} </div>`; } 
+    const totalRendered = firstDay + daysInMonth; const remainder = (7 - (totalRendered % 7)) % 7; for(let i=0; i<remainder; i++) { html += `<div class="border border-slate-100/50 bg-slate-50/30 rounded-xl min-h-[50px] md:min-h-[70px]"></div>`; } html += '</div>'; grid.innerHTML = html; }
 
     function getDisplayStatus(val) { return (!val || val.trim() === '-') ? '-' : (val.trim() === '--' ? 'L' : val.trim()); }
     function getStatusClass(val) { 
-        // Generates the proper clean CSS class names for spaces and brackets
         return (!val || val.trim() === '-') ? 'pending' : 
                (val.trim() === '--' || val.trim().toUpperCase() === 'L') ? 'l' : 
                val.trim().toLowerCase().replace(/[^a-z0-9]/g, ''); 
@@ -480,7 +628,6 @@
 
     function populateFilters() { 
         const contractors = [...new Set(globalData.map(d => d.contractor).filter(Boolean))].sort(); 
-        
         document.getElementById('statusFilter').innerHTML = `<option value="">All Statuses</option><option value="Active">Active</option><option value="Left">Left</option>`; 
         document.getElementById('contractorFilter').innerHTML = `<option value="">All Contractors</option>${contractors.map(c => `<option value="${c}">${c}</option>`).join('')}`; 
     }
@@ -518,6 +665,7 @@
     }
 
     function renderTable() {
+        selectedIndex = -1; // Reset selection on render
         const isMinimal = document.body.classList.contains('minimal-mode');
         const searchVal = document.getElementById('searchInput').value.trim();
         const standardWrapper = document.getElementById('standard-view-wrapper');
@@ -539,7 +687,10 @@
     function renderMinimalCards() {
         const pageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
         const minimalContainer = document.getElementById('minimalCardsContainer'); minimalContainer.innerHTML = '';
-        if(pageData.length === 0) { minimalContainer.innerHTML = `<div class="text-center py-10 fade-in-up text-slate-500 font-medium">No records found for your search.</div>`; return; }
+        if(pageData.length === 0) { 
+            minimalContainer.innerHTML = `<div class="text-center py-10 fade-in-up flex flex-col items-center"><i class="fa-solid fa-folder-open text-5xl text-slate-300 mb-3 drop-shadow-sm"></i><p class="text-slate-500 font-medium mb-4">No records found for your search.</p><button onclick="clearSearch()" class="px-5 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg font-bold transition shadow-sm border border-indigo-100 flex items-center gap-2"><i class="fa-solid fa-rotate-left"></i> Clear Filters</button></div>`; 
+            return; 
+        }
 
         const searchVal = document.getElementById('searchInput').value.trim();
         const scope = currentSearchScope; const hlAll = scope === 'all';
@@ -563,7 +714,7 @@
             const isLeft = (row.status !== 'Active'); const statusBg = isLeft ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700';
 
             minimalContainer.innerHTML += `
-                <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.04}s forwards; opacity: 0;" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md cursor-pointer transition transform hover:-translate-y-1 w-full">
+                <div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.04}s forwards; opacity: 0;" class="selectable-card bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md cursor-pointer transition transform hover:-translate-y-1 w-full outline-none">
                     <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-4"><div><h3 class="font-bold text-slate-800 text-lg leading-tight">${nameDisplay}</h3><p class="text-xs text-slate-500 font-mono mt-1"><i class="fa-solid fa-id-badge text-slate-300 mr-1.5"></i>${codeDisplay}</p></div><span class="text-[10px] font-bold px-2.5 py-1 rounded-full ${statusBg} uppercase tracking-wider">${row.status}</span></div>
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 sm:gap-0">
                         <div class="flex sm:flex-col gap-4 sm:gap-3 w-full sm:w-auto"><div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Team Leader</p><p class="text-sm font-bold text-slate-700">${tlDisplay}</p></div><div class="flex-1 sm:flex-none"><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Shift Supervisor</p><p class="text-sm font-bold text-slate-700">${supDisplay}</p></div></div>
@@ -591,7 +742,7 @@
             const supDisplay = highlightMatch(row.sanctioner, searchVal, hlAll || scope === 'sup');
             const nameDisplay = highlightMatch(row.name, searchVal, hlAll || scope === 'emp');
             const codeDisplay = highlightMatch(row.code, searchVal, hlAll || scope === 'emp');
-            const tr = document.createElement('tr'); tr.className = "hover:bg-teal-50/50 transition-colors cursor-pointer"; tr.style.animation = `fadeInUp 0.4s ease-out ${i * 0.03}s forwards`; tr.style.opacity = "0"; tr.onclick = () => openEmployeeModal((currentPage - 1) * rowsPerPage + i);
+            const tr = document.createElement('tr'); tr.className = "selectable-card hover:bg-teal-50/50 transition-colors cursor-pointer outline-none"; tr.style.animation = `fadeInUp 0.4s ease-out ${i * 0.03}s forwards`; tr.style.opacity = "0"; tr.onclick = () => openEmployeeModal((currentPage - 1) * rowsPerPage + i);
             let html = `<td class="p-4 font-semibold whitespace-nowrap"><span class="hover:text-teal-600 transition">${nameDisplay}</span><span class="block text-xs text-slate-500 font-normal mt-0.5"><i class="fa-solid fa-id-badge text-slate-300 mr-1"></i>${codeDisplay}</span></td><td class="p-4 text-slate-600">${row.status}</td><td class="p-4 text-slate-600 whitespace-nowrap">${row.contractor}<div class="text-[10px] text-slate-400 mt-1 font-medium">TL: ${tlDisplay} | Shift Sup: ${supDisplay}</div></td>`;
             row.dates.slice(0, 31).forEach(d => html += `<td class="p-2 text-center"><span class="status-badge status-${getStatusClass(d)}">${getDisplayStatus(d)}</span></td>`);
             tr.innerHTML = html; fragment.appendChild(tr);
@@ -599,36 +750,74 @@
         document.getElementById('tableBody').innerHTML = ''; document.getElementById('tableBody').appendChild(fragment);
 
         const mobileContainer = document.getElementById('mobileCardsContainer'); mobileContainer.innerHTML = '';
+        if(pageData.length === 0) {
+             mobileContainer.innerHTML = `<div class="text-center py-10 fade-in-up flex flex-col items-center col-span-full"><p class="text-slate-500 font-medium mb-4">No records found.</p><button onclick="clearSearch()" class="px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg font-bold transition shadow-sm border border-slate-200 flex items-center gap-2"><i class="fa-solid fa-rotate-left"></i> Clear Filters</button></div>`;
+             return;
+        }
+
         pageData.forEach((row, i) => {
             const tlDisplay = highlightMatch(row.tl, searchVal, hlAll || scope === 'tl');
             const supDisplay = highlightMatch(row.sanctioner, searchVal, hlAll || scope === 'sup');
             const nameDisplay = highlightMatch(row.name, searchVal, hlAll || scope === 'emp');
             const codeDisplay = highlightMatch(row.code, searchVal, hlAll || scope === 'emp');
             const isLeft = (row.status !== 'Active'); const bgClass = isLeft ? 'bg-rose-50/50 border-rose-200' : 'bg-white border-slate-200'; const statusBadgeClass = isLeft ? 'bg-rose-200 text-rose-800' : 'bg-emerald-100 text-emerald-800';
-            mobileContainer.innerHTML += `<div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.05}s forwards; opacity: 0;" class="${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1"><div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800 text-lg">${nameDisplay}</h3><p class="text-xs text-slate-500 font-mono mt-0.5">${codeDisplay}</p></div><span class="text-xs font-bold px-2 py-1 rounded-full ${statusBadgeClass}">${row.status}</span></div><div class="mt-2 text-[10px] text-slate-500 font-medium flex gap-3"><span><i class="fa-solid fa-user-tie text-slate-300 mr-1"></i> ${tlDisplay}</span><span><i class="fa-solid fa-file-signature text-slate-300 mr-1"></i> ${supDisplay}</span></div><div class="mt-3 inline-flex items-center bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50"><i class="fa-solid fa-briefcase text-slate-400 mr-1.5"></i> ${row.contractor}</div></div>`;
+            mobileContainer.innerHTML += `<div onclick="openEmployeeModal(${(currentPage - 1) * rowsPerPage + i})" style="animation: fadeInUp 0.4s ease-out ${i * 0.05}s forwards; opacity: 0;" class="selectable-card ${bgClass} border rounded-xl p-4 shadow-sm cursor-pointer transition transform hover:-translate-y-1 outline-none"><div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800 text-lg">${nameDisplay}</h3><p class="text-xs text-slate-500 font-mono mt-0.5">${codeDisplay}</p></div><span class="text-xs font-bold px-2 py-1 rounded-full ${statusBadgeClass}">${row.status}</span></div><div class="mt-2 text-[10px] text-slate-500 font-medium flex gap-3"><span><i class="fa-solid fa-user-tie text-slate-300 mr-1"></i> ${tlDisplay}</span><span><i class="fa-solid fa-file-signature text-slate-300 mr-1"></i> ${supDisplay}</span></div><div class="mt-3 inline-flex items-center bg-slate-100/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200/50"><i class="fa-solid fa-briefcase text-slate-400 mr-1.5"></i> ${row.contractor}</div></div>`;
         });
     }
     
     function changePage(dir) { currentPage += dir; renderTable(); document.getElementById('table-section-header').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-    function renderPagination() { const isMinimal = document.body.classList.contains('minimal-mode'); const searchVal = document.getElementById('searchInput').value.trim(); const container = document.getElementById('pagination-controls'); if(isMinimal && searchVal === '') { container.innerHTML = ''; return; } const totalPages = Math.ceil(filteredData.length / rowsPerPage); if (filteredData.length === 0) { container.innerHTML = ''; return; } const endRecord = Math.min(currentPage * rowsPerPage, filteredData.length); container.innerHTML = `<span class="text-slate-600 font-medium">Showing ${((currentPage-1)*rowsPerPage)+1}-${endRecord} of ${filteredData.length}</span><div class="flex gap-2"><button onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700">Previous</button><button onclick="changePage(1)" ${currentPage === totalPages || totalPages === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700">Next</button></div>`; }
+    function renderPagination() { const isMinimal = document.body.classList.contains('minimal-mode'); const searchVal = document.getElementById('searchInput').value.trim(); const container = document.getElementById('pagination-controls'); if(isMinimal && searchVal === '') { container.innerHTML = ''; return; } const totalPages = Math.ceil(filteredData.length / rowsPerPage); if (filteredData.length === 0) { container.innerHTML = ''; return; } const endRecord = Math.min(currentPage * rowsPerPage, filteredData.length); container.innerHTML = `<span class="text-slate-600 font-medium">Showing ${((currentPage-1)*rowsPerPage)+1}-${endRecord} of ${filteredData.length}</span><div class="flex gap-2"><button onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500">Previous</button><button onclick="changePage(1)" ${currentPage === totalPages || totalPages === 1 ? 'disabled' : ''} class="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500">Next</button></div>`; }
     
     function applyFilters() {
         const search = document.getElementById('searchInput').value.toLowerCase().trim(); 
         const status = document.getElementById('statusFilter').value; 
         const contractor = document.getElementById('contractorFilter').value;
         const scope = currentSearchScope;
+        const suggestionBox = document.getElementById('search-suggestion');
 
         if(search === '/admin') return; 
         
+        let closestMatchName = "";
+        let closestDist = Infinity;
+
         filteredData = globalData.filter(row => {
             const s = search; const matchName = row.name.toLowerCase().includes(s); const matchCode = row.code.toLowerCase().includes(s); const matchTl = (row.tl || '').toLowerCase().includes(s); const matchSup = (row.sanctioner || '').toLowerCase().includes(s);
             let matchesSearch = false; if (s === '') { matchesSearch = true; } else { if (scope === 'all') matchesSearch = matchName || matchCode || matchTl || matchSup; else if (scope === 'emp') matchesSearch = matchName || matchCode; else if (scope === 'tl') matchesSearch = matchTl; else if (scope === 'sup') matchesSearch = matchSup; }
             
+            // Fuzzy search heuristics if no direct match
+            if (s !== '' && !matchesSearch) {
+                let targets = [row.name.toLowerCase()];
+                if (scope === 'all' || scope === 'emp') targets.push(row.code.toLowerCase());
+                if (scope === 'all' || scope === 'tl') targets.push((row.tl||'').toLowerCase());
+                if (scope === 'all' || scope === 'sup') targets.push((row.sanctioner||'').toLowerCase());
+                
+                targets.forEach(t => {
+                    if(!t) return;
+                    const words = t.split(' ');
+                    words.forEach(w => {
+                        const dist = levenshteinDistance(s, w);
+                        const threshold = w.length <= 4 ? 1 : 2; // Tolerance level
+                        if(dist <= threshold && dist < closestDist) {
+                            closestDist = dist;
+                            closestMatchName = row.name; 
+                        }
+                    });
+                });
+            }
+
             const matchesStatus = status ? row.status === status : true; 
             const matchesContractor = contractor ? row.contractor === contractor : true;
 
             return matchesSearch && matchesStatus && matchesContractor;
         });
+
+        // Handle fuzzy suggestion UI
+        if (filteredData.length === 0 && closestMatchName && search !== '') {
+            suggestionBox.innerHTML = `Did you mean: <button onclick="document.getElementById('searchInput').value='${closestMatchName}'; applyFilters();" class="font-bold text-indigo-700 hover:text-indigo-900 underline cursor-pointer outline-none rounded">${closestMatchName.toUpperCase()}</button> ?`;
+            suggestionBox.classList.remove('hidden');
+        } else {
+            suggestionBox.classList.add('hidden');
+        }
 
         const count = document.getElementById('contractor-count'); 
         if (contractor || status || search) { let badgeText = `${filteredData.length} Employee(s)`; if (search !== '') { if (scope === 'tl' && filteredData.length > 0) badgeText = `Team: ${filteredData.length} Employee(s)`; if (scope === 'sup' && filteredData.length > 0) badgeText = `Under Shift Sup: ${filteredData.length} Employee(s)`; } count.textContent = badgeText; count.classList.remove('hidden'); } else { count.classList.add('hidden'); }
@@ -664,7 +853,7 @@
                     <div class="bg-orange-50 text-orange-800 p-1.5 rounded-lg border border-orange-100 flex flex-col items-center justify-between h-full"><span class="font-bold text-xl leading-none mt-1">${mp}</span><span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight opacity-80 mb-1">Miss Punch</span></div>
                 </div>
                 <div class="mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-900 p-3 rounded-lg flex justify-between items-center border border-blue-100 shadow-sm"><span class="font-bold text-sm uppercase tracking-wide"><i class="fa-solid fa-chart-pie mr-1 text-blue-500"></i> Attendance Rate</span><span class="font-bold text-2xl">${attendancePercentage}%</span></div>
-                <button onclick="shareEmployeeURL('${employee.name.replace(/'/g, "\\'")}')" class="w-full mt-4 bg-teal-100 hover:bg-teal-200 text-teal-800 py-2.5 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-share-nodes"></i> Share Attendance</button>
+                <button onclick="shareEmployeeURL('${employee.name.replace(/'/g, "\\'")}')" class="w-full mt-4 bg-teal-100 hover:bg-teal-200 text-teal-800 py-2.5 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 shadow-sm outline-none focus:ring-2 focus:ring-teal-500"><i class="fa-solid fa-share-nodes"></i> Share Attendance</button>
             </div>
             <div class="mt-auto pt-4 border-t border-slate-200">
                 <div class="flex justify-between items-center font-semibold text-slate-800 lg:cursor-default cursor-pointer select-none" onclick="if(window.innerWidth < 1024) { document.getElementById('legend-content').classList.toggle('hidden'); document.getElementById('legend-icon').classList.toggle('rotate-180'); }"><span>Legend</span><i id="legend-icon" class="fa-solid fa-chevron-down transition-transform lg:hidden text-slate-500"></i></div>
@@ -684,11 +873,16 @@
                 </div>
             </div>`;
         document.getElementById('modal-calendar-title').textContent = `Attendance for ${displayMonthStr}`;
-        let daysHTML = Array(firstDay).fill('<div></div>').join('');
+        let daysHTML = Array(firstDay).fill('<div class="border border-slate-100/50 bg-slate-50/50 rounded-lg min-h-[44px] md:min-h-0"></div>').join('');
         for (let i = 0; i < totalDays; i++) {
             const rawStatus = employee.dates[i] || '-';
             daysHTML += `<div class="status-${getStatusClass(rawStatus)} flex flex-col justify-center items-center rounded-lg font-bold py-2 shadow-sm border border-slate-100 transition hover:scale-105 min-h-[44px] md:min-h-0"><span class="text-sm md:text-base">${i+1}</span><span class="text-[10px] md:text-xs opacity-80 mt-0.5">${getDisplayStatus(rawStatus)}</span></div>`;
         }
+        // Fill remaining empty grid cells for a perfect calendar look
+        const totalRenderedCells = firstDay + totalDays;
+        const extraCells = (7 - (totalRenderedCells % 7)) % 7;
+        daysHTML += Array(extraCells).fill('<div class="border border-slate-100/50 bg-slate-50/50 rounded-lg min-h-[44px] md:min-h-0"></div>').join('');
+
         document.getElementById('modal-calendar').innerHTML = daysHTML; document.getElementById('employee-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('modal-content').classList.remove('scale-95'); history.pushState({}, '', `?Employee=${encodeURIComponent(employee.name)}`);
     }
 
@@ -702,13 +896,16 @@
 
     function renderShiftCalendar() {
         const y = calCurrentDate.getFullYear(), m = calCurrentDate.getMonth(); const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; document.getElementById('sc-month-title').innerText = `${monthNames[m]} ${y}`; const grid = document.getElementById('sc-days'); grid.innerHTML = ''; const firstDay = new Date(y, m, 1).getDay(), daysInMonth = new Date(y, m + 1, 0).getDate(), today = new Date();
-        for (let i = 0; i < firstDay; i++) { grid.innerHTML += `<div></div>`; }
+        for (let i = 0; i < firstDay; i++) { grid.innerHTML += `<div class="border border-slate-100/50 bg-slate-50/30 rounded-lg min-h-[48px]"></div>`; }
         for (let d = 1; d <= daysInMonth; d++) {
             const cDate = new Date(y, m, d), isoDate = formatISODate(cDate), sCode = getShiftForDate(cDate), isHol = holidays2026[isoDate];
             let cls = `sc-cell sc-shift-${sCode}`; let isToday = (d === today.getDate() && m === today.getMonth() && y === today.getFullYear());
             if (isToday) cls += ' ring-2 ring-indigo-500 ring-offset-2 scale-105 shadow-md z-10'; if (isHol) cls += ' sc-holiday';
             grid.innerHTML += `<div class="${cls} text-xs md:text-sm shadow-sm transition hover:scale-105"><div class="font-bold text-slate-700 ${isHol ? 'text-amber-900' : ''} ${isToday && !isHol ? 'text-indigo-900' : ''}">${d}</div><div class="text-[9px] md:text-xs font-bold mt-1 px-1.5 py-0.5 rounded-full bg-white/60 tracking-wider">${sCode}</div></div>`;
         }
+        const totalRendered = firstDay + daysInMonth; const remainder = (7 - (totalRendered % 7)) % 7;
+        for(let i=0; i<remainder; i++) { grid.innerHTML += `<div class="border border-slate-100/50 bg-slate-50/30 rounded-lg min-h-[48px]"></div>`; }
+        
         let holHtml = ''; Object.keys(holidays2026).sort().forEach(dateStr => { let hd = new Date(dateStr); if(hd.getFullYear() === y && hd.getMonth() === m) { holHtml += `<div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm flex justify-between items-center"><span class="font-bold text-amber-700">${hd.getDate()} ${monthNames[m]}</span> <span class="text-amber-900 font-medium text-right">${holidays2026[dateStr]}</span></div>`; } });
         if(!holHtml) holHtml = `<div class="text-sm text-slate-400 text-center italic mt-4 bg-slate-50 p-4 rounded-xl border border-slate-200">No public holidays this month</div>`; document.getElementById('sc-holiday-list').innerHTML = holHtml;
     }
@@ -743,6 +940,7 @@
     setTimeout(() => {
         if(IS_MAINTENANCE_MODE) return; 
 
+        // Uses IST offset (5.5 hours) to ensure "todayStr" changes perfectly at 12:00 AM Indian Standard Time
         const d = new Date(), utc = d.getTime() + (d.getTimezoneOffset() * 60000), ist = new Date(utc + (3600000 * 5.5)); 
         const todayStr = ist.toISOString().split('T')[0];
         const yesterday = new Date(ist); yesterday.setDate(yesterday.getDate() - 1);
@@ -783,7 +981,6 @@
             const liveEl = document.getElementById('live-users-count');
             if(liveEl) {
                 const size = snap.exists() ? Object.keys(snap.val()).length : 0;
-                // If users > 100, show 100+. Otherwise show the actual count.
                 liveEl.innerText = size > 100 ? '100+' : size;
             }
         });
