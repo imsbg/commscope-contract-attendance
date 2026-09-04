@@ -113,8 +113,8 @@
     <!-- Pull to Refresh UI -->
     <div id="ptr-indicator"><i class="fa-solid fa-arrow-down mr-2"></i> Pull to refresh</div>
 
-    <!-- Dynamic Marquee Container -->
-    <div id="marquee-container" class="hidden bg-indigo-600 text-white text-xs md:text-sm shadow-md relative z-[100]">
+    <!-- Dynamic Marquee Container (Fixed z-index to 40 so it stays under modals) -->
+    <div id="marquee-container" class="hidden bg-indigo-600 text-white text-xs md:text-sm shadow-md relative z-40">
         <div class="max-w-screen-2xl mx-auto flex items-center px-3 md:px-4 py-2.5 w-full">
             
             <!-- Notice Badge -->
@@ -994,7 +994,7 @@
             const liveEl = document.getElementById('live-users-count');
             if(liveEl) {
                 const size = snap.exists() ? Object.keys(snap.val()).length : 0;
-                liveEl.innerText = size > 90 ? '100+' : size;
+                liveEl.innerText = size > 100 ? '100+' : size;
             }
         });
 
