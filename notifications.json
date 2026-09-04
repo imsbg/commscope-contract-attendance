@@ -1,9 +1,9 @@
 [
   {
-    "title": "⚠️ Current Data Unavailable",
-    "message": "The latest contractor attendance PDF has internal formatting errors from the source, which is why it is currently showing 0 employees. While we work on a fix to restore your current data, you can view your finalized August records.",
-    "link": "https://imsbg.github.io/commscope-contract-attendance/puruna/august/",
-    "buttonText": "View August Data"
+  "title": "✅ Back on Track!",
+  "message": "The glitch is sorted! Your current contractor attendance records are fully restored and accurate. Dive in and check your latest logs without worry.",
+  "link": "https://imsbg.github.io/commscope-contract-attendance/",
+  "buttonText": "Refresh"
   },
   {
     "title": "🎉 New Tool: Age Calculator",
