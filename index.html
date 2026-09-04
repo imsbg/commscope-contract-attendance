@@ -114,11 +114,24 @@
     <div id="ptr-indicator"><i class="fa-solid fa-arrow-down mr-2"></i> Pull to refresh</div>
 
     <!-- Dynamic Marquee Container -->
-    <div id="marquee-container" class="hidden bg-indigo-600 text-white text-xs md:text-sm shadow-md relative z-50">
-        <div class="max-w-screen-2xl mx-auto flex items-center px-4 py-2.5">
-            <span class="font-bold mr-3 uppercase tracking-wider text-indigo-200 shrink-0 flex items-center gap-2"><i class="fa-solid fa-bullhorn animate-pulse"></i> Notice</span>
-            <marquee id="marquee-text" scrollamount="6" class="font-medium flex-1 tracking-wide"></marquee>
-            <button onclick="document.getElementById('marquee-container').style.display='none'" class="ml-3 text-indigo-300 hover:text-white shrink-0 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <div id="marquee-container" class="hidden bg-indigo-600 text-white text-xs md:text-sm shadow-md relative z-[100]">
+        <div class="max-w-screen-2xl mx-auto flex items-center px-3 md:px-4 py-2.5 w-full">
+            
+            <!-- Notice Badge -->
+            <div class="font-bold mr-2 md:mr-3 uppercase tracking-wider text-indigo-200 flex-shrink-0 flex items-center gap-1.5 md:gap-2">
+                <i class="fa-solid fa-bullhorn animate-pulse"></i> Notice
+            </div>
+            
+            <!-- Marquee wrapper forced to take exact remaining space and enable scrolling -->
+            <div class="flex-1 min-w-0 overflow-hidden flex items-center">
+                <marquee id="marquee-text" scrollamount="5" class="font-medium tracking-wide w-full"></marquee>
+            </div>
+            
+            <!-- Close Button -->
+            <button onclick="document.getElementById('marquee-container').style.display='none'" class="ml-3 flex-shrink-0 text-indigo-300 hover:text-white transition-colors h-6 w-6 flex items-center justify-center rounded-full hover:bg-indigo-500">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            
         </div>
     </div>
 
@@ -981,7 +994,7 @@
             const liveEl = document.getElementById('live-users-count');
             if(liveEl) {
                 const size = snap.exists() ? Object.keys(snap.val()).length : 0;
-                liveEl.innerText = size > 100 ? '100+' : size;
+                liveEl.innerText = size > 90 ? '100+' : size;
             }
         });
 
