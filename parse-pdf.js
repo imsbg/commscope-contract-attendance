@@ -12,8 +12,7 @@ async function fetchAndParsePDF() {
     if (!json.success) throw new Error("GAS Error: " + json.error);
 
     console.log(`📄 Received PDF: ${json.fileNameUsed || "Unknown Name"}`);
-    if (json.fileUrl) console.log(`🔗 File Link: ${json.fileUrl}`);
-
+    
     console.log("📦 Decoding Base64 PDF data...");
     const pdfBuffer = Buffer.from(json.data, 'base64');
     const pdfData = new Uint8Array(pdfBuffer);
@@ -27,42 +26,25 @@ async function fetchAndParsePDF() {
     let maxDays = 31; // Default fallback
     let foundMaxDays = false;
 
-    // Expanded valid attendance codes to include '--' (used for Left/Inactive employees) and other edge cases
     const validAttSet = new Set(['p', 'mp', 'a', 'hd', 'wo', 'slwp', 'lvp', 'slp', 'pl', 'fd', 'l', 'ho', 'wwo', 'cf', 'who', 'ho(rota)', 'who(rota)', '-', '--', 'co', 'u/a', 'w/o']);
 
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         
+        // Extract items with width to calculate physical gaps later
         let items = textContent.items
-            .map(item => ({ text: item.str.trim(), x: item.transform[4], y: item.transform[5] }))
-            .filter(item => item.text !== '');
+            .map(item => ({ 
+                text: item.str, 
+                x: item.transform[4], 
+                y: item.transform[5],
+                width: item.width || (item.str.length * 5) // Fallback if width is missing
+            }))
+            .filter(item => item.text.trim() !== '');
 
         if (items.length === 0) continue;
 
-        let fullTextPage = items.map(itm => itm.text).join(' ');
-
-        // 1. EXTRACT MONTH
-        if (currentMonthStr === "Unknown Month") {
-            let match = fullTextPage.match(/Month\s*of\s*([A-Za-z]+)\s*(\d{4})/i) || fullTextPage.replace(/\s/g, '').match(/Monthof([A-Za-z]+)(\d{4})/i);
-            if (match) currentMonthStr = match[1] + " " + match[2];
-        }
-
-        // Detect the exact number of days exported in this PDF from the table header
-        // Matches "Contractor 1 2 ... Reporting"
-        if (!foundMaxDays) {
-            let headerMatch = fullTextPage.match(/Contractor\s+((?:\d{1,2}\s*)+)Reporting/i);
-            if (headerMatch) {
-                let daysArr = headerMatch[1].trim().split(/\s+/).map(Number);
-                if (daysArr.length > 0) {
-                    maxDays = Math.max(...daysArr);
-                    foundMaxDays = true;
-                    console.log(`📅 Detected dynamic days in this report: ${maxDays} Days`);
-                }
-            }
-        }
-
-        // 2. GROUP BY Y COORDINATE (Tolerance 10 to catch slight misalignments)
+        // 1. GROUP BY Y COORDINATE to form lines
         let rows = [];
         items.forEach(item => {
             let foundRow = rows.find(r => Math.abs(r.y - item.y) < 10);
@@ -70,49 +52,80 @@ async function fetchAndParsePDF() {
             else rows.push({ y: item.y, items: [item] });
         });
 
-        // 3. PARSE ROWS via String Matching (Reads left to right)
+        // 2. RECONSTRUCT LINES ACCURATELY USING GAP DETECTION
         for (let row of rows) {
             row.items.sort((a, b) => a.x - b.x); 
             
-            // Build full row string
-            let fullText = row.items.map(itm => itm.text.trim()).filter(t => t).join(' ');
+            let fullText = "";
+            let prev = null;
             
-            // Pre-process known multi-word attendance codes so they don't break tokenizing
+            for (let itm of row.items) {
+                if (prev) {
+                    // Calculate distance between the end of the previous item and the start of this one
+                    let gap = itm.x - (prev.x + prev.width);
+                    // If the gap is larger than 4 pixels, it's a real space. Otherwise, merge them!
+                    if (gap > 4) fullText += " ";
+                }
+                fullText += itm.text;
+                prev = itm;
+            }
+            
+            // Clean up text format
+            fullText = fullText.replace(/\s+/g, ' ').trim();
+            fullText = fullText.replace(/-\s+-/g, '--'); // Fix separated dashes for Left employees
             fullText = fullText.replace(/HO\s*\(ROTA\)/gi, 'HO(ROTA)').replace(/WHO\s*\(ROTA\)/gi, 'WHO(ROTA)');
 
-            // Regex looks for: (Letters-Numbers) (Name) (Active or Left)
-            let regex = /([A-Z0-9]+[-\s]+\d+)\s+(.+?)\s+(Active|Left)\s+/i;
+            // Extract Month
+            if (currentMonthStr === "Unknown Month") {
+                let monthMatch = fullText.match(/Month\s*of\s*([A-Za-z]+)\s*(\d{4})/i) || fullText.replace(/\s/g, '').match(/Monthof([A-Za-z]+)(\d{4})/i);
+                if (monthMatch) currentMonthStr = monthMatch[1] + " " + monthMatch[2];
+            }
+
+            // Detect how many day columns exist in this specific PDF (e.g. 1 2)
+            if (!foundMaxDays) {
+                let headerMatch = fullText.match(/Contractor\s+((?:\d{1,2}\s*)+)Reporting/i);
+                if (headerMatch) {
+                    let daysArr = headerMatch[1].trim().split(/\s+/).map(Number);
+                    if (daysArr.length > 0) {
+                        maxDays = Math.max(...daysArr);
+                        foundMaxDays = true;
+                        console.log(`📅 Detected dynamic days in this report: ${maxDays} Days`);
+                    }
+                }
+            }
+
+            // 3. REGEX TO MATCH EMPLOYEE ROWS 
+            // Looks for: (Code) (Name) (Active/Left) (Rest of string)
+            let regex = /^([A-Z0-9]+\s*-\s*\d+)\s+(.+?)\s+(Active|Left)\s+(.+)$/i;
             let match = fullText.match(regex);
 
-            if (!match) continue; // Skip if it doesn't look like an employee row
+            if (!match) continue; 
 
-            let code = match[1].replace(/\s+/g, ''); // Ensure no spaces in code (e.g. AD-123)
+            let code = match[1].replace(/\s+/g, ''); // Ensure no spaces in AD-1234
             let name = match[2].trim();
             let status = match[3];
+            let remainder = match[4].trim();
 
-            // Everything after 'Active' / 'Left'
-            let remainder = fullText.substring(match.index + match[0].length).trim();
-
-            // 4. Extract Contractor
-            let knownContractors = ['ADECCO', 'ANANYA', 'Dibya Industrial Service', 'Dibya', 'ESJAY', 'MATHEW', 'Om Sai Krupa Enterprise', 'Om Sai', 'SHAM', 'VASUDEVA', 'YASHASWI'];
+            // 4. EXTRACT CONTRACTOR
+            // Sorted longest to shortest to prevent partial matches
+            let knownContractors = ['Dibya Industrial Service', 'Om Sai Krupa Enterprise', 'Om Sai Krupa', 'YASHASWI', 'VASUDEVA', 'ANANYA', 'ADECCO', 'MATHEW', 'Dibya', 'ESJAY', 'Om Sai', 'SHAM'];
             let contractor = 'Unknown';
             
             for (let c of knownContractors) {
                 if (remainder.toLowerCase().startsWith(c.toLowerCase())) {
                     contractor = c;
-                    remainder = remainder.substring(c.length).trim(); // Remove contractor from remainder
+                    remainder = remainder.substring(c.length).trim();
                     break;
                 }
             }
             
             if (contractor === 'Unknown') {
-                // Fallback: just grab the first word
                 let parts = remainder.split(/\s+/);
                 contractor = parts[0];
                 remainder = parts.slice(1).join(' ').trim();
             }
 
-            // 5. Extract Attendance & Supervisors
+            // 5. EXTRACT ATTENDANCE & SUPERVISORS
             let tokens = remainder.split(/\s+/);
             let datesArray = new Array(31).fill('-');
             let datePointer = 0;
@@ -128,15 +141,12 @@ async function fetchAndParsePDF() {
                         parsingDates = false;
                         supTokens.push(token);
                     } else if (validAttSet.has(tClean)) {
-                        // It's a valid attendance code, add it to the calendar
                         datesArray[datePointer] = token.toUpperCase() === 'HO(ROTA)' ? 'HO (ROTA)' : token.toUpperCase();
                         datePointer++;
                     } else if (/^\d{1,2}$/.test(token)) {
-                        // Stray number (likely a day header that bled in), ignore it safely
-                        continue;
+                        continue; // Stray header numbers bleeding into row
                     } else {
-                        // We hit a word that IS NOT an attendance code (e.g., 'Nitesh').
-                        // This means the dates are over and Supervisors have started!
+                        // Reached supervisors text
                         parsingDates = false;
                         supTokens.push(token);
                     }
@@ -145,7 +155,7 @@ async function fetchAndParsePDF() {
                 }
             }
 
-            // 6. Split Supervisors roughly in half (TL / Sanctioner)
+            // 6. SPLIT SUPERVISORS (TL & Sanctioner)
             let tl = "N/A", sanctioner = "N/A";
             if (supTokens.length > 0) {
                 let mid = Math.floor(supTokens.length / 2);
