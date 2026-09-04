@@ -24,9 +24,11 @@ async function fetchAndParsePDF() {
 
     let globalData = [];
     let currentMonthStr = "Unknown Month";
+    let maxDays = 31; // Default fallback
+    let foundMaxDays = false;
 
-    // Valid attendance codes used to identify dates (add any specific ones you need)
-    const validAttSet = new Set(['p', 'mp', 'a', 'hd', 'wo', 'slwp', 'lvp', 'slp', 'pl', 'fd', 'l', 'ho', 'wwo', 'cf', 'who', 'ho(rota)', 'who(rota)', '-']);
+    // Expanded valid attendance codes to include '--' (used for Left/Inactive employees) and other edge cases
+    const validAttSet = new Set(['p', 'mp', 'a', 'hd', 'wo', 'slwp', 'lvp', 'slp', 'pl', 'fd', 'l', 'ho', 'wwo', 'cf', 'who', 'ho(rota)', 'who(rota)', '-', '--', 'co', 'u/a', 'w/o']);
 
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
@@ -38,11 +40,26 @@ async function fetchAndParsePDF() {
 
         if (items.length === 0) continue;
 
+        let fullTextPage = items.map(itm => itm.text).join(' ');
+
         // 1. EXTRACT MONTH
         if (currentMonthStr === "Unknown Month") {
-            let fullTextPage = items.map(itm => itm.text).join(' ');
             let match = fullTextPage.match(/Month\s*of\s*([A-Za-z]+)\s*(\d{4})/i) || fullTextPage.replace(/\s/g, '').match(/Monthof([A-Za-z]+)(\d{4})/i);
             if (match) currentMonthStr = match[1] + " " + match[2];
+        }
+
+        // Detect the exact number of days exported in this PDF from the table header
+        // Matches "Contractor 1 2 ... Reporting"
+        if (!foundMaxDays) {
+            let headerMatch = fullTextPage.match(/Contractor\s+((?:\d{1,2}\s*)+)Reporting/i);
+            if (headerMatch) {
+                let daysArr = headerMatch[1].trim().split(/\s+/).map(Number);
+                if (daysArr.length > 0) {
+                    maxDays = Math.max(...daysArr);
+                    foundMaxDays = true;
+                    console.log(`📅 Detected dynamic days in this report: ${maxDays} Days`);
+                }
+            }
         }
 
         // 2. GROUP BY Y COORDINATE (Tolerance 10 to catch slight misalignments)
@@ -106,7 +123,11 @@ async function fetchAndParsePDF() {
                 let tClean = token.toLowerCase();
                 
                 if (parsingDates) {
-                    if (validAttSet.has(tClean) && datePointer < 31) {
+                    // Stop checking for dates if we've processed all available day columns for this month
+                    if (datePointer >= maxDays) {
+                        parsingDates = false;
+                        supTokens.push(token);
+                    } else if (validAttSet.has(tClean)) {
                         // It's a valid attendance code, add it to the calendar
                         datesArray[datePointer] = token.toUpperCase() === 'HO(ROTA)' ? 'HO (ROTA)' : token.toUpperCase();
                         datePointer++;
