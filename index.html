@@ -291,14 +291,19 @@
         </div>
         
        <footer class="text-center text-xs text-slate-500 pt-8 pb-12 relative flex flex-col items-center mt-auto w-full">
-            <div class="flex justify-center gap-3 sm:gap-4 mb-6 cursor-pointer hover:scale-105 transition-transform" onclick="openVisitorModal()" title="Click to view daily visitors">
+            <div class="flex flex-wrap justify-center gap-3 sm:gap-4 mb-6 cursor-pointer hover:scale-105 transition-transform" onclick="openVisitorModal()" title="Click to view daily visitors">
                 <div class="bg-white px-3 sm:px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
                     <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Yesterday</p>
                     <p class="text-base sm:text-lg font-bold text-slate-700" id="vis-yday">--</p>
                 </div>
                 <div class="bg-white px-3 sm:px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
-                    <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Today (IST)</p>
+                    <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Today</p>
                     <p class="text-base sm:text-lg font-bold text-indigo-600" id="vis-today">--</p>
+                </div>
+                <!-- Unique Box -->
+                <div class="bg-white px-3 sm:px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-center">
+                    <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unique</p>
+                    <p class="text-base sm:text-lg font-bold text-pink-600" id="vis-unique-today">--</p>
                 </div>
                 <div class="bg-gradient-to-r from-teal-600 to-teal-500 px-3 sm:px-4 py-2 rounded-lg shadow-md text-center text-white relative overflow-hidden group">
                     <div class="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:animate-[shimmer_1s_forwards]"></div>
@@ -387,7 +392,7 @@
     <div id="visitor-modal" onclick="if(event.target === this) closeVisitorModal()" class="fixed inset-0 bg-black/60 z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300 modal-blur">
         <div id="visitor-modal-content" class="bg-slate-50 rounded-2xl w-full max-w-2xl mx-auto h-auto max-h-[90vh] flex flex-col scale-95 transition-transform duration-300 shadow-2xl relative mt-10 md:mt-20 cursor-default">
              <button onclick="closeVisitorModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
-             <div class="p-5 md:p-6 bg-white rounded-t-2xl border-b border-slate-200"><h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-chart-simple text-indigo-600"></i> Daily Visitor Logs (IST)</h3></div>
+             <div class="p-5 md:p-6 bg-white rounded-t-2xl border-b border-slate-200"><h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-chart-simple text-indigo-600"></i> Daily Visitor Logs</h3></div>
              <div class="p-4 md:p-6 flex-1 overflow-y-auto custom-scrollbar"><div id="visitor-calendar-grid" class="grid grid-cols-7 gap-1.5 md:gap-3"></div></div>
         </div>
     </div>
@@ -413,7 +418,14 @@
         <div id="shift-modal-content" class="bg-slate-50 rounded-2xl w-full max-h-[95vh] h-auto flex flex-col lg:flex-row scale-95 transition-transform duration-300 overflow-y-auto max-w-6xl mx-auto relative shadow-2xl custom-scrollbar cursor-default">
              <button onclick="closeShiftModal()" class="absolute top-3 right-3 text-slate-600 bg-white/80 shadow hover:bg-white rounded-full h-10 w-10 text-xl z-20 transition flex items-center justify-center">&times;</button>
              <div class="p-4 md:p-6 flex-1 flex flex-col bg-slate-50">
-                <div class="flex justify-between items-center mb-6"><button onclick="changeShiftMonth(-1)" class="w-10 h-10 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold transition shadow-sm">&lt;</button><h3 id="sc-month-title" class="text-xl md:text-2xl font-bold text-indigo-900">Month Year</h3><button onclick="changeShiftMonth(1)" class="w-10 h-10 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold transition shadow-sm">&gt;</button></div>
+                <div class="flex justify-between items-center mb-6">
+                    <button onclick="changeShiftMonth(-1)" class="w-10 h-10 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold transition shadow-sm">&lt;</button>
+                    <div class="flex flex-col items-center">
+                        <h3 id="sc-month-title" class="text-xl md:text-2xl font-bold text-indigo-900">Month Year</h3>
+                        <div id="sc-live-clock" class="text-[10px] md:text-xs font-bold text-indigo-600 mt-1 bg-indigo-50 px-2.5 py-0.5 rounded shadow-sm border border-indigo-100 tracking-wider">--:--:-- --</div>
+                    </div>
+                    <button onclick="changeShiftMonth(1)" class="w-10 h-10 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold transition shadow-sm">&gt;</button>
+                </div>
                 <div class="grid grid-cols-7 gap-1 md:gap-2 text-center font-bold text-xs md:text-sm text-slate-500 mb-2 uppercase tracking-wider"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
                 <div id="sc-days" class="grid grid-cols-7 gap-1 md:gap-2 flex-1 content-start"></div>
              </div>
@@ -433,6 +445,17 @@
 <script>
     const IS_MAINTENANCE_MODE = false; 
 
+    // Logical Today for shifts & date defaulting
+    function getLogicalToday() {
+        const now = new Date();
+        // Shift cutoff at 7:59:59 AM. If hour < 8, it's logically yesterday.
+        if (now.getHours() < 8) {
+            now.setDate(now.getDate() - 1);
+        }
+        return now;
+    }
+    function formatISODate(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0'); }
+
     let globalData = [], filteredData = [], currentPage = 1, currentMonthStr = "";
     const rowsPerPage = 15; 
     let trendChartInstance = null;
@@ -446,12 +469,21 @@
     let currentAdminToken = null;
     let selectedIndex = -1; // For keyboard navigation
 
-    const DEFAULT_SETTINGS = { pattern: 'ACB', baseDate: '2026-01-05', baseShift: 'A' }; 
+    const DEFAULT_SETTINGS = { pattern: 'ACB', baseDate: formatISODate(getLogicalToday()), baseShift: 'A' }; 
     let shiftSettings = JSON.parse(localStorage.getItem('shiftSettings')) || DEFAULT_SETTINGS;
     if(!shiftSettings.pattern) shiftSettings.pattern = 'ACB';
     let calCurrentDate = new Date(); if(calCurrentDate.getFullYear() !== 2026) calCurrentDate.setFullYear(2026);
     const SEQUENCES = { 'ACB': ['A', 'C', 'B'], 'BC': ['B', 'C'] };
     const holidays2026 = { "2026-01-01": "New Year Day", "2026-01-26": "Republic Day", "2026-04-03": "Good Friday", "2026-04-14": "Ambedkar Jayanti", "2026-05-01": "May Day", "2026-08-15": "Independence Day", "2026-09-14": "Ganesh Chaturthi (Day 1)", "2026-09-15": "Ganesh Chaturthi (Day 2)", "2026-10-02": "Gandhi Jayanti", "2026-10-20": "Dussehra", "2026-12-19": "Goa Liberation Day", "2026-12-25": "Christmas Day" };
+
+    // Shift Clock Initialization
+    setInterval(() => {
+        const clockEl = document.getElementById('sc-live-clock');
+        if (clockEl) {
+            const now = new Date();
+            clockEl.innerText = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+        }
+    }, 1000);
 
     document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('footer-year').textContent = new Date().getFullYear();
@@ -838,8 +870,14 @@
     }
 
     function openEmployeeModal(index) {
-        const employee = filteredData[index]; let date = new Date(currentMonthStr); let firstDay = 0, totalDays = 31, displayMonthStr = currentMonthStr;
-        if (!isNaN(date.getTime())) { firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay(); const woIndex = employee.dates.findIndex(d => d === 'WO'); if (woIndex !== -1) { const expectedFirstDay = (7 - (woIndex % 7)) % 7; if (firstDay !== expectedFirstDay) { const prevDate = new Date(date.getFullYear(), date.getMonth() - 1, 1); if (prevDate.getDay() === expectedFirstDay) { date = prevDate; firstDay = expectedFirstDay; displayMonthStr = date.toLocaleString('default', { month: 'long', year: 'numeric' }); } } } totalDays = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(); }
+        const employee = filteredData[index]; 
+        let date = new Date(currentMonthStr); 
+        let firstDay = 0, totalDays = 31, displayMonthStr = currentMonthStr;
+        
+        if (!isNaN(date.getTime())) { 
+            firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay(); 
+            totalDays = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(); 
+        }
 
         let p = 0, a = 0, mp = 0, fd = 0, validDays = 0;
         for (let i = 0; i < totalDays; i++) {
@@ -905,14 +943,15 @@
     function onPatternChange() { shiftSettings.pattern = document.getElementById('sc-setup-pattern').value; updateShiftDropdown(); saveShiftSettings(); }
     function saveShiftSettings() { shiftSettings.pattern = document.getElementById('sc-setup-pattern').value; shiftSettings.baseShift = document.getElementById('sc-setup-shift').value; shiftSettings.baseDate = document.getElementById('sc-setup-date').value || shiftSettings.baseDate; localStorage.setItem('shiftSettings', JSON.stringify(shiftSettings)); renderShiftCalendar(); }
     function getShiftForDate(dateObj) { if (dateObj.getDay() === 0) return 'OFF'; const targetMon = getMonday(dateObj), baseMon = getMonday(new Date(shiftSettings.baseDate)); const diffWeeks = Math.floor(Math.round((targetMon - baseMon) / (1000 * 60 * 60 * 24)) / 7); const activeSeq = SEQUENCES[shiftSettings.pattern] || SEQUENCES['ACB']; let baseIndex = activeSeq.indexOf(shiftSettings.baseShift); if (baseIndex === -1) baseIndex = 0; let currentIndex = (baseIndex + diffWeeks) % activeSeq.length; if (currentIndex < 0) currentIndex += activeSeq.length; return activeSeq[currentIndex]; }
-    function formatISODate(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0'); }
 
     function renderShiftCalendar() {
-        const y = calCurrentDate.getFullYear(), m = calCurrentDate.getMonth(); const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; document.getElementById('sc-month-title').innerText = `${monthNames[m]} ${y}`; const grid = document.getElementById('sc-days'); grid.innerHTML = ''; const firstDay = new Date(y, m, 1).getDay(), daysInMonth = new Date(y, m + 1, 0).getDate(), today = new Date();
+        const y = calCurrentDate.getFullYear(), m = calCurrentDate.getMonth(); const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; document.getElementById('sc-month-title').innerText = `${monthNames[m]} ${y}`; const grid = document.getElementById('sc-days'); grid.innerHTML = ''; const firstDay = new Date(y, m, 1).getDay(), daysInMonth = new Date(y, m + 1, 0).getDate();
+        const logicalToday = getLogicalToday();
+        
         for (let i = 0; i < firstDay; i++) { grid.innerHTML += `<div class="border border-slate-100/50 bg-slate-50/30 rounded-lg min-h-[48px]"></div>`; }
         for (let d = 1; d <= daysInMonth; d++) {
             const cDate = new Date(y, m, d), isoDate = formatISODate(cDate), sCode = getShiftForDate(cDate), isHol = holidays2026[isoDate];
-            let cls = `sc-cell sc-shift-${sCode}`; let isToday = (d === today.getDate() && m === today.getMonth() && y === today.getFullYear());
+            let cls = `sc-cell sc-shift-${sCode}`; let isToday = (d === logicalToday.getDate() && m === logicalToday.getMonth() && y === logicalToday.getFullYear());
             if (isToday) cls += ' ring-2 ring-indigo-500 ring-offset-2 scale-105 shadow-md z-10'; if (isHol) cls += ' sc-holiday';
             grid.innerHTML += `<div class="${cls} text-xs md:text-sm shadow-sm transition hover:scale-105"><div class="font-bold text-slate-700 ${isHol ? 'text-amber-900' : ''} ${isToday && !isHol ? 'text-indigo-900' : ''}">${d}</div><div class="text-[9px] md:text-xs font-bold mt-1 px-1.5 py-0.5 rounded-full bg-white/60 tracking-wider">${sCode}</div></div>`;
         }
@@ -924,7 +963,19 @@
     }
 
     function changeShiftMonth(dir) { calCurrentDate.setMonth(calCurrentDate.getMonth() + dir); renderShiftCalendar(); }
-    function openShiftModal() { document.getElementById('sc-setup-pattern').value = shiftSettings.pattern; updateShiftDropdown(); document.getElementById('sc-setup-date').value = shiftSettings.baseDate; renderShiftCalendar(); document.getElementById('shift-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('shift-modal-content').classList.remove('scale-95'); }
+    function openShiftModal() { 
+        document.getElementById('sc-setup-pattern').value = shiftSettings.pattern; 
+        updateShiftDropdown(); 
+        
+        // Force today as start date every time it's opened
+        const logicalTodayStr = formatISODate(getLogicalToday());
+        shiftSettings.baseDate = logicalTodayStr;
+        document.getElementById('sc-setup-date').value = logicalTodayStr;
+        saveShiftSettings();
+
+        document.getElementById('shift-modal').classList.remove('opacity-0', 'pointer-events-none'); 
+        document.getElementById('shift-modal-content').classList.remove('scale-95'); 
+    }
     function closeShiftModal() { document.getElementById('shift-modal').classList.add('opacity-0', 'pointer-events-none'); document.getElementById('shift-modal-content').classList.add('scale-95'); }
 </script>
 
@@ -959,21 +1010,32 @@
         const yesterday = new Date(ist); yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-        const updates = {}; updates['/visitors/total'] = increment(1); updates['/visitors/daily/' + todayStr] = increment(1);
+        const updates = {}; 
+        updates['/visitors/total'] = increment(1); 
+        updates['/visitors/daily/' + todayStr] = increment(1);
+
+        // Daily Unique Visitors System (Resetting daily via localStorage)
+        const visitedTodayFlag = localStorage.getItem('visited_unique_' + todayStr);
+        if (!visitedTodayFlag) {
+            updates['/visitors/unique/' + todayStr] = increment(1);
+            localStorage.setItem('visited_unique_' + todayStr, 'true');
+        }
 
         update(ref(db), updates).then(() => {
             get(ref(db, 'visitors')).then((snapshot) => {
-                let realTotal = 0, realToday = 0, realYday = 0;
+                let realTotal = 0, realToday = 0, realYday = 0, realUniqueToday = 0;
                 if(snapshot.exists()) { 
                     const data = snapshot.val(); 
                     window.globalVisitorData = data; 
                     realTotal = data.total || 0; 
                     realToday = data.daily[todayStr] || 0; 
                     realYday = data.daily[yesterdayStr] || 0; 
+                    realUniqueToday = (data.unique && data.unique[todayStr]) ? data.unique[todayStr] : 0;
                 }
                 document.getElementById('vis-total').innerText = realTotal.toLocaleString(); 
                 document.getElementById('vis-today').innerText = realToday.toLocaleString(); 
                 document.getElementById('vis-yday').innerText = realYday.toLocaleString();
+                document.getElementById('vis-unique-today').innerText = realUniqueToday.toLocaleString();
             }).catch(console.error);
         }).catch(console.error);
         
